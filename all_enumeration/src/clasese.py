@@ -16,10 +16,18 @@ class Node:
     def __init__(self, j_id, order):
         self.j_id = j_id
         self.order = order
+        self.visited = False
         self.next_nodes = []
         self.prev_nodes = []
     def __repr__(self):
         return '(' + str(self.j_id)+','+str(self.order)+')'
+    def check_delible(self):
+        for p_n in self.prev_nodes:
+            if not p_n.visited:
+                break
+        else:
+            return True
+        return False 
         
 '''
 class QC:

@@ -11,16 +11,17 @@ def generate(num_jobs, num_qcs, num_ycs, num_yts):
     # input
     qs = input_partition(js, num_qcs)
     ya = input_partition(js, num_ycs)
-    count = 0
+#    count = 0
     for ys in list_permutations(ya):
         for ts in part_perms(js, num_yts):
-            count += 1
-            if is_cycle(qs, ys, ts):
-                print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~', count
-                print qs
-                print ys
-                print ts
-                print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+#            count += 1
+            if not is_cycle(qs, ys, ts):
+                yield (qs, ys, ts)
+#                print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~', count
+#                print qs
+#                print ys
+#                print ts
+#                print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 
 def build_graph(qs, ys, ts):
     js = [j for j in chain(*qs)]
@@ -71,67 +72,66 @@ def build_graph(qs, ys, ts):
             next_j = st[j + 1]
             cur_j.nodes[2].next_nodes.append(next_j.nodes[1])
             next_j.nodes[1].prev_nodes.append(cur_j.nodes[2])
-                        
     
+#===============================================================================
+# '''                        
+#    # below part is for visualizing graph
+#    for j in js:
+#        print 'Job', j
+#        max_num_n_n = 0
+#        max_num_p_n = 0
+#        for n in j.nodes:
+#            if len(n.next_nodes) > max_num_n_n:
+#                max_num_n_n = len(n.next_nodes)
+#            if len(n.prev_nodes) > max_num_p_n:
+#                max_num_p_n = len(n.prev_nodes) 
+#            print '    ', n,
+#        print '' 
+#        print '    ',
+#        print '========'*5
+#        print '', 'n_n',
+#        for i in xrange(max_num_n_n):
+#            for n in j.nodes:
+#                if len(n.next_nodes) > i:
+#                    print n.next_nodes[i],'    ',
+#                else :
+#                    print '        ',
+#            if i != max_num_n_n -1:
+#                print ''
+#                print '      ',
+#        print ''
+#        print '    ',
+#        print '--------'*5
+#        print '', 'p_n ',
+#        for i in xrange(max_num_p_n):
+#            for n in j.nodes:
+#                if len(n.prev_nodes) > i:
+#                    print n.prev_nodes[i],'    ',
+#                else :
+#                    print '        ',
+#            print ''
+#            print '      ',
+#        print ''
+#        
+# '''
+#===============================================================================
+    todo = []
     for j in js:
-        print 'Job', j
-        max_num_n_n = 0
-        max_num_p_n = 0
-        for n in j.nodes:
-            if len(n.next_nodes) > max_num_n_n:
-                max_num_n_n = len(n.next_nodes)
-            if len(n.prev_nodes) > max_num_p_n:
-                max_num_p_n = len(n.prev_nodes) 
-            print '    ', n,
-        print '' 
-        print '    ',
-        print '========'*5
-        print '', 'n_n',
-        for i in xrange(max_num_n_n):
-            for n in j.nodes:
-                if len(n.next_nodes) > i:
-                    print n.next_nodes[i],'    ',
-                else :
-                    print '        ',
-            if i != max_num_n_n -1:
-                print ''
-                print '      ',
-        print ''
-        print '    ',
-        print '--------'*5
-        print '', 'p_n ',
-        for i in xrange(max_num_p_n):
-            for n in j.nodes:
-                if len(n.prev_nodes) > i:
-                    print n.prev_nodes[i],'    ',
-                else :
-                    print '        ',
-            print ''
-            print '      ',
-        print ''
-        
-                
-#            if len(n.next_nodes) > 1 or (n.next_nodes and n.order == 3):
-#                print n 
-         
-    
-    
-
+        if not j.nodes[0].prev_nodes:
+            todo.append(j.nodes[0])
+    return todo                        
 
 def is_cycle(qs, ys, ts):
     todo = build_graph(qs, ys, ts)
-    makespan = 0
     while todo:
         for i in xrange(len(todo)):
             node = todo[i]
-            if node.remove_and_update_t():
-                if makespan < node.t:
-                    makespan = node.t
+            if node.check_delible():
                 del todo[i]
                 break
         else:  # cycle!
-            return None
-    return makespan
+            return True
+    return False
 
 def next_part(k, m, n, p):
     for i in xrange(n - 1, 0, -1):
@@ -247,6 +247,19 @@ def input_partition(jobs, part_num):
 
 if __name__ == '__main__':
 #    generate(6, 2, 2, 3)
+    count = 0
+    for qs, ys, ts in generate(4, 2, 2, 3):
+        print count
+        count += 1
+        for i, sq in enumerate(qs):
+            print 'QC', i, ' : ', sq
+        for i, sy in enumerate(ys):
+            print 'YC', i, ' : ', sy
+        for i, st in enumerate(ts):
+            print 'YT', i, ' : ', st
+        print ''
+            
+'''
     j0 = Job(0, 'D')
     j1 = Job(1, 'L')
     j2 = Job(2, 'L')
@@ -254,5 +267,7 @@ if __name__ == '__main__':
     qs = [[j0, j1], [j3, j2]]
     ys = [[j3, j1, j0], [j2]]
     ts = [[j2], [j0], [j1, j3]]
-    build_graph(qs, ys, ts)
+#    build_graph(qs, ys, ts)
+    print is_cycle(qs, ys, ts)
     
+'''
