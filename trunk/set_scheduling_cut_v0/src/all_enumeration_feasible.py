@@ -77,33 +77,33 @@ def run():
                             handling_qc.num_of_flag = len([t_f for t_f in n_node.agreeable_yt_of_job[handling_qc.primary_j] if t_f])
                             break
                 elif chosen_j != handling_qc.primary_j:
-                    #===========================================================
-                    # set not agreeable yt in each jobs
-                    #===========================================================
+                    '''
+                    set not agreeable yt in each jobs
+                    '''
                     for s_i in range(handling_qc.primary_j_id_in_seq, list(handling_qc.job_seq).index(chosen_j)):
                         n_node.agreeable_yt_of_job[handling_qc.job_seq[s_i]][handling_yt.id] = False
-                    #===========================================================
-                    # revise # of flag
-                    #===========================================================
+                    '''
+                    revise # of flag
+                    '''
                     handling_qc.num_of_flag = len([t_f for t_f in n_node.agreeable_yt_of_job[handling_qc.primary_j] if t_f])
-                    #===========================================================
-                    # there is two case
-                    # one is chosen_j == handling_qc.job_sequence[-1]
-                    # another is chosen_j != handling_qc.job_sequence[-1]
-                    #===========================================================
+                    '''
+                    there is two case
+                    one is chosen_j == handling_qc.job_sequence[-1]
+                    another is chosen_j != handling_qc.job_sequence[-1]
+                    '''
                     if chosen_j != handling_qc.job_seq[-1]:
                         adding_job_to_cut(n_node.cut, qc_j_seq, chosen_j, jobs, n_node)
                 else:
-                    #===========================================================
-                    # chosen_j == handling_qc.primary_j and chosen_j == handling_qc.job_seq[-1]
-                    #===========================================================
+                    '''
+                    chosen_j == handling_qc.primary_j and chosen_j == handling_qc.job_seq[-1]
+                    '''
                     pass
                 
                 if n_node.cut:
-                    #===========================================================
-                    # if n_node.cut == []
-                    # it means that all jobs are scheduled
-                    #===========================================================
+                    '''
+                    if n_node.cut == []
+                    it means that all jobs are scheduled
+                    '''
                     stack_for_cut.append(n_node)
                 else:
                     count +=1
@@ -116,19 +116,19 @@ def run():
                         print '    yt',yt_i,' : ', yt.job_seq
 
 def adding_job_to_cut(cut, qc_j_seq, chosen_j, jobs, n_node):
-    #===================================================================
-    # adding job which have condition for entering cut 
-    #===================================================================
+    '''
+    adding job which have condition for entering cut 
+    '''
     for x in range(list(qc_j_seq).index(chosen_j) + 1, len(qc_j_seq)):
         if jobs[qc_j_seq[x]].type == 'discharging' and qc_j_seq[x] not in n_node.cut and not n_node.scheduled_jobs[qc_j_seq[x]]:
             cut.append(qc_j_seq[x])
         elif jobs[qc_j_seq[x]].type == 'loading' and n_node.scheduled_jobs[qc_j_seq[x]]:
             continue
         else:
-            #=======================================================
-            # jobs[qc_j_seq[x]].type == 'loading'
-            # and n_node.scheduled_jobs[qc_j_seq[x]] is False
-            #=======================================================
+            '''
+            jobs[qc_j_seq[x]].type == 'loading'
+            and n_node.scheduled_jobs[qc_j_seq[x]] is False
+            '''
             break
 #    return cut
 if __name__ == '__main__':
