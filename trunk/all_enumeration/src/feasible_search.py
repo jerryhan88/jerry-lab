@@ -106,12 +106,14 @@ def is_cycle(qs, ys, ts):
     todo = build_graph(qs, ys, ts)
     if not todo:
         return True
-    
     while todo:
         for i in xrange(len(todo)):
             node = todo[i]
             if node.check_delible():
                 del todo[i]
+                node.visited = True
+                for n_n in node.next_nodes:
+                    todo.append(n_n)
                 break
         else:  # cycle!
             return True
