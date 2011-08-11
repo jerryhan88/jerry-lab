@@ -2,8 +2,8 @@ from __future__ import division #@UnresolvedImport
 import Input
 from clasese import Node
 def run():
-    jobs, qcs, ycs, yts = Input.small_problem()
-#    jobs, qcs, ycs, yts = Input.big_problem()
+#    jobs, qcs, ycs, yts = Input.small_problem()
+    jobs, qcs, ycs, yts = Input.big_problem()
     #===========================================================================
     # find job which satisfy cut's condition
     #===========================================================================
@@ -106,14 +106,16 @@ def run():
                     '''
                     stack_for_cut.append(n_node)
                 else:
-                    count +=1
-                    print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~', count 
-                    for qc_i, qc in enumerate(n_node.qcs):
-                        print '    qc',qc_i,' : ', qc.job_seq
-                    for yc_i, yc in enumerate(n_node.ycs):
-                        print '    yc',yc_i,' : ', yc.job_seq
-                    for yt_i, yt in enumerate(n_node.yts):
-                        print '    yt',yt_i,' : ', yt.job_seq
+                    count += 1
+                    if count % 50000 == 0:
+                        
+                        print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~', count 
+#                    for qc_i, qc in enumerate(n_node.qcs):
+#                        print '    qc',qc_i,' : ', qc.job_seq
+#                    for yc_i, yc in enumerate(n_node.ycs):
+#                        print '    yc',yc_i,' : ', yc.job_seq
+#                    for yt_i, yt in enumerate(n_node.yts):
+#                        print '    yt',yt_i,' : ', yt.job_seq
 
 def adding_job_to_cut(cut, qc_j_seq, chosen_j, jobs, n_node):
     '''
