@@ -1,7 +1,6 @@
 from __future__ import division #@UnresolvedImport
 from random import seed, choice, shuffle, randrange #@UnresolvedImport
 from clasese import Job#@UnresolvedImport
-from itertools import *
 
 def ex1():
     j0 , j1, j2, j3 = Job(0, 'D'), Job(1, 'L'), Job(2, 'L'), Job(3, 'D')
