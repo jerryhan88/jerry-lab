@@ -1,5 +1,5 @@
 from __future__ import division #@UnresolvedImport
-from random import seed, randrange #@UnresolvedImport
+from random import seed #@UnresolvedImport
 
 def next_part(k, m, n, p):
     for i in xrange(n - 1, -1, -1):
