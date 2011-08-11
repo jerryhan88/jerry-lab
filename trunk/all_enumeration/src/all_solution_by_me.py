@@ -1,42 +1,36 @@
 from __future__ import division #@UnresolvedImport
-from itertools import *
+from random import seed, randrange #@UnresolvedImport
 
 def next_part(k, m, n, p):
-    for i in xrange(n - 1, 0, -1):
-        if k[i] < p - 1 and k[i] <= m[i - 1]:
+    for i in xrange(n - 1, -1, -1):
+        if k[i] < p - 1:
             k[i] = k[i] + 1
-            m[i] = max(m[i], k[i])
-            for j in xrange(i + 1, n - (p - m[i]) + 1):
-                k[j] = 0
-                m[j] = m[i]
-            for j in xrange(n - (p - m[i]) + 1, n):
-                k[j] = m[j] = p - (n - j)
             return True
+        else:
+            k[i] = 0
     return False
 
-def make_partition(k, l):
-    p = []
+def make_partition(k, l, num_part):
+#    n = len(l)
+    p = [[] for _ in xrange(num_part)]
     for i in xrange(len(l)):
         j = k[i]
-        if len(p) <= j:
-            p.append([])
         p[j].append(l[i])
     return p
     
 def partitions(l, p):
+    seed(10)
     n = len(l)
     k = [0] * n
-    for i in xrange(n - p + 1, n):
-        k[i] = i - (n - p)
+#    print k
     m = list(k)
-
-    yield make_partition(k, l)
-
+    yield make_partition(k, l, p)
     while next_part(k, m, n, p):
-        yield make_partition(k, l)
+        yield make_partition(k, l, p)
         
 def part_perms(l, p):
     for ll in partitions(l, p):
+#        print ll
         for x in list_permutations(ll):
             yield x
 
@@ -57,10 +51,10 @@ def next_perm(l, n):
                 yield p
                 
 def permutations(l):
-    if l:
-        yield l
-        for p in next_perm(l, len(l)):
-            yield p
+#    if l:
+    yield l
+    for p in next_perm(l, len(l)):
+        yield p
             
 def list_permutations(ll):
     n = len(ll)
@@ -68,6 +62,7 @@ def list_permutations(ll):
     ls = [list(ll[i]) for i in xrange(n)]
     # init each permutation
     ys = [permutations(ls[i]) for i in xrange(n)]
+    
     for i in xrange(n):
         ys[i].next()
     yield ls
@@ -86,3 +81,36 @@ def list_permutations(ll):
         if i == n:
             break
         yield ls
+
+
+if __name__ == '__main__':
+    i = 0
+    l = range(5)
+
+    '''
+    s = set()
+    for x in permutations(l):
+        i = i + 1
+        print i, x
+        s.add(tuple(x))
+    print i, len(s)
+    '''
+
+    '''
+    for x in partitions(l, 3):
+        i = i + 1
+        print i, x
+    '''
+
+    '''
+    ll = [[1, 2], [3, 4, 5], [6, 7, 8]]
+    for x in list_permutations(ll):
+        i = i + 1
+        print i, x
+    '''
+
+#    '''
+    for x in part_perms(l, 3):
+        i = i + 1
+        print i, x
+#    '''
