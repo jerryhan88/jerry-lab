@@ -1,6 +1,9 @@
 from __future__ import division #@UnresolvedImport
 from input import ran_example
-from all_solution_by_prof import *
+from all_solution_by_me import * #@UnresolvedImport
+#from all_solution_by_prof import *
+from itertools import *
+
 
 
 def search_feasible_sol(js, qs, ya, num_yts):
@@ -122,8 +125,8 @@ def is_cycle(qs, ys, ts):
 if __name__ == '__main__':
 #    search_feasible_sol(6, 2, 2, 3)
 #    js, qs, ya, num_yts = ran_example(2, 1, 1, 1)
-#    js, qs, ya, num_yts = ran_example(4, 1, 1, 3)
-    js, qs, ya, num_yts = ran_example(6, 2, 2, 3)
+    js, qs, ya, num_yts = ran_example(4, 1, 1, 3)
+#    js, qs, ya, num_yts = ran_example(6, 2, 2, 3)
 #    js, qs, ya, num_yts = ran_example(2, 1, 1, 3)
  
     count = 0
