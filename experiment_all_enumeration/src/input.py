@@ -1,5 +1,5 @@
 from __future__ import division #@UnresolvedImport
-from random import seed, choice, shuffle, randrange #@UnresolvedImport
+from random import choice, shuffle, randrange #@UnresolvedImport
 from clasese import Job#@UnresolvedImport
 
 def ex1():
@@ -11,7 +11,6 @@ def ex1():
     return js, qs, ya, num_yts
 
 def ran_example(num_jobs, num_qcs, num_ycs, num_yts):
-    seed(15)
     js = [Job(i, choice(['D', 'L'])) for i in xrange(num_jobs)]
     qs = partition(js, num_qcs)
     ya = partition(js, num_ycs)

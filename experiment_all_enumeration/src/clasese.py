@@ -38,6 +38,8 @@ class QC:
         self.num_of_flag = num_of_flag
         self.primary_j = job_seq[0]
         self.primary_j_id_in_seq = 0
+    def __repr__(self):
+        return 'QC'+str(self.id) + ':' + str(self.job_seq)
     def duplicate(self):
         n_qc = QC(self.id, self.job_seq, self.num_of_flag)
         n_qc.primary_j, n_qc.primary_j_id_in_seq = self.primary_j, self.primary_j_id_in_seq
@@ -48,6 +50,8 @@ class YC:
         self.id = id
         self.assigned_j = assigned_j
         self.job_seq = []
+    def __repr__(self):
+        return 'YC'+str(self.id) + ':' + str(self.job_seq)
     def duplicate(self):
         n_yc = YC(self.id, self.assigned_j)
         n_yc.job_seq = self.job_seq[:]
@@ -57,6 +61,8 @@ class YT:
     def __init__(self, id):
         self.id = id
         self.job_seq = []
+    def __repr__(self):
+        return 'YT'+str(self.id) + ':' + str(self.job_seq)
     def duplicate(self):
         n_yt = YT(self.id)
         n_yt.job_seq = self.job_seq[:]
