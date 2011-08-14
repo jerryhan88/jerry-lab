@@ -2,8 +2,8 @@ from __future__ import division #@UnresolvedImport
 from set_cut_scheduling import set_cut_run
 from feasible_solution import search_feasible_sol
 from input import ran_example
-from random import seed#@UnresolvedImport 
-
+from random import seed #@UnresolvedImport 
+from pprint import pprint #@UnresolvedImport
 def comparison():
     seed(100)
     js, qcs, ya, num_yts = ran_example(4, 1, 2, 2)
@@ -73,8 +73,8 @@ def comparison():
             st = list(t.job_seq)
             st.append('YT' + str(t.id))
             yts_seq.append(tuple(st))
-        set_fea_sol.add((tuple(qcs_seq), tuple(ycs_seq), tuple(yts_seq)))
-    print len(set_fea_sol),set_fea_sol
+        set_set_cut.add((tuple(qcs_seq), tuple(ycs_seq), tuple(yts_seq)))
+    print len(set_set_cut),set_set_cut
     
 if __name__ == '__main__':
     comparison()
