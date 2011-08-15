@@ -11,6 +11,9 @@ def comparison():
     re_fea_sol, re_set_cut = [],[]
     
     for qs, ys, ts in search_feasible_sol(js, qcs, ya, num_yts):
+        q = [x[:]for x in qs]
+        y = [x[:]for x in ys]
+        t = [x[:]for x in ts]
 ###        fea_sol = []
 ##        qcs_seq = []
 ##        for i, s in enumerate(qs):
@@ -26,7 +29,7 @@ def comparison():
 ##            yts_seq.append(tuple(s))
 ##        re_fea_sol.add((tuple(qcs_seq), tuple(ycs_seq), tuple(yts_seq)))
             
-        re_fea_sol.append([qs, ys, ts])
+        re_fea_sol.append([q, y, t])
 
     for qs, ys, ts in set_cut_run(js, qcs, ya, num_yts):
         re_set_cut.append([qs, ys, ts])
