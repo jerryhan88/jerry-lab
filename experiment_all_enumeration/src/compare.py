@@ -5,7 +5,10 @@ from input import ran_example
 from random import seed #@UnresolvedImport 
 from pprint import pprint #@UnresolvedImport
 def comparison():
-    seed(100)
+#    seed(100)
+#    seed(99)
+    seed(10)
+
     js, qcs, ya, num_yts = ran_example(4, 1, 2, 2)
 #    re_fea_sol, re_set_cut = set(), set()
     re_fea_sol, re_set_cut = [],[]
@@ -14,21 +17,6 @@ def comparison():
         q = [x[:]for x in qs]
         y = [x[:]for x in ys]
         t = [x[:]for x in ts]
-###        fea_sol = []
-##        qcs_seq = []
-##        for i, s in enumerate(qs):
-##            s.append('QC' + str(i))
-##            qcs_seq.append(tuple(s))
-##        ycs_seq = []
-##        for i, s in enumerate(ys):
-##            s.append('YC' + str(i))
-##            ycs_seq.append(tuple(s))
-##        yts_seq = []
-##        for i, s in enumerate(ts):
-##            s.append('YT' + str(i))
-##            yts_seq.append(tuple(s))
-##        re_fea_sol.add((tuple(qcs_seq), tuple(ycs_seq), tuple(yts_seq)))
-            
         re_fea_sol.append([q, y, t])
 
     for qs, ys, ts in set_cut_run(js, qcs, ya, num_yts):
