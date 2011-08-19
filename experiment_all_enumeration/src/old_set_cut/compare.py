@@ -5,11 +5,9 @@ from input import ran_example
 from random import seed #@UnresolvedImport 
 from pprint import pprint #@UnresolvedImport
 def comparison():
-#    seed(100)
+    seed(100)
+#    seed(99)
 #    seed(10)
-
-    seed(99)
-#    seed(16)
 
     js, qcs, ya, num_yts = ran_example(4, 1, 2, 2)
 #    re_fea_sol, re_set_cut = set(), set()
@@ -21,9 +19,7 @@ def comparison():
         t = [x[:]for x in ts]
         re_fea_sol.append([q, y, t])
 
-
-    jobs, qcs_seq, ycs_seq, yts_seq, scheduled_js, qcs_primary_j, agreeable_yt_of_job, handling_v, qcs_num_of_flag, cut =  initialize(js, qcs, ya, num_yts)
-
+    jobs, qcs_seq, ycs_seq, yts_seq, scheduled_js, qcs_primary_j, agreeable_yt_of_job, handling_v, qcs_num_of_flag, cut = initialize(js, qcs, ya, num_yts)
     for qs, ys, ts in set_cut_run(jobs, qcs_seq, ycs_seq, yts_seq, scheduled_js, qcs_primary_j, agreeable_yt_of_job, handling_v, qcs_num_of_flag, cut):
         re_set_cut.append([qs, ys, ts])
     
@@ -49,28 +45,28 @@ def comparison():
             yts_seq.append(tuple(st))
         set_fea_sol.add((tuple(qcs_seq), tuple(ycs_seq), tuple(yts_seq)))
     print len(set_fea_sol), set_fea_sol 
-
+    
+    
     set_set_cut = set()
     for qs, ys, ts in re_set_cut:
         qcs_seq = []
-        for i, q in enumerate(qs):
-            sq = q[:]
-            sq.append('QC' + str(i))
+        for q in qs:
+            sq = list(q.job_seq)
+            sq.append('QC' + str(q.id))
             qcs_seq.append(tuple(sq))
+#            print sq 
         ycs_seq = []
-        for i, y in enumerate(ys):
-            sy = y[:]
-            sy.append('YC' + str(i))
+        for y in ys:
+            sy = list(y.job_seq)
+            sy.append('YC' + str(y.id))
             ycs_seq.append(tuple(sy))
         yts_seq = []
-        for i, t in enumerate(ts):
-            st = t[:]
-            st.append('YT' + str(i))
+        for t in ts:
+            st = list(t.job_seq)
+            st.append('YT' + str(t.id))
             yts_seq.append(tuple(st))
         set_set_cut.add((tuple(qcs_seq), tuple(ycs_seq), tuple(yts_seq)))
     print len(set_set_cut),set_set_cut
-    
-    print set_set_cut == set_fea_sol
     
 if __name__ == '__main__':
     comparison()

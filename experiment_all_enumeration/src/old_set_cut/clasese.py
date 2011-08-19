@@ -1,13 +1,13 @@
 from __future__ import division #@UnresolvedImport
 
-class Job(object):
+class Job:
     def __init__(self, id, type):
         self.id = id
         self.type = type
+        self.handling_qc_id = None
+        self.handling_yc_id = None
     def __repr__(self):
         return str(self.id) + ':' + str(self.type)
-    def __cmp__(self, other):
-        return self.id - other.id
     def make_nodes(self, num):
         self.nodes = [Node(self.id, i) for i in xrange(num)]
         for i in xrange(1, len(self.nodes)):
@@ -30,6 +30,43 @@ class Node:
         else:
             return True
         return False
+
+class QC:
+    def __init__(self, id, job_seq, num_of_flag):
+        self.id = id
+        self.job_seq = job_seq
+        self.num_of_flag = num_of_flag
+        self.primary_j = job_seq[0]
+        self.primary_j_id_in_seq = 0
+    def __repr__(self):
+        return 'QC'+str(self.id) + ':' + str(self.job_seq)
+    def duplicate(self):
+        n_qc = QC(self.id, self.job_seq, self.num_of_flag)
+        n_qc.primary_j, n_qc.primary_j_id_in_seq = self.primary_j, self.primary_j_id_in_seq
+        return n_qc
+        
+class YC:
+    def __init__(self, id, assigned_j):
+        self.id = id
+        self.assigned_j = assigned_j
+        self.job_seq = []
+    def __repr__(self):
+        return 'YC'+str(self.id) + ':' + str(self.job_seq)
+    def duplicate(self):
+        n_yc = YC(self.id, self.assigned_j)
+        n_yc.job_seq = self.job_seq[:]
+        return n_yc
+        
+class YT:
+    def __init__(self, id):
+        self.id = id
+        self.job_seq = []
+    def __repr__(self):
+        return 'YT'+str(self.id) + ':' + str(self.job_seq)
+    def duplicate(self):
+        n_yt = YT(self.id)
+        n_yt.job_seq = self.job_seq[:]
+        return n_yt
 
 class Deposit:
     def __init__(self, cut, scheduled_jobs, agreeable_yt_of_job, qcs, ycs, yts):
