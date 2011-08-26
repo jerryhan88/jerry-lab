@@ -8,11 +8,12 @@ def comparison():
 #    seed(100)
 #    seed(10)
 
-#    seed(99)  #1:D ,2:D ,0:D ,3:D 
+    seed(99)  #1:D ,2:D ,0:D ,3:D 
 #    seed(16)  #2:D ,0:D ,3:D ,1:D 
-    seed(17)  #0:L ,1:L ,2:L ,3:D 
+#    seed(17)  #0:L ,1:L ,2:L ,3:D 
 
-    js, qcs, ya, num_yts = ran_example(4, 1, 2, 2)
+#    js, qcs, ya, num_yts = ran_example(4, 1, 2, 2)
+    js, qcs, ya, num_yts = ran_example(4, 2, 2, 3)
 #    re_fea_sol, re_set_cut = set(), set()
     re_fea_sol, re_set_cut = [],[]
     
@@ -24,7 +25,6 @@ def comparison():
 
 
     jobs, qcs_seq, ycs_seq, yts_seq, scheduled_js, qcs_primary_j, agreeable_yt_of_job, handling_v, qcs_num_of_flag, cut =  initialize(js, qcs, ya, num_yts)
-
     for qs, ys, ts in set_cut_run(jobs, qcs_seq, ycs_seq, yts_seq, scheduled_js, qcs_primary_j, agreeable_yt_of_job, handling_v, qcs_num_of_flag, cut):
         re_set_cut.append([qs, ys, ts])
     

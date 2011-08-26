@@ -105,10 +105,17 @@ def initialize(jobs, init_qcs_seq, ycs_assign, num_yts):
     return jobs, qcs_seq, ycs_seq, yts_seq, scheduled_js, qcs_primary_j, agreeable_yt_of_job, handling_v , qcs_num_of_flag, cut
 
 if __name__ == '__main__':
-    seed(100)
+    seed(16)
     jobs, qcs_seq, ycs_assign, num_yts = ran_example(4, 1, 2, 2)
     jobs, qcs_seq, ycs_seq, yts_seq, scheduled_js, qcs_primary_j, agreeable_yt_of_job, handling_v, qcs_num_of_flag, cut = initialize(jobs, qcs_seq, ycs_assign, num_yts)
-    for qs, ys, ts in set_cut_run(jobs, qcs_seq, ycs_seq, yts_seq, scheduled_js, qcs_primary_j, agreeable_yt_of_job, handling_v, qcs_num_of_flag, cut):
-        print qs, ys, ts
+    print jobs
+    print cut
+    
+    
+#    for qs, ys, ts in set_cut_run(jobs, qcs_seq, ycs_seq, yts_seq, scheduled_js, qcs_primary_j, agreeable_yt_of_job, handling_v, qcs_num_of_flag, cut):
+#        print qs, ys, ts
+        
+        
+        
 #    set_cut_run(jobs, qcs_seq, ycs_seq, yts_seq, scheduled_js, qcs_primary_j, agreeable_yt_of_job, cut)
 #    print jobs, qcs_seq, ycs_assign, num_yts
