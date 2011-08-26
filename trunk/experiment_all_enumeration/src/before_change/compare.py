@@ -8,9 +8,9 @@ def comparison():
 #    seed(100)
 #    seed(10)
 
-#    seed(99)  #1:D ,2:D ,0:D ,3:D 
+    seed(99)  #1:D ,2:D ,0:D ,3:D 
 #    seed(16)  #2:D ,0:D ,3:D ,1:D 
-    seed(17)  #0:L ,1:L ,2:L ,3:D 
+#    seed(17)  #0:L ,1:L ,2:L ,3:D 
 
     js, qcs, ya, num_yts = ran_example(4, 1, 2, 2)
 #    re_fea_sol, re_set_cut = set(), set()
