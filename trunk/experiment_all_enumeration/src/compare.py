@@ -3,7 +3,6 @@ from set_cut_scheduling import set_cut_run, initialize
 from feasible_solution import search_feasible_sol
 from input import ran_example
 from random import seed #@UnresolvedImport 
-from pprint import pprint #@UnresolvedImport
 def comparison():
 #    seed(100)
 #    seed(10)
