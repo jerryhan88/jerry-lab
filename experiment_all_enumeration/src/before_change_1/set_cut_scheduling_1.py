@@ -13,20 +13,11 @@ def set_cut_run(jobs, qcs_seq, init_ycs_seq, init_yts_seq, init_scheduled_js, in
             agreeable_yt_of_job = [x[:] for x in init_agreeable_yt_of_job]
             qcs_num_of_flag = init_qcs_num_of_flag[:]
             cut = init_cut[:]
-            
-            
-            if not planed_js[0] and planed_js[1] and not planed_js[2] and not planed_js[3]:
-                print 'debug'
-            
             chosen_j_id = cut.pop(i)
+            
             handling_qc = handling_v[chosen_j_id][0]
-            
-            tar_j = chosen_j_id
-            primary_j = qcs_primary_j[handling_qc]
-            
-            if qcs_num_of_flag[handling_qc] == 1 and chosen_j_id != qcs_primary_j[handling_qc] and agreeable_yt_of_job[qcs_primary_j[handling_qc]][agree_yt_id] and handling_v[primary_j][1] == handling_v[tar_j][1]:
+            if qcs_num_of_flag[handling_qc] == 1 and chosen_j_id != qcs_primary_j[handling_qc] and agreeable_yt_of_job[qcs_primary_j[handling_qc]][agree_yt_id]:
                 continue
-            
             handling_yc = handling_v[chosen_j_id][1]
             handling_yt = agree_yt_id
             ycs_seq[handling_yc].append(chosen_j_id)
@@ -59,7 +50,7 @@ def set_cut_run(jobs, qcs_seq, init_ycs_seq, init_yts_seq, init_scheduled_js, in
                 yield qcs_seq, ycs_seq, yts_seq
             else:
                 for qcs_seq, ycs_seq, yts_seq in set_cut_run(jobs, qcs_seq, ycs_seq, yts_seq, planed_js, qcs_primary_j, agreeable_yt_of_job, handling_v, qcs_num_of_flag, cut):
-                    print cut
+                    print 'qcs_primary_j : ', qcs_primary_j, 'cut : ',cut
                     yield qcs_seq, ycs_seq, yts_seq
 
 def adding_job_to_cut(cut, qc_j_seq, chosen_j_id, jobs, planed_js, primary_j, handling_v, num_yts):
@@ -69,12 +60,15 @@ def adding_job_to_cut(cut, qc_j_seq, chosen_j_id, jobs, planed_js, primary_j, ha
             ''' before appearing Loading job which is not scheduled'''
             break
         elif jobs[qc_j_seq[x]].type == 'D' and qc_j_seq[x] not in cut and not planed_js[qc_j_seq[x]] and not cycle_possiblility(jobs, qc_j_seq[x], qc_j_seq, primary_j, planed_js, handling_v, num_yts):
+#            if qc_j_seq[x] == 3: print 'hi'
             cut.append(qc_j_seq[x])
+#            print '~~~~~~~~~~~~~~~~~~~~~~~',qc_j_seq[x]
             
 def cycle_possiblility(jobs, tar_j, seq, primary_j, planed_js, handling_v, num_yts):
     if tar_j == primary_j:
         return False
     
+#    if tar_j == 3: print '~~~~~~~hi'
     primary_j_index = None
     tar_j_index = None
     
@@ -89,15 +83,11 @@ def cycle_possiblility(jobs, tar_j, seq, primary_j, planed_js, handling_v, num_y
 #    print seq
 #    print 'primary_j : ', primary_j 
 #    print 'tar_j : ', tar_j
+#    
 #    print '~~~~~~~~~~~~~~~~~~~~~',tar_j_index# - primary_j_index
-#    if handling_v[primary_j][1] == handling_v[tar_j][1] and (tar_j_index - primary_j_index) > num_yts :
-    if handling_v[primary_j][1] == handling_v[tar_j][1] and (tar_j_index - primary_j_index - 1) > num_yts - 2 :
-        feasible = False
-        for x in xrange(primary_j_index+1, tar_j_index):
-            if not planed_js[seq[x]]: break
-        else:
-            feasible = True
-        if not feasible: return True
+#    if handling_v[primary_j][1] == handling_v[tar_j][1] and len([x for x in xrange(primary_j_index+1, tar_j_index) if not planed_js[seq[x]]]) >= num_yts - 1:
+    if handling_v[primary_j][1] == handling_v[tar_j][1] and (tar_j_index - primary_j_index) >= num_yts - 1 :
+        return True
     
     for i in xrange(primary_j_index, tar_j_index):
         if jobs[seq[i]].type == 'L' and not planed_js[seq[i]]:
@@ -134,8 +124,26 @@ def initialize(jobs, init_qcs_seq, ycs_assign, num_yts):
             
     return jobs, qcs_seq, ycs_seq, yts_seq, planed_js, qcs_primary_j, agreeable_yt_of_job, handling_v , qcs_num_of_flag, cut
 
+
+#def update_cut(cut, qcs_seq, qcs_primary_j, planed_js, handling_v, num_yts):
+#    if not cut:
+#        '''initialize cut'''
+#        for q_id, seq in enumerate(qcs_seq):
+#            for i, j_id in enumerate(seq):
+#                ''' all loading job will be in cut
+#                    and discharging job before finding first loading job will be in cut 
+#                    also discharging job which will cause cycle is filtered'''
+#                if i == 0: pass
+#                elif jobs[j_id].type == 'L': pass 
+#                elif cycle_possiblility(jobs, j_id, qcs_seq[q_id], qcs_primary_j[q_id], planed_js, handling_v, num_yts): continue
+#                cut.append(j_id)
+#    else:
+#        pass
+#    return cut
+
+
 if __name__ == '__main__':
-    seed(16)
+    seed(99)
     
     jobs, qcs_seq, ycs_assign, num_yts = ran_example(4, 1, 2, 2)
     jobs, qcs_seq, ycs_seq, yts_seq, planed_js, qcs_primary_j, agreeable_yt_of_job, handling_v, qcs_num_of_flag, cut = initialize(jobs, qcs_seq, ycs_assign, num_yts)
@@ -143,7 +151,13 @@ if __name__ == '__main__':
     print 'jobs : ', jobs
     print 'cut : ', cut
     
-    count = 0    
+    count = 0
     for qs, ys, ts in set_cut_run(jobs, qcs_seq, ycs_seq, yts_seq, planed_js, qcs_primary_j, agreeable_yt_of_job, handling_v, qcs_num_of_flag, cut):
-        count +=1
-        print count, qs, ys, ts
+        count += 1
+        print count, 
+        print qs, ys, ts
+
+
+
+#    set_cut_run(jobs, qcs_seq, ycs_seq, yts_seq, planed_js, qcs_primary_j, agreeable_yt_of_job, cut)
+#    print jobs, qcs_seq, ycs_assign, num_yts
