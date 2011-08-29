@@ -20,13 +20,8 @@ def set_cut_run(jobs, qcs_seq, init_ycs_seq, init_yts_seq, init_scheduled_js, in
             
             chosen_j_id = cut.pop(i)
             handling_qc = handling_v[chosen_j_id][0]
-            
-            tar_j = chosen_j_id
-            primary_j = qcs_primary_j[handling_qc]
-            
-            if qcs_num_of_flag[handling_qc] == 1 and chosen_j_id != qcs_primary_j[handling_qc] and agreeable_yt_of_job[qcs_primary_j[handling_qc]][agree_yt_id] and handling_v[primary_j][1] == handling_v[tar_j][1]:
+            if qcs_num_of_flag[handling_qc] == 1 and chosen_j_id != qcs_primary_j[handling_qc] and agreeable_yt_of_job[qcs_primary_j[handling_qc]][agree_yt_id]:
                 continue
-            
             handling_yc = handling_v[chosen_j_id][1]
             handling_yt = agree_yt_id
             ycs_seq[handling_yc].append(chosen_j_id)
@@ -135,7 +130,7 @@ def initialize(jobs, init_qcs_seq, ycs_assign, num_yts):
     return jobs, qcs_seq, ycs_seq, yts_seq, planed_js, qcs_primary_j, agreeable_yt_of_job, handling_v , qcs_num_of_flag, cut
 
 if __name__ == '__main__':
-    seed(16)
+    seed(17)
     
     jobs, qcs_seq, ycs_assign, num_yts = ran_example(4, 1, 2, 2)
     jobs, qcs_seq, ycs_seq, yts_seq, planed_js, qcs_primary_j, agreeable_yt_of_job, handling_v, qcs_num_of_flag, cut = initialize(jobs, qcs_seq, ycs_assign, num_yts)
@@ -146,4 +141,6 @@ if __name__ == '__main__':
     count = 0    
     for qs, ys, ts in set_cut_run(jobs, qcs_seq, ycs_seq, yts_seq, planed_js, qcs_primary_j, agreeable_yt_of_job, handling_v, qcs_num_of_flag, cut):
         count +=1
+        if count == 30:
+            print 'debug start'
         print count, qs, ys, ts
