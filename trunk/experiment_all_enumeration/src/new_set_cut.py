@@ -49,17 +49,40 @@ def set_cut_all_enumeration(init_cut, init_agreeable_yts_of_jobs, init_qcs_num_o
 def set_cut_algorithm(chosen_j, assigned_yt, cut, agreeable_yts_of_jobs, qcs_num_of_flag, qcs_primary_j, planed_jobs, ycs_seq, yts_seq, jobs, qcs_seq, handling_v):
     handling_qc = handling_v[chosen_j][0]
     assigned_yc = handling_v[chosen_j][1]
-    if job_not_plannable(qcs_num_of_flag[handling_qc], qcs_primary_j[handling_qc], chosen_j, agreeable_yts_of_jobs, assigned_yc, assigned_yt, handling_v, len(yts_seq)):
+    if job_not_plannable(qcs_num_of_flag[handling_qc], qcs_primary_j[handling_qc], chosen_j, agreeable_yts_of_jobs, qcs_seq[handling_qc], assigned_yc, assigned_yt, handling_v, len(yts_seq)):
         return False
     
-def job_not_plannable(qc_num_of_flag, qc_primary_j, chosen_j, agreeable_yts_of_jobs, assigned_yc_of_c_j, assigned_yt, handling_v, num_yts):
-    if qc_num_of_flag == 1 and qc_primary_j == chosen_j and agreeable_yts_of_jobs[qc_primary_j][assigned_yt]: return True
-    elif check_same_yc(): return True
+def job_not_plannable(qc_num_of_flag, qc_primary_j, chosen_j, agreeable_yts_of_jobs, qc_seq, assigned_yc_of_c_j, assigned_yt, handling_v, num_yts):
+    if qc_primary_j == chosen_j: return False
+    elif qc_num_of_flag == 1 and qc_primary_j != chosen_j and agreeable_yts_of_jobs[qc_primary_j][assigned_yt]: return True
+    elif check_same_yc(qc_primary_j, chosen_j, handling_v, qc_seq, agreeable_yts_of_jobs, num_yts): return True
     
-def check_same_yc():
+def check_same_yc(qc_primary_j, chosen_j, handling_v, qc_seq, agreeable_yts_of_jobs, num_yts):
+    same_yc_j_and_j_index = None
+    primary_j_index = None
+    chosen_j_index = None
+    assigned_yc_of_c_j = handling_v[chosen_j][1]
     
-    pass
-
+    for i, j_id in enumerate(qc_seq):
+        if j_id == qc_primary_j:
+            primary_j_index = i
+            continue
+        if j_id == chosen_j:
+            chosen_j_index = i
+            break
+    
+    for x in xrange(primary_j_index, chosen_j_index):
+        tar_j = qc_seq[x]
+        tar_j_index = x
+        assigned_yc_of_t_j = handling_v[tar_j][1]
+        if assigned_yc_of_t_j == assigned_yc_of_c_j:
+            same_yc_j_and_j_index = (tar_j, tar_j_index)
+            break
+    else:
+        return True
+    
+    
+    
 def initialize(init_jobs, init_qcs_seq, ycs_assignment, num_yts):
     init_jobs.sort()
     jobs = tuple(init_jobs)
