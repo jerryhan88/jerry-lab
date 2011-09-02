@@ -195,13 +195,27 @@ def list_permutations(ll):
             break
         yield ls
 
+def save_schedules(pb, S, fname):
+    import pickle #@UnresolvedImport
+    f = open(fname, 'wb')
+    pickle.dump((pb, S), f)
+    f.close()
+
+def load_schedules(fname):
+    import pickle #@UnresolvedImport
+    f = open(fname, 'rb')
+    pb, S = pickle.load(f)
+    f.close()
+    return pb, S
+
 if __name__ == '__main__':
 #    search_feasible_sol(6, 2, 2, 3)
 #    js, qs, ya, num_yts = ran_example(2, 1, 1, 1)
-    js, qs, ya, num_yts = ran_example(4, 1, 1, 3)
+    pb = js, qs, ya, num_yts = ran_example(4, 1, 1, 3)
 #    js, qs, ya, num_yts = ran_example(6, 2, 2, 3)
 #    js, qs, ya, num_yts = ran_example(2, 1, 1, 3)
- 
+
+    ''' 
     count = 0
     for qs, ys, ts in search_feasible_sol(js, qs, ya, num_yts):
         print ''
@@ -216,3 +230,15 @@ if __name__ == '__main__':
         for i, st in enumerate(ts):
             print 'YT' + str(i) + ':' + str(st), ' ',
         print ''
+    '''
+
+    S = []
+    for s in search_feasible_sol(*pb):
+        S.append([[list(seq) for seq in t] for t in s])
+    print pb, S
+
+    save_schedules(pb, S, 'test.pkl')
+    
+    pb, S = load_schedules('test.pkl')
+    print pb, S
+
