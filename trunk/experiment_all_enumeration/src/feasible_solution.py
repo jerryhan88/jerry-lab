@@ -231,12 +231,10 @@ if __name__ == '__main__':
             print 'YT' + str(i) + ':' + str(st), ' ',
         print ''
     '''
-
     S = []
     for s in search_feasible_sol(*pb):
         S.append([[list(seq) for seq in t] for t in s])
     print pb, S
-
     save_schedules(pb, S, 'test.pkl')
     
     pb, S = load_schedules('test.pkl')

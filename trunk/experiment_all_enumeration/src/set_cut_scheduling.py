@@ -154,9 +154,15 @@ def run(init_jobs, init_qcs_seq, ycs_assignment, num_yts, for_debuging=False):
     '''
     count = 0
     if for_debuging:
-        for order, ys, ts in d_set_cut_all_enumeration(cut, agreeable_yts_of_jobs, qcs_num_of_flag, qcs_primary_j, planed_jobs, ycs_seq, yts_seq, jobs, qcs_seq, handling_v):
+        f = file('set_cut_result.txt', 'w')
+        f.write(str(jobs))
+        f.write('\n')
+        for order, ys, ts in d_set_cut_all_enumeration(f, cut, agreeable_yts_of_jobs, qcs_num_of_flag, qcs_primary_j, planed_jobs, ycs_seq, yts_seq, jobs, qcs_seq, handling_v):
             count += 1
-#            print count, order, qcs_seq, ys, ts
+            f.write('    '+ str(count) +' : '+ str(order) + str(qcs_seq) + str(ys) + str(ts))
+            f.write('\n')
+            print count, order, qcs_seq, ys, ts
+        f.close()
     else:
         for ys, ts in set_cut_all_enumeration(cut, agreeable_yts_of_jobs, qcs_num_of_flag, qcs_primary_j, planed_jobs, ycs_seq, yts_seq, jobs, qcs_seq, handling_v):
             count += 1
@@ -178,7 +184,7 @@ def set_cut_all_enumeration(init_cut, init_agreeable_yts_of_jobs, init_qcs_num_o
                 for ycs_seq, yts_seq in set_cut_all_enumeration(cut, agreeable_yts_of_jobs, qcs_num_of_flag, qcs_primary_j, planed_jobs, ycs_seq, yts_seq, jobs, qcs_seq, handling_v):
                     yield ycs_seq, yts_seq
     
-def d_set_cut_all_enumeration(init_cut, init_agreeable_yts_of_jobs, init_qcs_num_of_flag, init_qcs_primary_j, init_planed_jobs, init_ycs_seq, init_yts_seq, jobs, qcs_seq, init_handling_v, init_order=[]):
+def d_set_cut_all_enumeration(f, init_cut, init_agreeable_yts_of_jobs, init_qcs_num_of_flag, init_qcs_primary_j, init_planed_jobs, init_ycs_seq, init_yts_seq, jobs, qcs_seq, init_handling_v, init_order=[]):
     for i in xrange(len(init_cut)):
         if init_cut == [3, 0, 2] and i == 2:
             print 'hi'
@@ -194,7 +200,9 @@ def d_set_cut_all_enumeration(init_cut, init_agreeable_yts_of_jobs, init_qcs_num
             if not cut:
                 yield order, ycs_seq, yts_seq
             else:
-                for order, ycs_seq, yts_seq in d_set_cut_all_enumeration(cut, agreeable_yts_of_jobs, qcs_num_of_flag, qcs_primary_j, planed_jobs, ycs_seq, yts_seq, jobs, qcs_seq, handling_v, order):
+                for order, ycs_seq, yts_seq in d_set_cut_all_enumeration(f, cut, agreeable_yts_of_jobs, qcs_num_of_flag, qcs_primary_j, planed_jobs, ycs_seq, yts_seq, jobs, qcs_seq, handling_v, order):
+                    f.write(str(cut))
+                    f.write('\n')
                     print cut
                     yield order, ycs_seq, yts_seq
 
@@ -246,8 +254,8 @@ def duplicate_data(l):
     else: return l[:]
     
 if __name__ == '__main__':
-    seed(11)
-    jobs, qcs_seq, ycs_assign, num_yts = ran_example(4, 1, 2, 2)
+    seed(0)
+    jobs, qcs_seq, ycs_assign, num_yts = ran_example(6, 2, 2, 3)
     '''
     job : [3:D, 1:D, 2:D, 0:D]
     qcs_seq : [[2:D, 0:D, 3:D, 1:D]]
@@ -255,3 +263,4 @@ if __name__ == '__main__':
     num_yts : 2
     '''
     run(jobs, qcs_seq, ycs_assign, num_yts, True)
+
