@@ -53,14 +53,14 @@ def set_cut_run(jobs, qcs_seq, init_ycs_seq, init_yts_seq, init_scheduled_js, in
                 for qcs_seq, ycs_seq, yts_seq in set_cut_run(jobs, qcs_seq, ycs_seq, yts_seq, scheduled_js, qcs_primary_j, agreeable_yt_of_job, handling_v, qcs_num_of_flag, cut):
                     yield qcs_seq, ycs_seq, yts_seq
 
-def adding_job_to_cut(cut, qc_j_seq, chosen_j_id, jobs, scheduled_js):
+def adding_job_to_cut(cut, qc_seq, chosen_j_id, jobs, scheduled_js):
     ''' adding job which have condition for entering cut '''
-    for x in xrange(qc_j_seq.index(chosen_j_id) + 1, len(qc_j_seq)):
-        if jobs[qc_j_seq[x]].type == 'L' and not scheduled_js[qc_j_seq[x]]:
+    for x in xrange(qc_seq.index(chosen_j_id) + 1, len(qc_seq)):
+        if jobs[qc_seq[x]].type == 'L' and not scheduled_js[qc_seq[x]]:
             ''' before appearing Loading job which is not scheduled'''
             break
-        elif jobs[qc_j_seq[x]].type == 'D' and qc_j_seq[x] not in cut and not scheduled_js[qc_j_seq[x]]:
-            cut.append(qc_j_seq[x])
+        elif jobs[qc_seq[x]].type == 'D' and qc_seq[x] not in cut and not scheduled_js[qc_seq[x]]:
+            cut.append(qc_seq[x])
 
 def initialize(jobs, init_qcs_seq, ycs_assign, num_yts):
     jobs.sort()

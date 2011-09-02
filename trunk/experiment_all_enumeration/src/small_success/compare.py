@@ -6,7 +6,7 @@ from random import seed #@UnresolvedImport
 def comparison(f, seed_num):
     js, qcs, ya, num_yts = ran_example(6, 2, 2, 3)
     re_fea_sol, re_set_cut = [], []
-    print 'search_feasible : '
+    
     for qs, ys, ts in search_feasible_sol(js, qcs, ya, num_yts):
         q = tuple([tuple(x[:])for x in qs])
         y = [x[:]for x in ys]
@@ -16,7 +16,6 @@ def comparison(f, seed_num):
     jobs, qcs_seq, ycs_seq, yts_seq, planed_jobs, qcs_primary_j, agreeable_yts_of_jobs, handling_v, qcs_num_of_flag, cut = initialize(js, qcs, ya, num_yts)
     for ys, ts in set_cut_all_enumeration(cut, agreeable_yts_of_jobs, qcs_num_of_flag, qcs_primary_j, planed_jobs, ycs_seq, yts_seq, jobs, qcs_seq, handling_v):
         re_set_cut.append([qcs_seq, ys, ts])
-    
     
     set_fea_sol = set()
     for qs, ys, ts in re_fea_sol:
