@@ -62,14 +62,14 @@ def set_cut_run(jobs, qcs_seq, init_ycs_seq, init_yts_seq, init_scheduled_js, in
                     print cut
                     yield qcs_seq, ycs_seq, yts_seq
 
-def adding_job_to_cut(cut, qc_j_seq, chosen_j_id, jobs, planed_js, primary_j, handling_v, num_yts):
+def adding_job_to_cut(cut, qc_seq, chosen_j_id, jobs, planed_jobs, primary_j, handling_v, num_yts):
     ''' adding job which have condition for entering cut '''
-    for x in xrange(qc_j_seq.index(chosen_j_id) + 1, len(qc_j_seq)):
-        if jobs[qc_j_seq[x]].type == 'L' and not planed_js[qc_j_seq[x]]:
+    for x in xrange(qc_seq.index(chosen_j_id) + 1, len(qc_seq)):
+        if jobs[qc_seq[x]].type == 'L' and not planed_jobs[qc_seq[x]]:
             ''' before appearing Loading job which is not scheduled'''
             break
-        elif jobs[qc_j_seq[x]].type == 'D' and qc_j_seq[x] not in cut and not planed_js[qc_j_seq[x]] and not cycle_possiblility(jobs, qc_j_seq[x], qc_j_seq, primary_j, planed_js, handling_v, num_yts):
-            cut.append(qc_j_seq[x])
+        elif jobs[qc_seq[x]].type == 'D' and qc_seq[x] not in cut and not planed_jobs[qc_seq[x]] and not cycle_possiblility(jobs, qc_seq[x], qc_seq, primary_j, planed_jobs, handling_v, num_yts):
+            cut.append(qc_seq[x])
             
 def cycle_possiblility(jobs, tar_j, seq, primary_j, planed_js, handling_v, num_yts):
     if tar_j == primary_j:

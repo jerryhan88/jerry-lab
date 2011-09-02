@@ -18,6 +18,8 @@ def set_cut_run(jobs, qcs_seq, init_ycs_seq, init_yts_seq, init_scheduled_js, in
             if not planed_js[0] and planed_js[1] and not planed_js[2] and not planed_js[3]:
                 print 'debug'
             
+            
+            
             chosen_j_id = cut.pop(i)
             handling_qc = handling_v[chosen_j_id][0]
             
