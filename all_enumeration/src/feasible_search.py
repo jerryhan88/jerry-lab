@@ -4,8 +4,6 @@ from all_solution_by_me import * #@UnresolvedImport
 #from all_solution_by_prof import *
 from itertools import *
 
-
-
 def search_feasible_sol(js, qs, ya, num_yts):
     for ys in list_permutations(ya):
         for ts in part_perms(js, num_yts):
