@@ -5,11 +5,11 @@ import java.awt.event.WindowEvent;
 import javax.swing.JPanel;
 import javax.swing.JWindow;
 
-public class itemFrame extends JWindow {
+public class ItemFrame extends JWindow {
 	private static final long serialVersionUID = 1L;
 	JPanel whole;
 
-	public itemFrame(Frame f) {
+	public ItemFrame(Frame f) {
 		setBounds(60, 60, 100, 100);
 		addWindowListener(new WindowAdapter() {
 

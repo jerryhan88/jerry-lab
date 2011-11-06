@@ -68,7 +68,7 @@ public class MFrame extends JFrame implements ActionListener {
 //				}
 //			});
 
-			 itemFrame iF = new itemFrame(this);
+			 ItemFrame iF = new ItemFrame(this);
 			 
 		} else if (check.equals("notice")) {
 			noticeFrame nF = new noticeFrame();
