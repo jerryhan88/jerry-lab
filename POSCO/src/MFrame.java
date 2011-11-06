@@ -57,19 +57,13 @@ public class MFrame extends JFrame implements ActionListener {
 		if (check.equals("exit")) {
 			System.exit(0);
 		} else if (check.equals("item")) {
-//			Dialog info = new Dialog(this, "test", true);
-//			info.setSize(140, 190);
-//			info.setLocation(50, 50);
-//			info.setVisible(true);
-//			info.addWindowListener(new WindowAdapter() { // Dialog의 닫기 이벤트
-//				public void windowClosing(WindowEvent e) {
-//					e.getWindow().setVisible(false);
-//					e.getWindow().dispose();
-//				}
-//			});
 
-			 ItemFrame iF = new ItemFrame(this);
-			 
+			itemFrame iF = new itemFrame();
+			iF.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+			iF.setBounds(100, 50, 400, 300);
+			iF.setResizable(false);
+			iF.setVisible(true);
+
 		} else if (check.equals("notice")) {
 			noticeFrame nF = new noticeFrame();
 			nF.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
