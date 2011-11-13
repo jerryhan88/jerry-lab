@@ -1,3 +1,7 @@
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 
@@ -27,6 +31,7 @@ public class MFrame extends JFrame {
 	public MFrame() {
 		super("POSCO");
 		this.setLayout(null);
+		setBounds(100, 50, 1024, 768);
 		JLabel items = new JLabel("Items");
 		items.setBounds(iPpx + 5, iPpy - 25, 50, 20);
 		this.add(items);
@@ -49,5 +54,14 @@ public class MFrame extends JFrame {
 		this.add(noticeP);
 		this.add(processP);
 //		processP.setBackground(new java.awt.Color(150));
+		WindowListener wndCloser = new WindowAdapter() {
+			public void windowClosing(WindowEvent e) {
+				System.exit(0);
+			}
+		};
+		addWindowListener(wndCloser);
+		setVisible(true);
+		
+		
 	}
 }
