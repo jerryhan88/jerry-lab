@@ -1,5 +1,7 @@
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 
 public class Act {
 	String name;
@@ -11,19 +13,29 @@ public class Act {
 	Act prevAct;
 	Act nextAct;
 
+	boolean isCircle = false;
+
 	boolean noneNext = false;
 
 	void draw(Graphics g) {
-		g.setColor(Color.LIGHT_GRAY);
-		g.fillRect(px, py, 150, 100);
+		Graphics2D g2d = (Graphics2D) g;
+		g2d.setStroke(new BasicStroke(2));
+
+		// g.setColor(Color.LIGHT_GRAY);
+		if (isCircle) {
+			g.drawOval(px, py, 100, 100);
+		} else {
+			g.drawRect(px, py, 150, 100);
+		}
+		
 		g.setColor(Color.BLACK);
-//		g.drawString(name, px + 65, py+ 120);
+		// g.drawString(name, px + 65, py+ 120);
 		if (nextAct != null) {
-			drawEdge(g, nextAct);
+			drawEdge(g, nextAct, isCircle);
 		}
 	}
 
-	void drawEdge(Graphics g, Act nextA) {
+	void drawEdge(Graphics g, Act nextA, boolean isCircle) {
 		double ax = nextA.px - px;
 		double ay = nextA.py - py;
 
@@ -31,8 +43,13 @@ public class Act {
 
 		double ux = ax / la;
 		double uy = ay / la;
-
-		int sx = px + 150;
+		int sx;
+		if (isCircle) {
+			 sx= px + 100;
+		} else {
+			sx = px + 150;
+		}
+		
 		int sy = py + 50;
 		int ex = nextA.px - 1;
 		int ey = nextA.py + 50;

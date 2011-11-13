@@ -13,7 +13,10 @@ public class processDrawing extends JComponent {
 			acts[i].name = "act " + Integer.toString(i);
 			acts[i].actor = "act " + Integer.toString(i);
 			acts[i].px = i * 200 + 30;
-			acts[i].py = 140;
+			acts[i].py = 100;
+			if (i == 0 || i==3) {
+				acts[i].isCircle = true;
+			}
 
 		}
 		for (int i = 0; i < acts.length; i++) {
