@@ -35,6 +35,7 @@ public class LFrame extends JFrame implements ActionListener {
 		setBounds(100, 50, 1024, 768);
 		JPanel m_p = (JPanel) getContentPane();
 		m_p.setLayout(null);
+		
 		Color b_color = new Color(64, 117, 180);
 		Font content_f = new Font("Times New Roman", Font.BOLD, 30);
 		Color f_color = new Color(255, 255, 255);

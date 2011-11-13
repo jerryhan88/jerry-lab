@@ -16,7 +16,7 @@ public class processDrawing extends JComponent {
 			acts[i].py = 140;
 
 		}
-		for (int i = 0; i < acts.length; i++) { // Block 9개 그리기
+		for (int i = 0; i < acts.length; i++) {
 			Act prev;
 			Act next;
 			if (i == 0) {

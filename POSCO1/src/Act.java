@@ -17,7 +17,7 @@ public class Act {
 		g.setColor(Color.LIGHT_GRAY);
 		g.fillRect(px, py, 150, 100);
 		g.setColor(Color.BLACK);
-		g.drawString(name, px + 65, py+ 120);
+//		g.drawString(name, px + 65, py+ 120);
 		if (nextAct != null) {
 			drawEdge(g, nextAct);
 		}
