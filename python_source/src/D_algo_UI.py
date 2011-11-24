@@ -1,12 +1,14 @@
 from __future__ import division
 
 import wx
-from random import randrange
+from random import randrange, seed
+from math import sqrt
 
 class Node:
     def __init__(self, id):
         self.id = id
-        self.min_d = None
+        self.min_d = 10000
+        self.visited = False
         self.x = None
         self.y = None
     def __repr__(self):
@@ -18,13 +20,22 @@ class Edge:
         self.prev = prev
         self.next = next
     def __repr__(self):
-        return '('+str(self.prev.id) +'-'+ str(self.next.id)+')'
+        return '(' + str(self.prev.id) + '-' + str(self.next.id) + ')'
+
+class Person:
+    def __init__(self, name, start_n, end_n):
+        self.name = name
+        self.start_n = start_n
+        self.end_n = end_n
+        self.path = []
 
 class Frame(wx.Frame):
     def __init__(self, parent, ID, title, pos, size, style=wx.DEFAULT_FRAME_STYLE):
         wx.Frame.__init__(self, parent, ID, title, pos, size, style)
-        self.p = wx.Panel(self, -1, pos=(0, 0), size=(600, 600))
-        self.p.Bind(wx.EVT_PAINT, self.drawing)
+        f_size_x, f_size_y = size
+        self.base_p = wx.Panel(self, -1, pos=(0, 0), size=(f_size_x, f_size_y))
+        
+        self.base_p.Bind(wx.EVT_PAINT, self.drawing)
         self.nodelist = []
         self.edgelist = []
         for i in range(25):
@@ -36,22 +47,73 @@ class Frame(wx.Frame):
         
         for i in range(len(self.nodelist)) :
             w = randrange(10)
-            if i % 5 == 4:
-                if i != 24:
-                    self.edgelist[i].append(Edge(w, self.nodelist[i], self.nodelist[i + 5]))
+            if i == 24:
+                pass
+            elif i % 5 == 4:
+                self.edgelist[i].append(Edge(w, self.nodelist[i], self.nodelist[i + 5]))
             elif i // 5 == 4:
-                if i != 24:
-                    self.edgelist[i].append(Edge(w, self.nodelist[i], self.nodelist[i + 1]))
+                self.edgelist[i].append(Edge(w, self.nodelist[i], self.nodelist[i + 1]))
             else:
                 self.edgelist[i].append(Edge(w, self.nodelist[i], self.nodelist[i + 1]))
+                w = randrange(10)
                 self.edgelist[i].append(Edge(w, self.nodelist[i], self.nodelist[i + 5]))
+
+        wx.StaticText(self.base_p, -1, 'User', (60, f_size_y - 90))
+        self.user_n = wx.TextCtrl(self.base_p, -1, 'Jerry', pos=(55, f_size_y - 67), size=(50, 20))
         
         
-        print self.edgelist    
+        tem_x = 70
+        wx.StaticText(self.base_p, -1, 'Choice Two nodes, start and end', (60+tem_x, f_size_y - 90))
+        wx.StaticText(self.base_p, -1, 'Start', (60+tem_x, f_size_y - 65))
+        self.start_n = wx.TextCtrl(self.base_p, -1, '0', pos=(95+tem_x, f_size_y - 67), size=(25, 20))
+        
+        wx.StaticText(self.base_p, -1, 'End', (200+tem_x, f_size_y - 65))
+        self.end_n = wx.TextCtrl(self.base_p, -1, '24', pos=(230+tem_x, f_size_y - 67), size=(25, 20))
+
+        
+        s_btn = wx.Button(self.base_p, -1, "solve", pos=(f_size_x - 100, f_size_y - 80), size=(60, 30))
+        
+        self.base_p.Bind(wx.EVT_BUTTON, self.start_D_algo, s_btn)
+        
+    def start_D_algo(self, _):
+        name = self.user_n.GetValue()
+        start_n = self.start_n.GetValue()
+        end_n  = self.end_n.GetValue()
+        ps = Person(name, self.nodelist[int(start_n)], self.nodelist[int(end_n)])
+        
+        path = self.D_algo_run(ps)
+        
+        
+    def D_algo_run(self, ps):
+        start = ps.start_n
+        end = ps.end_n
+        
+        start.min_d = 0
+        todo = [start]
+        
+        while todo:
+            n = todo.pop(0)
+            n.visited = True
+            
+            for e in self.edgelist[n.id]:
+                target_n = e.next
+                
+                dist = n.min_d + e.w
+                
+                if target_n.min_d >= dist:
+                    target_n.min_d = dist
+                if not target_n.visited and not [x for x in todo if target_n.id == x.id]:
+                    todo.append(target_n)
+                    
+        print end.min_d
+            
+            
+        
+        
         
     def drawing(self, _):
-        dc = wx.PaintDC(self.p)
-        self.p.PrepareDC(dc)
+        dc = wx.PaintDC(self.base_p)
+        self.base_p.PrepareDC(dc)
 
         old_pen = dc.GetPen()
         dc.SetPen(wx.Pen(wx.BLACK, 2))
@@ -62,52 +124,42 @@ class Frame(wx.Frame):
 
         for n in self.nodelist:
             dc.DrawCircle(n.x, n.y, 30)
-            
+            dc.DrawText(str(n.id), n.x - 7, n.y - 7)
         
         for es in self.edgelist:
             for e in es:
-                prev_n=e.prev
-                next_n=e.next
+                prev_n = e.prev
+                next_n = e.next
                 
                 ax = next_n.x - prev_n.x
                 ay = next_n.y - prev_n.y
-                la = Math.sqrt(ax * ax + ay * ay);
-                
-                pass
-            
-#            
-#            ax = n1.x - x;
-#            ay = n1.y - y;
-#    
-#            la = Math.sqrt(ax * ax + ay * ay);
-#    
-#            ux = ax / la;
-#            uy = ay / la;
-#    
-#            sx = x + (int) (ux * 5) - 10;
-#            sy = y + (int) (uy * 5) - 10;
-#            ex = n1.x - (int) (ux * 5) - 10;
-#            ey = n1.y - (int) (uy * 5) - 10;
-#    
-#            px = -uy;
-#            py = ux;
-#            g.drawLine(sx, sy, ex, ey);
-#            g.drawLine(ex, ey, ex - (int) (ux * 5) + (int) (px * 3), ey
-#                    - (int) (uy * 5) + (int) (py * 3));
-#            g.drawLine(ex, ey, ex - (int) (ux * 5) - (int) (px * 3), ey
-#                    - (int) (uy * 5) - (int) (py * 3));
-#                
-#                
-#            
-#            dc.DrawLine()
-#        
-       
+                la = sqrt(ax * ax + ay * ay);
+                ux = ax / la;
+                uy = ay / la;
 
+                sx = prev_n.x + (int) (ux * 30);
+                sy = prev_n.y + (int) (uy * 30);
+                ex = next_n.x - (int) (ux * 30);
+                ey = next_n.y - (int) (uy * 30);
+
+                px = -uy;
+                py = ux;
+                dc.DrawLine(sx, sy, ex, ey);
+                
+                dc.DrawLine(ex, ey, ex - (int) (ux * 5) + (int) (px * 3), ey
+                        - (int) (uy * 5) + (int) (py * 3));
+                dc.DrawLine(ex, ey, ex - (int) (ux * 5) - (int) (px * 3), ey
+                        - (int) (uy * 5) - (int) (py * 3));
+                
+                dc.DrawText(str(e.w), sx, sy)
+                    
+#            dc.DrawLine()
         
 
         dc.EndDrawing()
     
 if __name__ == '__main__':
+    seed(0)
     app = wx.PySimpleApp()
     mv = Frame(None, -1, 'Main_viewer', pos=(100, 100), size=(600, 600))
     mv.Show(True)
