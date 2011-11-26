@@ -18,7 +18,7 @@ class Arriving_Event_Viewer(wx.Dialog):
     def __init__(self, parent, name, size=(640, 800), pos=(40, 40)):
         wx.Dialog.__init__(self, None, -1, 'Arriving Event Viewer', pos , size)
         
-        wx.StaticBox(self, -1, "Notice Option", pos=(10, 0), size=(500, 45)) #@UnusedVariable
+        wx.StaticBox(self, -1, "Notice Option", pos=(10, 0), size=(500, 45))
         self.stowage = wx.CheckBox(self, -1, "Stowage", pos=(30, 20))
         self.stowage.SetValue(True)
         self.COPINO = wx.CheckBox(self, -1, "COPINO", pos=(160, 20))
