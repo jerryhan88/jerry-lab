@@ -24,23 +24,20 @@ class M_frame(wx.Frame):
         
     def message_display(self, msg_p_px, msg_p_py, msg_p_sx, msg_p_sy):
         msg_p = wx.Panel(self, -1, pos=(msg_p_px, msg_p_py), size=(msg_p_sx, msg_p_sy))
-#        msg_p.SetBackgroundColour(wx.Colour(0, 100, 200, 100))
         wx.StaticBox(msg_p, -1, "", pos=(2, 0), size=(msg_p_sx - 22, msg_p_sy))
-        t_msg_p = wx.Panel(msg_p, -1, pos=(7, 12), size=(msg_p_sx - 28, 60))
-        t_msg_p.SetBackgroundColour(self.t_b_color)
-        t_msg_p.SetFont(self.t_font)
+        t_msg_p = wx.Panel(msg_p, -1, pos=(7, 10), size=(msg_p_sx - 28, 60))
         t_msg_p_px, t_msg_p_py = t_msg_p.GetPosition()
         t_msg_p_sx, t_msg_p_sy = t_msg_p.GetSize()
-        rt_t = wx.StaticText(t_msg_p, -1, 'Real time message')
-        rt_t_x, rt_t_y = rt_t.GetSize()
-        rt_t.SetForegroundColour(self.t_color)
-        rt_t.SetPosition((13 , (t_msg_p_sy - rt_t_y) / 2))
+        
+        RTM_img = wx.Image('pic/RTM.png', wx.BITMAP_TYPE_PNG)
+        wx.StaticBitmap(t_msg_p, -1, wx.BitmapFromImage(RTM_img))
+        
         
         self.notice_view = wx.TextCtrl(msg_p, -1, "", pos=(t_msg_p_px, t_msg_p_py + t_msg_p_sy),
                            size=(t_msg_p_sx, msg_p_sy - t_msg_p_sy - 50), style=wx.TE_MULTILINE | wx.TE_PROCESS_ENTER)
         self.notice_view.SetEditable(False)
         self.notice_view.SetBackgroundColour(wx.Colour(220, 230, 242, 100))
-        self.notice_view.write('\n---------------------------------------------------');
+        self.notice_view.write('---------------------------------------------------');
         self.notice_view.write('\n  2011-11-27  19:6:53');
         self.notice_view.write('\n    earlier departure from Dong_he.cop');
         notice_view_px, notice_view_py = self.notice_view.GetPosition()
@@ -67,28 +64,21 @@ class M_frame(wx.Frame):
         
     def process_display(self, proce_p_px, proce_p_py, proce_p_sx, proce_p_sy):
         proce_p = wx.Panel(self, -1, pos=(proce_p_px, proce_p_py), size=(proce_p_sx, proce_p_sy))
-#        proce_p.SetBackgroundColour(wx.Colour(100, 100, 200, 100))
         wx.StaticBox(proce_p, -1, "", pos=(2, 0), size=(proce_p_sx - 22, proce_p_sy - 40))
-        t_process_p = wx.Panel(proce_p, -1, pos=(7, 12), size=(proce_p_sx - 28, 60))
+        t_process_p = wx.Panel(proce_p, -1, pos=(7, 10), size=(proce_p_sx - 28, 60))
         t_process_p_px, t_process_p_py = t_process_p.GetPosition()
         t_process_p_sx, t_process_p_sy = t_process_p.GetSize()
-        t_process_p.SetBackgroundColour(self.t_b_color)
-        t_process_p.SetFont(self.t_font)
-        t_process_p_sx, t_process_p_sy = t_process_p.GetSize()
-        pro_t = wx.StaticText(t_process_p, -1, 'Process')
-        pro_t_x, pro_t_y = pro_t.GetSize()
-        pro_t.SetForegroundColour(self.t_color)
-        pro_t.SetPosition((13 , (t_process_p_sy - pro_t_y) / 2))
         
+        process_img = wx.Image('pic/our_process.png', wx.BITMAP_TYPE_PNG)
+        wx.StaticBitmap(t_process_p, -1, wx.BitmapFromImage(process_img), pos = (-3,0))
         
         m_p = wx.Panel(proce_p, -1, pos=(t_process_p_px, t_process_p_py + t_process_p_sy), size=(70, proce_p_sy - t_process_p_sy - 60))
-#        m_p.SetBackgroundColour(wx.Colour(100, 100, 200, 100))
         m_p_px, m_p_py = m_p.GetPosition() 
         m_p_sx, m_p_sy = m_p.GetSize()
         
         self.btn_img = ['recBtn', 'circleBtn', 'arrowBtn', 'deliveryBtn', 'xBtn', 'moneyBtn']
         last_py = 0
-#        self.plus_btn = wx.BitmapButton(btn_p, id= -1, bitmap=minus_img, pos=(pro_p_sx - 50, 2), size=(30, 30))
+        
         for i, name in enumerate(self.btn_img):
             img = wx.Image('pic/' + name + '.png', wx.BITMAP_TYPE_PNG).ConvertToBitmap()
             w = img.GetWidth()
@@ -187,17 +177,12 @@ class M_frame(wx.Frame):
 
     def product_display(self, pro_p_px, pro_p_py, pro_p_sx, pro_p_sy):
         pro_p = wx.Panel(self, -1, pos=(pro_p_px, pro_p_py), size=(pro_p_sx, pro_p_sy))
-#        pro_p.SetBackgroundColour(wx.Colour(64, 117, 0, 100))
         wx.StaticBox(pro_p, -1, "", pos=(5, 0), size=(pro_p_sx - 7, pro_p_sy))
-        t_pro_p = wx.Panel(pro_p, -1, pos=(7, 12), size=(pro_p_sx - 9, 60))
+        t_pro_p = wx.Panel(pro_p, -1, pos=(7, 10), size=(pro_p_sx - 9, 60))
+        our_product_img = wx.Image('pic/our_product.png', wx.BITMAP_TYPE_PNG)
+        wx.StaticBitmap(t_pro_p, -1, wx.BitmapFromImage(our_product_img))
         t_pro_p_px, t_pro_p_py = t_pro_p.GetPosition()
         t_pro_p_sx, t_pro_p_sy = t_pro_p.GetSize()
-        t_pro_p.SetBackgroundColour(self.t_b_color)
-        t_pro_p.SetFont(self.t_font)
-        p_t = wx.StaticText(t_pro_p, -1, 'My Product')
-        p_t_x, p_t_y = p_t.GetSize()
-        p_t.SetForegroundColour(self.t_color)
-        p_t.SetPosition((13 , (t_pro_p_sy - p_t_y) / 2))
         
         btn_p = wx.Panel(pro_p, -1, pos=(7, pro_p_sy - 40), size=(pro_p_sx - 9, 40))
         btn_p_sx, btn_p_sy = btn_p.GetSize()
