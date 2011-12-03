@@ -5,7 +5,7 @@ import wx, datetime, math
 class M_frame(wx.Frame):
     def __init__(self, parent, ID, title, pos, size, style=wx.DEFAULT_FRAME_STYLE):
         wx.Frame.__init__(self, parent, ID, title, pos, size, style)
-        self.selected_item = None
+        self.selected_item = 1
         f_size_x, f_size_y = size
         wx.Panel(self, -1)
         self.t_b_color = wx.Colour(64, 117, 180, 100)
@@ -51,8 +51,6 @@ class M_frame(wx.Frame):
         s_btn.SetFont(wx.Font(15, wx.FONTFAMILY_ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD))
         self.Bind(wx.EVT_BUTTON, self.add_log, s_btn)
         
-#        self.input_msg.Bind(wx.EVT_KEY_DOWN, self.add_log)
-        
     def add_log(self, evt):
         ct = datetime.datetime.now()
         self.notice_view.write('\n---------------------------------------------------');
@@ -60,7 +58,6 @@ class M_frame(wx.Frame):
         self.notice_view.write('\n ' + self.input_msg.GetValue())
         self.notice_view.write('\n---------------------------------------------------');
         self.input_msg.Clear()
-        
         
     def process_display(self, proce_p_px, proce_p_py, proce_p_sx, proce_p_sy):
         proce_p = wx.Panel(self, -1, pos=(proce_p_px, proce_p_py), size=(proce_p_sx, proce_p_sy))
@@ -91,13 +88,12 @@ class M_frame(wx.Frame):
         process_view_px, process_view_py = self.product_view.GetPosition()
         self.process_view_sx, self.process_view_sy = self.product_view.GetSize()
 
-        print process_view_px, process_view_py
-        print self.process_view_sx, self.process_view_sy
-        
         self.process_view.SetScrollbars(100, self.process_view_sy, 13, 1)
 #        self.process_view.SetBackgroundColour(wx.Colour(100, 200, 200, 100))
         self.process_view.Bind(wx.EVT_PAINT, self.drawing)
         self.process_view.Bind(wx.EVT_LEFT_DOWN, self.OnProcessClick)
+        self.process_view.Bind(wx.EVT_LEFT_DCLICK, self.OnProcessDClick)
+        
         self.process_view.SetBackgroundColour(wx.Colour(255, 255, 255))
         self.processes = []
         self.edges = []
@@ -112,22 +108,36 @@ class M_frame(wx.Frame):
         confirm_btn = wx.Button(self.process_view, -1, 'confirm', pos=(self.process_b_img_px + 100, h * 0.833 - 50), size=(70, 35))
         confirm_btn.SetFont(wx.Font(15, wx.FONTFAMILY_ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_LIGHT))
         
+        self.prev_process = None
+        self.next_process = None
         
     def OnProcessClick(self, e):
+        dx, dy = self.process_view.GetViewStart()
+        x, y = e.GetX() + dx * 100, e.GetY() + dy * 100
+        for i, p in enumerate(self.processes):
+            if p.px <= x <= p.px + self.btw_p_size:
+                if not self.prev_process:
+                    self.prev_process = self.processes[i]
+                else:
+                    self.next_process = self.processes[i]
+        self.process_view.Refresh()
+    
+    def OnProcessDClick(self, e):
+        self.prev_process = None
+        self.next_process = None
         dx, dy = self.process_view.GetViewStart()
         x, y = e.GetX() + dx * 100, e.GetY() + dy * 100
         
         for i, p in enumerate(self.processes):
             if p.type == 0:
                 if p.px <= x <= p.px + 150:
-                    print 'rec', i
                     process_info_view = Process_info_Viewer('rec' + str(i))
                     process_info_view.Show(True)
             if p.type == 1:
                 if p.px <= x <= p.px + 100:
-                    print 'circle', i
                     process_info_view = Process_info_Viewer('circle' + str(i))
-                    process_info_view.Show(True) 
+                    process_info_view.Show(True)
+        self.process_view.Refresh()
                     
     def drawing(self, _):
         dc = wx.PaintDC(self.process_view)
@@ -141,25 +151,17 @@ class M_frame(wx.Frame):
         
         h_center_py = self.process_view_sy / 2
         d_start_px = 70
-        btw_p_size = 80
+        self.btw_p_size = 80
         
         if not self.selected_item:
             p1_px, p1_py = d_start_px, h_center_py
-            p2_px, p2_py = d_start_px + btw_p_size, h_center_py
-            p3_px, p3_py = d_start_px + btw_p_size * 2, h_center_py - 50
-            p4_px, p4_py = d_start_px + btw_p_size * 2, h_center_py + 50
-            p5_px, p5_py = d_start_px + btw_p_size * 3, h_center_py
-            p6_px, p6_py = d_start_px + btw_p_size * 4, h_center_py
-            p7_px, p7_py = d_start_px + btw_p_size * 5, h_center_py
-            p8_px, p8_py = d_start_px + btw_p_size * 6, h_center_py
-            dc.DrawBitmap(circle_img, p1_px, p1_py)
-            dc.DrawBitmap(x_img, p2_px, p2_py)
-            dc.DrawBitmap(rec_img, p3_px, p3_py)
-            dc.DrawBitmap(rec_img, p4_px, p4_py)
-            dc.DrawBitmap(x_img, p5_px, p5_py)
-            dc.DrawBitmap(delivery_img, p6_px, p6_py)
-            dc.DrawBitmap(money_img, p7_px, p7_py)
-            dc.DrawBitmap(circle_img, p8_px, p8_py)
+            p2_px, p2_py = d_start_px + self.btw_p_size, h_center_py
+            p3_px, p3_py = d_start_px + self.btw_p_size * 2, h_center_py - 50
+            p4_px, p4_py = d_start_px + self.btw_p_size * 2, h_center_py + 50
+            p5_px, p5_py = d_start_px + self.btw_p_size * 3, h_center_py
+            p6_px, p6_py = d_start_px + self.btw_p_size * 4, h_center_py
+            p7_px, p7_py = d_start_px + self.btw_p_size * 5, h_center_py
+            p8_px, p8_py = d_start_px + self.btw_p_size * 6, h_center_py
             es = [(p1_px + 50, p1_py + 25, p2_px, p2_py + 25),
                   (p2_px + 50, p2_py + 25, p3_px, p3_py + 25),
                   (p2_px + 50, p2_py + 25, p4_px, p4_py + 25),
@@ -169,6 +171,14 @@ class M_frame(wx.Frame):
                   (p6_px + 50, p6_py + 25, p7_px, p7_py + 25),
                   (p7_px + 50, p7_py + 25, p8_px, p8_py + 25)
                   ]
+            dc.DrawBitmap(circle_img, p1_px, p1_py)
+            dc.DrawBitmap(x_img, p2_px, p2_py)
+            dc.DrawBitmap(rec_img, p3_px, p3_py)
+            dc.DrawBitmap(rec_img, p4_px, p4_py)
+            dc.DrawBitmap(x_img, p5_px, p5_py)
+            dc.DrawBitmap(delivery_img, p6_px, p6_py)
+            dc.DrawBitmap(money_img, p7_px, p7_py)
+            dc.DrawBitmap(circle_img, p8_px, p8_py)
             for e in es:
                 sx, sy, ex, ey = e[0], e[1], e[2], e[3]
                 ax = ex - sx;
@@ -186,22 +196,55 @@ class M_frame(wx.Frame):
         else:
             for p in self.processes:
                 if p.type == 0:
-                    dc.DrawRectangle(p.px, p.py, 100, 100)
-                if p.type == 1:
-                    dc.DrawCircle(p.px, p.py, 50)
-                    
+                    dc.DrawBitmap(rec_img, p.px, p.py)
+                elif p.type == 1:
+                    dc.DrawBitmap(circle_img, p.px, p.py)
+                elif p.type == 2:
+                    dc.DrawBitmap(delivery_img, p.px, p.py)
+                elif p.type == 3:
+                    dc.DrawBitmap(x_img, p.px, p.py)    
+                else:
+                    dc.DrawBitmap(money_img, p.px, p.py)
                 
-            for i, e in enumerate(self.edges):
-                last_process = self.processes[i]
-                if last_process.type == 0:
-                    sx, sy, ex, ey = e.sx, e.sy, e.ex, e.ey
-                elif last_process.type == 1:
-                    sx, sy, ex, ey = e.sx - 50, e.sy - 50, e.ex - 50, e.ey - 50
+                if self.prev_process:
+                    old_pen = dc.GetPen()
+                    dc.SetPen(wx.Pen(wx.BLUE, 3))
+                    p1 = (self.prev_process.px - 3, self.prev_process.py - 3)
+                    p2 = (self.prev_process.px - 3 + 56, self.prev_process.py - 3)
+                    p3 = (self.prev_process.px - 3, self.prev_process.py - 3 + 56)
+                    p4 = (self.prev_process.px - 3 + 56, self.prev_process.py - 3 + 56)
+                    dc.DrawLine(p1[0], p1[1], p2[0], p2[1])
+                    dc.DrawLine(p1[0], p1[1], p3[0], p3[1])
+                    dc.DrawLine(p2[0], p2[1], p4[0], p4[1])
+                    dc.DrawLine(p3[0], p3[1], p4[0], p4[1])
+                    dc.SetPen(old_pen)
+                if self.next_process:
+                    old_pen = dc.GetPen()
+                    dc.SetPen(wx.Pen(wx.RED, 3))
+                    p1 = (self.next_process.px - 3, self.next_process.py - 3)
+                    p2 = (self.next_process.px - 3 + 56, self.next_process.py - 3)
+                    p3 = (self.next_process.px - 3, self.next_process.py - 3 + 56)
+                    p4 = (self.next_process.px - 3 + 56, self.next_process.py - 3 + 56)
+                    dc.DrawLine(p1[0], p1[1], p2[0], p2[1])
+                    dc.DrawLine(p1[0], p1[1], p3[0], p3[1])
+                    dc.DrawLine(p2[0], p2[1], p4[0], p4[1])
+                    dc.DrawLine(p3[0], p3[1], p4[0], p4[1])
+                    dc.SetPen(old_pen)
+                    
+            for e in self.edges:
+                sx, sy, ex, ey = e.sx, e.sy, e.ex, e.ey
+                ax = ex - sx;
+                ay = ey - sy;
+                la = math.sqrt(ax * ax + ay * ay);
+                ux = ax / la;
+                uy = ay / la;
+                px = -uy;
+                py = ux;
                 dc.DrawLine(sx, sy, ex, ey)
-                dc.DrawLine(ex, ey, ex - 15, ey - 15)
-                dc.DrawLine(ex, ey, ex - 15, ey + 15)
-
-
+                dc.DrawLine(ex, ey, ex - int((ux * 5)) + int(px * 3), ey
+                        - int(uy * 5) + int(py * 3));
+                dc.DrawLine(ex, ey, ex - int(ux * 5) - int(px * 3), ey
+                        - int(uy * 5) - int(py * 3));
         
         x, y = self.process_view.GetViewStart()
         self.back_img = dc.DrawBitmap(self.process_b_img , self.process_b_img_px + x * 100, self.process_b_img_py)
@@ -209,43 +252,60 @@ class M_frame(wx.Frame):
 
     def recBtn(self, evt):
         if not self.processes:
-            px, py = (30, (self.process_view_sy - 100) / 2)
+            px, py = (30, self.process_view_sy / 2)
         else:
             last_process = self.processes[-1]
-            if last_process.type == 0:  
-                px, py = (last_process.px + 150, last_process.py)
-            elif last_process.type == 1:
-                px, py = (last_process.px + 100, last_process.py - 50)
+            px, py = (last_process.px + self.btw_p_size, last_process.py)
         p = Process(0, px, py)
         self.processes.append(p)
         self.process_view.Refresh()
         
     def circleBtn(self, evt):
         if not self.processes:
-            px, py = (50 + 30, 50 + (self.process_view_sy - 100) / 2)
+            px, py = (30, self.process_view_sy / 2)
         else:
             last_process = self.processes[-1]
-            if last_process.type == 0:  
-                px, py = (last_process.px + 200, last_process.py + 50)
-            elif last_process.type == 1:
-                px, py = (last_process.px + 150, last_process.py)
+            px, py = (last_process.px + self.btw_p_size, last_process.py)
         p = Process(1, px, py)
         self.processes.append(p)
         self.process_view.Refresh()
         
     def arrowBtn(self, evt):
-        last_process = self.processes[-1]
-        sx, sy = last_process.px + 100, last_process.py + 50
-        e = Edge(sx, sy, sx + 50, sy)
+        sx, sy = self.prev_process.px + 50, self.prev_process.py + 25  
+        ex, ey = self.next_process.px, self.next_process.py + 25 
+        e = Edge(sx, sy, ex, ey)
         self.edges.append(e)
+        self.prev_process = None
+        self.next_process = None
         self.process_view.Refresh()
         
     def deliveryBtn(self, evt):
-        pass
+        if not self.processes:
+            px, py = (30, self.process_view_sy / 2)
+        else:
+            last_process = self.processes[-1]
+            px, py = (last_process.px + self.btw_p_size, last_process.py)
+        p = Process(2, px, py)
+        self.processes.append(p)
+        self.process_view.Refresh()
     def xBtn(self, evt):
-        pass
+        if not self.processes:
+            px, py = (30, self.process_view_sy / 2)
+        else:
+            last_process = self.processes[-1]
+            px, py = (last_process.px + self.btw_p_size, last_process.py)
+        p = Process(3, px, py)
+        self.processes.append(p)
+        self.process_view.Refresh()
     def moneyBtn(self, evt):
-        pass
+        if not self.processes:
+            px, py = (30, self.process_view_sy / 2)
+        else:
+            last_process = self.processes[-1]
+            px, py = (last_process.px + self.btw_p_size, last_process.py)
+        p = Process(4, px, py)
+        self.processes.append(p)
+        self.process_view.Refresh()
 
     def product_display(self, pro_p_px, pro_p_py, pro_p_sx, pro_p_sy):
         pro_p = wx.Panel(self, -1, pos=(pro_p_px, pro_p_py), size=(pro_p_sx, pro_p_sy))
@@ -327,7 +387,6 @@ class M_frame(wx.Frame):
     def item0(self, evt):
         self.selected_item = self.imgs_name[0]
         self.item_info() 
-        print 'hi1'
     
     def item1(self, evt):
         self.selected_item = self.imgs_name[1]
@@ -347,11 +406,9 @@ class M_frame(wx.Frame):
         item_info_view.Show(True)
         
     def item_add(self, evt):
-        print 'hi'
         pass
     
     def item_remove(self, evt):
-        print 'hi'
         pass
             
 class Item_info_Viewer(wx.Dialog):
@@ -379,7 +436,7 @@ class Process_info_Viewer(wx.Dialog):
 class Process:
     def __init__(self, type, px, py):
         # p_type
-        # 1 = rec, 2 = circle, 3 = delivery, 4 = x, 5 = money 
+        # 0 = rec, 1 = circle, 2 = delivery, 3 = x, 4 = money 
         self.type = type
         self.px = px
         self.py = py
