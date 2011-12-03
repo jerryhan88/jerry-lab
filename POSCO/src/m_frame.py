@@ -1,6 +1,6 @@
 from __future__ import division
 
-import wx, datetime
+import wx, datetime, math
 
 class M_frame(wx.Frame):
     def __init__(self, parent, ID, title, pos, size, style=wx.DEFAULT_FRAME_STYLE):
@@ -37,7 +37,7 @@ class M_frame(wx.Frame):
                            size=(t_msg_p_sx, msg_p_sy - t_msg_p_sy - 50), style=wx.TE_MULTILINE | wx.TE_PROCESS_ENTER)
         self.notice_view.SetEditable(False)
         self.notice_view.SetBackgroundColour(wx.Colour(220, 230, 242, 100))
-        self.notice_view.write('---------------------------------------------------');
+        self.notice_view.write('-------------------------------------------------------------');
         self.notice_view.write('\n  2011-11-27  19:6:53');
         self.notice_view.write('\n    earlier departure from Dong_he.cop');
         notice_view_px, notice_view_py = self.notice_view.GetPosition()
@@ -68,9 +68,8 @@ class M_frame(wx.Frame):
         t_process_p = wx.Panel(proce_p, -1, pos=(7, 10), size=(proce_p_sx - 28, 60))
         t_process_p_px, t_process_p_py = t_process_p.GetPosition()
         t_process_p_sx, t_process_p_sy = t_process_p.GetSize()
-        
         process_img = wx.Image('pic/our_process.png', wx.BITMAP_TYPE_PNG)
-        wx.StaticBitmap(t_process_p, -1, wx.BitmapFromImage(process_img), pos = (-3,0))
+        wx.StaticBitmap(t_process_p, -1, wx.BitmapFromImage(process_img), pos=(-3, 0))
         
         m_p = wx.Panel(proce_p, -1, pos=(t_process_p_px, t_process_p_py + t_process_p_sy), size=(70, proce_p_sy - t_process_p_sy - 60))
         m_p_px, m_p_py = m_p.GetPosition() 
@@ -89,50 +88,123 @@ class M_frame(wx.Frame):
         
         self.process_view = wx.ScrolledWindow(proce_p, -1, pos=(m_p_px + m_p_sx, m_p_py), size=(t_process_p_sx - m_p_sx, m_p_sy))
         self.process_view.SetDoubleBuffered(True)
+        process_view_px, process_view_py = self.product_view.GetPosition()
         self.process_view_sx, self.process_view_sy = self.product_view.GetSize()
+
+        print process_view_px, process_view_py
+        print self.process_view_sx, self.process_view_sy
+        
         self.process_view.SetScrollbars(100, self.process_view_sy, 13, 1)
 #        self.process_view.SetBackgroundColour(wx.Colour(100, 200, 200, 100))
         self.process_view.Bind(wx.EVT_PAINT, self.drawing)
         self.process_view.Bind(wx.EVT_LEFT_DOWN, self.OnProcessClick)
+        self.process_view.SetBackgroundColour(wx.Colour(255, 255, 255))
         self.processes = []
         self.edges = []
+        
+        process_b_img = wx.Image('pic/process_back.png', wx.BITMAP_TYPE_PNG)
+        w = process_b_img.GetWidth()
+        h = process_b_img.GetHeight()
+        self.process_b_img = wx.BitmapFromImage(process_b_img.Scale(w * 0.6, h * 0.833))
+        self.process_b_img_px = self.process_view_sx + 120
+        self.process_b_img_py = 0
+        
+        confirm_btn = wx.Button(self.process_view, -1, 'confirm', pos=(self.process_b_img_px + 100, h * 0.833 - 50), size=(70, 35))
+        confirm_btn.SetFont(wx.Font(15, wx.FONTFAMILY_ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_LIGHT))
+        
         
     def OnProcessClick(self, e):
         dx, dy = self.process_view.GetViewStart()
         x, y = e.GetX() + dx * 100, e.GetY() + dy * 100
         
         for i, p in enumerate(self.processes):
-            if p.type ==0:
+            if p.type == 0:
                 if p.px <= x <= p.px + 150:
-                    print 'rec',i
+                    print 'rec', i
                     process_info_view = Process_info_Viewer('rec' + str(i))
                     process_info_view.Show(True)
-            if p.type ==1:
+            if p.type == 1:
                 if p.px <= x <= p.px + 100:
-                    print 'circle',i
+                    print 'circle', i
                     process_info_view = Process_info_Viewer('circle' + str(i))
                     process_info_view.Show(True) 
-                    
                     
     def drawing(self, _):
         dc = wx.PaintDC(self.process_view)
         self.process_view.PrepareDC(dc)
-        for p in self.processes:
-            if p.type == 0:
-                dc.DrawRectangle(p.px, p.py, 100, 100)
-            if p.type == 1:
-                dc.DrawCircle(p.px, p.py, 50)
-            
-        for i, e in enumerate(self.edges):
-            last_process = self.processes[i]
-            if last_process.type == 0:
-                sx, sy, ex, ey = e.sx, e.sy, e.ex, e.ey
-            elif last_process.type == 1:
-                sx, sy, ex, ey = e.sx - 50, e.sy - 50, e.ex - 50, e.ey - 50
-            dc.DrawLine(sx, sy, ex, ey)
-            dc.DrawLine(ex, ey, ex - 15, ey - 15)
-            dc.DrawLine(ex, ey, ex - 15, ey + 15)
-            
+        
+        rec_img = wx.Image('pic/recBtn.png', wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+        circle_img = wx.Image('pic/circleBtn.png', wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+        x_img = wx.Image('pic/xBtn.png', wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+        delivery_img = wx.Image('pic/deliveryBtn.png', wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+        money_img = wx.Image('pic/moneyBtn.png', wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+        
+        h_center_py = self.process_view_sy / 2
+        d_start_px = 70
+        btw_p_size = 80
+        
+        if not self.selected_item:
+            p1_px, p1_py = d_start_px, h_center_py
+            p2_px, p2_py = d_start_px + btw_p_size, h_center_py
+            p3_px, p3_py = d_start_px + btw_p_size * 2, h_center_py - 50
+            p4_px, p4_py = d_start_px + btw_p_size * 2, h_center_py + 50
+            p5_px, p5_py = d_start_px + btw_p_size * 3, h_center_py
+            p6_px, p6_py = d_start_px + btw_p_size * 4, h_center_py
+            p7_px, p7_py = d_start_px + btw_p_size * 5, h_center_py
+            p8_px, p8_py = d_start_px + btw_p_size * 6, h_center_py
+            dc.DrawBitmap(circle_img, p1_px, p1_py)
+            dc.DrawBitmap(x_img, p2_px, p2_py)
+            dc.DrawBitmap(rec_img, p3_px, p3_py)
+            dc.DrawBitmap(rec_img, p4_px, p4_py)
+            dc.DrawBitmap(x_img, p5_px, p5_py)
+            dc.DrawBitmap(delivery_img, p6_px, p6_py)
+            dc.DrawBitmap(money_img, p7_px, p7_py)
+            dc.DrawBitmap(circle_img, p8_px, p8_py)
+            es = [(p1_px + 50, p1_py + 25, p2_px, p2_py + 25),
+                  (p2_px + 50, p2_py + 25, p3_px, p3_py + 25),
+                  (p2_px + 50, p2_py + 25, p4_px, p4_py + 25),
+                  (p3_px + 50, p3_py + 25, p5_px, p5_py + 25),
+                  (p4_px + 50, p4_py + 25, p5_px, p5_py + 25),
+                  (p5_px + 50, p5_py + 25, p6_px, p6_py + 25),
+                  (p6_px + 50, p6_py + 25, p7_px, p7_py + 25),
+                  (p7_px + 50, p7_py + 25, p8_px, p8_py + 25)
+                  ]
+            for e in es:
+                sx, sy, ex, ey = e[0], e[1], e[2], e[3]
+                ax = ex - sx;
+                ay = ey - sy;
+                la = math.sqrt(ax * ax + ay * ay);
+                ux = ax / la;
+                uy = ay / la;
+                px = -uy;
+                py = ux;
+                dc.DrawLine(sx, sy, ex, ey)
+                dc.DrawLine(ex, ey, ex - int((ux * 5)) + int(px * 3), ey
+                        - int(uy * 5) + int(py * 3));
+                dc.DrawLine(ex, ey, ex - int(ux * 5) - int(px * 3), ey
+                        - int(uy * 5) - int(py * 3));
+        else:
+            for p in self.processes:
+                if p.type == 0:
+                    dc.DrawRectangle(p.px, p.py, 100, 100)
+                if p.type == 1:
+                    dc.DrawCircle(p.px, p.py, 50)
+                    
+                
+            for i, e in enumerate(self.edges):
+                last_process = self.processes[i]
+                if last_process.type == 0:
+                    sx, sy, ex, ey = e.sx, e.sy, e.ex, e.ey
+                elif last_process.type == 1:
+                    sx, sy, ex, ey = e.sx - 50, e.sy - 50, e.ex - 50, e.ey - 50
+                dc.DrawLine(sx, sy, ex, ey)
+                dc.DrawLine(ex, ey, ex - 15, ey - 15)
+                dc.DrawLine(ex, ey, ex - 15, ey + 15)
+
+
+        
+        x, y = self.process_view.GetViewStart()
+        self.back_img = dc.DrawBitmap(self.process_b_img , self.process_b_img_px + x * 100, self.process_b_img_py)
         dc.EndDrawing()
 
     def recBtn(self, evt):
@@ -209,17 +281,49 @@ class M_frame(wx.Frame):
         self.product_view.SetScrollbars(100, self.product_view_sy, 13, 1)
 #        self.product_view.Bind(wx.EVT_LEFT_DOWN, self.OnItemClick)
         
-        self.imgs_name = ['TORX', 'TORXPLUS', 'TRILOBULAR']
-        last_px = 0
+        
 #        self.plus_btn = wx.BitmapButton(btn_p, id= -1, bitmap=minus_img, pos=(pro_p_sx - 50, 2), size=(30, 30))
+        self.imgs_name = ['TORX', 'TORXPLUS', 'TRILOBULAR', 'TORXPLUS']
+        last_px = 25
+        diminish_size = 0.8
+        c_t = wx.StaticText(self, -1, 'Code', (10, 237))
+        c_t.SetBackgroundColour(wx.Colour(239, 235, 222))
+        c_t.SetFont(wx.Font(12, wx.FONTFAMILY_ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD))
+        
+        sd_t = wx.StaticText(self, -1, 'Sche Day', (10, 260))
+        sd_t.SetBackgroundColour(wx.Colour(239, 235, 222))
+        sd_t.SetFont(wx.Font(12, wx.FONTFAMILY_ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD))
+        
+        product_name = ['ad32454', 'de33454', 'cx31254', 'qb42384']
+        product_info_font = wx.Font(11, wx.FONTFAMILY_ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
+        product_name_b_color = wx.Colour(144, 124, 138)
+        
+        sds = ['11.12.11', '11.12.13', '11.12.11', '11.12.14']
+        product_sd_b_color = wx.Colour(88, 74, 78)
+        
         for i, name in enumerate(self.imgs_name):
-            img = wx.Image('pic/' + name + '.png', wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+            img = wx.Image('pic/' + name + '.png', wx.BITMAP_TYPE_PNG)
             w = img.GetWidth()
             h = img.GetHeight()
-            i_btn = wx.BitmapButton(self.product_view, id=i, bitmap=img, pos=(last_px, 0), size=(200, 200))
-            last_px = last_px + w
+            img_ = img.Scale(w * diminish_size, h * diminish_size).ConvertToBitmap()
+            i_btn = wx.BitmapButton(self.product_view, id=i, bitmap=img_, pos=(last_px, 0), size=(200 * diminish_size, 200 * diminish_size))
+            i_btn_px, i_btn_py = i_btn.GetPosition()
+            i_btn_sx, i_btn_sy = i_btn.GetSize()
+            
+            info_txt_pos = (i_btn_px + 55, i_btn_py + i_btn_sy + 8)
+            pn = wx.StaticText(self.product_view, -1, product_name[i], info_txt_pos)
+            pn.SetBackgroundColour(product_name_b_color)
+            pn.SetFont(product_info_font)
+            pn_px, pn_py = pn.GetPosition()
+            pn_sx, pn_sy = pn.GetSize()
+            
+            sd = wx.StaticText(self.product_view, -1, sds[i], (pn_px, pn_py + pn_sy + 5))
+            sd.SetBackgroundColour(product_sd_b_color)
+            sd.SetFont(product_info_font)
+            
             i_btn.Bind(wx.EVT_BUTTON, eval('self.item' + str(i)))
-    
+            last_px = last_px + w * diminish_size
+            
     def item0(self, evt):
         self.selected_item = self.imgs_name[0]
         self.item_info() 
@@ -228,9 +332,14 @@ class M_frame(wx.Frame):
     def item1(self, evt):
         self.selected_item = self.imgs_name[1]
         self.item_info()
+        self.process_view.Refresh()
         
     def item2(self, evt):
         self.selected_item = self.imgs_name[2]
+        self.item_info()
+    
+    def item3(self, evt):
+        self.selected_item = self.imgs_name[3]
         self.item_info()
         
     def item_info(self):
