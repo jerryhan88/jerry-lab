@@ -9,7 +9,7 @@ class TestFrame(wx.Frame):
         fgs = wx.FlexGridSizer(cols=2, hgap=10, vgap=10)
         for name in filenames:
 #            img1 = wx.Image('pic//image.gif', wx.BITMAP_TYPE_GIF)
-            img1 = wx.Image('pic//image.gif', wx.BITMAP_TYPE_GIF).ConvertToBitmap()
+            img1 = wx.Image('pic/image.gif', wx.BITMAP_TYPE_GIF).ConvertToBitmap()
 #            print img1.GetImageCount()
 #            print img1 , name
             w = img1.GetWidth()
