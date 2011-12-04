@@ -525,9 +525,9 @@ class Item_Select_Viewer(wx.Dialog):
         wx.Dialog.__init__(self, None, -1, 'Items', pos=(100, 100) , size=(330, 200))
 #        wx.StaticText(self, -1, selected_item, (10, 10))
         '', '',
-        self.img1_ = wx.Image('pic/TRILOBULAR.png', wx.BITMAP_TYPE_PNG).Scale(100, 100).ConvertToBitmap()
+        self.img1_ = wx.Image('pic/TORX.png', wx.BITMAP_TYPE_PNG).Scale(100, 100).ConvertToBitmap()
         self.img2_ = wx.Image('pic/TORXPLUS.png', wx.BITMAP_TYPE_PNG).Scale(100, 100).ConvertToBitmap()
-        self.img3_ = wx.Image('pic/TORX.png', wx.BITMAP_TYPE_PNG).Scale(100, 100).ConvertToBitmap()
+        self.img3_ = wx.Image('pic/TRILOBULAR.png', wx.BITMAP_TYPE_PNG).Scale(100, 100).ConvertToBitmap()
         
         px = 20
         py = 10
@@ -609,9 +609,10 @@ class Item_info_Viewer(wx.Dialog):
         button = wx.Button(self, -1, "Confirm", (100, 150))
         self.Bind(wx.EVT_BUTTON, self.confirm, button)
         
-#        if 
-#        item_info = wx.TextCtrl(self.base, -1, 'HeadFirst', pos=(id_p_px + id_p_sx, id_p_py), size=id_and_pw_input_size)
-        
+        if selected_item =='TORX':
+            item_info = wx.TextCtrl(self, -1, 'TORX', pos=(w+10, 50), size=(120,10))
+        elif selected_item =='TORXPLUS':
+            item_info = wx.TextCtrl(self, -1, 'TORXPLUS', pos=(w+10, 50), size=(120,10))
     def confirm(self, event):
         self.Destroy()
 
@@ -633,8 +634,8 @@ class Edge:
         
 if __name__ == '__main__':
     app = wx.PySimpleApp()
-    mv = M_frame(None, -1, 'POSCO', pos=(100, 50), size=(1024, 768))
-    mv.Show(True)
-#    mv = Item_Select_Viewer()
+#    mv = M_frame(None, -1, 'POSCO', pos=(100, 50), size=(1024, 768))
 #    mv.Show(True)
+    mv = Item_info_Viewer('TORX')
+    mv.Show(True)
     app.MainLoop()
