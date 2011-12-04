@@ -3,6 +3,10 @@ from __future__ import division
 import wx, datetime, math
 from process import Process_info_Viewer
 
+selected_item_id = None
+code = None
+sche_day = None
+
 class M_frame(wx.Frame):
     def __init__(self, parent, ID, title, pos, size, style=wx.DEFAULT_FRAME_STYLE):
         wx.Frame.__init__(self, parent, ID, title, pos, size, style)
@@ -38,9 +42,10 @@ class M_frame(wx.Frame):
         
         self.notice_view.SetEditable(False)
         self.notice_view.SetBackgroundColour(wx.Colour(220, 230, 242, 100))
-        self.notice_view.write('-------------------------------------------------------------');
+        self.notice_view.write('---------------------------------------------------------------------------------------');
         self.notice_view.write('\n  2011-11-27  19:6:53');
         self.notice_view.write('\n    earlier departure from Dong_he.cop');
+        self.notice_view.write('\n---------------------------------------------------------------------------------------');
         notice_view_px, notice_view_py = self.notice_view.GetPosition()
         notice_view_sx, notice_view_sy = self.notice_view.GetSize() 
         
@@ -54,10 +59,10 @@ class M_frame(wx.Frame):
         
     def add_log(self, evt):
         ct = datetime.datetime.now()
-        self.notice_view.write('\n---------------------------------------------------');
+        self.notice_view.write('\n---------------------------------------------------------------------------------------');
         self.notice_view.write('\n ' + str(ct.date()) + '  ' + str(ct.time().hour) + ':' + str(ct.time().minute) + ':' + str(ct.time().second));
-        self.notice_view.write('\n ' + self.input_msg.GetValue())
-        self.notice_view.write('\n---------------------------------------------------');
+        self.notice_view.write('\n [HeadFirst]  ' + self.input_msg.GetValue())
+        self.notice_view.write('\n---------------------------------------------------------------------------------------');
         self.input_msg.Clear()
         
     def process_display(self, proce_p_px, proce_p_py, proce_p_sx, proce_p_sy):
@@ -154,7 +159,7 @@ class M_frame(wx.Frame):
         d_start_px = 70
         self.btw_p_size = 80
         
-        if not self.selected_item:
+        if self.selected_item == None or self.selected_item == 'TORX':
             p1_px, p1_py = d_start_px, h_center_py
             p2_px, p2_py = d_start_px + self.btw_p_size, h_center_py
             p3_px, p3_py = d_start_px + self.btw_p_size * 2, h_center_py - 50
@@ -180,6 +185,69 @@ class M_frame(wx.Frame):
             dc.DrawBitmap(delivery_img, p6_px, p6_py)
             dc.DrawBitmap(money_img, p7_px, p7_py)
             dc.DrawBitmap(circle_img, p8_px, p8_py)
+            for e in es:
+                sx, sy, ex, ey = e[0], e[1], e[2], e[3]
+                ax = ex - sx;
+                ay = ey - sy;
+                la = math.sqrt(ax * ax + ay * ay);
+                ux = ax / la;
+                uy = ay / la;
+                px = -uy;
+                py = ux;
+                dc.DrawLine(sx, sy, ex, ey)
+                dc.DrawLine(ex, ey, ex - int((ux * 5)) + int(px * 3), ey
+                        - int(uy * 5) + int(py * 3));
+                dc.DrawLine(ex, ey, ex - int(ux * 5) - int(px * 3), ey
+                        - int(uy * 5) - int(py * 3));
+        elif self.selected_item == 'TORXPLUS':
+            p1_px, p1_py = d_start_px, h_center_py
+            p2_px, p2_py = d_start_px + self.btw_p_size, h_center_py
+            
+            p3_px, p3_py = d_start_px + self.btw_p_size * 2, h_center_py - 50
+            p4_px, p4_py = d_start_px + self.btw_p_size * 2, h_center_py + 50
+            
+            p5_px, p5_py = d_start_px + self.btw_p_size * 3, h_center_py - 50 - 30
+            p6_px, p6_py = d_start_px + self.btw_p_size * 3, h_center_py - 50 + 30
+            p7_px, p7_py = d_start_px + self.btw_p_size * 3, h_center_py + 50
+            
+            p8_px, p8_py = d_start_px + self.btw_p_size * 4, h_center_py
+            p9_px, p9_py = d_start_px + self.btw_p_size * 5, h_center_py
+            p10_px, p10_py = d_start_px + self.btw_p_size * 6, h_center_py
+            p11_px, p11_py = d_start_px + self.btw_p_size * 7, h_center_py
+            
+            es = [(p1_px + 50, p1_py + 25, p2_px, p2_py + 25),
+                  
+                  (p2_px + 50, p2_py + 25, p3_px, p3_py + 25),
+                  (p2_px + 50, p2_py + 25, p4_px, p4_py + 25),
+                  
+                  (p3_px + 50, p3_py + 25, p5_px, p5_py + 25),
+                  (p3_px + 50, p3_py + 25, p6_px, p6_py + 25),
+                  (p4_px + 50, p4_py + 25, p7_px, p7_py + 25),
+                  
+                  (p5_px + 50, p5_py + 25, p8_px, p8_py + 25),
+                  (p6_px + 50, p6_py + 25, p8_px, p8_py + 25),
+                  (p7_px + 50, p7_py + 25, p8_px, p8_py + 25),
+                  
+                  
+                  (p8_px + 50, p8_py + 25, p9_px, p9_py + 25),
+                  (p9_px + 50, p9_py + 25, p10_px, p10_py + 25),
+                  ]
+            
+            dc.DrawBitmap(circle_img, p1_px, p1_py)
+            dc.DrawBitmap(x_img, p2_px, p2_py)
+            dc.DrawBitmap(rec_img, p3_px, p3_py)
+            dc.DrawBitmap(rec_img, p4_px, p4_py)
+            
+            dc.DrawBitmap(rec_img, p5_px, p5_py)
+            dc.DrawBitmap(rec_img, p6_px, p6_py)
+            dc.DrawBitmap(rec_img, p7_px, p7_py)
+            
+            
+            dc.DrawBitmap(x_img, p8_px, p8_py)
+            dc.DrawBitmap(delivery_img, p9_px, p9_py)
+            dc.DrawBitmap(money_img, p10_px, p10_py)
+            
+            dc.DrawBitmap(circle_img, p11_px, p11_py)
             for e in es:
                 sx, sy, ex, ey = e[0], e[1], e[2], e[3]
                 ax = ex - sx;
@@ -340,8 +408,7 @@ class M_frame(wx.Frame):
 #        self.product_view.SetBackgroundColour("WHITE")
         self.product_view.SetScrollRate(1, 1)        
         self.product_view.SetScrollbars(100, self.product_view_sy, 13, 1)
-#        self.product_view.Bind(wx.EVT_LEFT_DOWN, self.OnItemClick)
-        
+        self.product_view.Bind(wx.EVT_LEFT_DOWN, self.OnItemClick)
         
 #        self.plus_btn = wx.BitmapButton(btn_p, id= -1, bitmap=minus_img, pos=(pro_p_sx - 50, 2), size=(30, 30))
         self.imgs_name = ['TORX', 'TORXPLUS', 'TRILOBULAR']
@@ -355,14 +422,17 @@ class M_frame(wx.Frame):
         sd_t.SetBackgroundColour(wx.Colour(239, 235, 222))
         sd_t.SetFont(wx.Font(12, wx.FONTFAMILY_ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD))
         
-        product_name = ['ad32454', 'de33454', 'cx31254', 'qb42384']
+        product_name = ['ad32454', 'de33454']
         product_info_font = wx.Font(11, wx.FONTFAMILY_ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
         product_name_b_color = wx.Colour(144, 124, 138)
         
-        sds = ['11.12.11', '11.12.13', '11.12.11']
+        sds = ['11.12.11', '11.12.13']
         product_sd_b_color = wx.Colour(88, 74, 78)
         
         for i, name in enumerate(self.imgs_name):
+            if i == 2:
+                self.last_px = last_px
+                continue
             img = wx.Image('pic/' + name + '.png', wx.BITMAP_TYPE_PNG)
             w = img.GetWidth()
             h = img.GetHeight()
@@ -385,9 +455,41 @@ class M_frame(wx.Frame):
             i_btn.Bind(wx.EVT_BUTTON, eval('self.item' + str(i)))
             last_px = last_px + w * diminish_size
             
+    def OnItemClick(self, e):
+        global selected_item_id
+        global code
+        global sche_day
+        diminish_size = 0.8
+        product_info_font = wx.Font(11, wx.FONTFAMILY_ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
+        product_name_b_color = wx.Colour(144, 124, 138)
+        product_sd_b_color = wx.Colour(88, 74, 78) 
+        if selected_item_id != None:
+            img = wx.Image('pic/' + self.imgs_name[selected_item_id] + '.png', wx.BITMAP_TYPE_PNG)
+            w = img.GetWidth()
+            h = img.GetHeight()
+            img_ = img.Scale(w * diminish_size, h * diminish_size).ConvertToBitmap()
+            i_btn = wx.BitmapButton(self.product_view, id= -1, bitmap=img_, pos=(self.last_px, 0), size=(200 * diminish_size, 200 * diminish_size))
+            i_btn_px, i_btn_py = i_btn.GetPosition()
+            i_btn_sx, i_btn_sy = i_btn.GetSize()
+            
+            info_txt_pos = (i_btn_px + 55, i_btn_py + i_btn_sy + 8)
+            pn = wx.StaticText(self.product_view, -1, code, info_txt_pos)
+            pn.SetBackgroundColour(product_name_b_color)
+            pn.SetFont(product_info_font)
+            pn_px, pn_py = pn.GetPosition()
+            pn_sx, pn_sy = pn.GetSize()
+            
+            sd = wx.StaticText(self.product_view, -1, sche_day, (pn_px, pn_py + pn_sy + 5))
+            sd.SetBackgroundColour(product_sd_b_color)
+            sd.SetFont(product_info_font)
+            
+            i_btn.Bind(wx.EVT_BUTTON, eval('self.item' + str(selected_item_id)))
+            
     def item0(self, evt):
         self.selected_item = self.imgs_name[0]
+        print self.imgs_name[0]
         self.item_info() 
+        self.process_view.Refresh()
     
     def item1(self, evt):
         self.selected_item = self.imgs_name[1]
@@ -397,10 +499,12 @@ class M_frame(wx.Frame):
     def item2(self, evt):
         self.selected_item = self.imgs_name[2]
         self.item_info()
+        self.process_view.Refresh()
     
     def item3(self, evt):
         self.selected_item = self.imgs_name[3]
         self.item_info()
+        self.process_view.Refresh()
         
     def item_info(self):
         item_info_view = Item_info_Viewer(self.selected_item)
@@ -409,6 +513,8 @@ class M_frame(wx.Frame):
     def item_add(self, evt):
         item_select_view = Item_Select_Viewer()
         item_select_view.Show(True)
+#        item_select_view.Destroy()
+#        print code, sche_day
     
     def item_remove(self, evt):
         pass
@@ -416,30 +522,96 @@ class M_frame(wx.Frame):
 
 class Item_Select_Viewer(wx.Dialog):
     def __init__(self):
-        wx.Dialog.__init__(self, None, -1, 'Items', pos=(100, 100) , size=(400, 300))
+        wx.Dialog.__init__(self, None, -1, 'Items', pos=(100, 100) , size=(330, 200))
 #        wx.StaticText(self, -1, selected_item, (10, 10))
-        '', '', 
-        img1 = wx.Image('pic/TRILOBULAR.png', wx.BITMAP_TYPE_PNG).Scale(100,100).ConvertToBitmap()
-        img2 = wx.Image('pic/TORXPLUS.png', wx.BITMAP_TYPE_PNG).Scale(100,100).ConvertToBitmap()
-        img3 = wx.Image('pic/TORX.png', wx.BITMAP_TYPE_PNG).Scale(100,100).ConvertToBitmap()
-        wx.StaticBitmap(self, -1, img1, (0, 50))
-        wx.StaticBitmap(self, -1, img2, (100, 50))
-        wx.StaticBitmap(self, -1, img3, (200, 50))
-        button = wx.Button(self, -1, "Confirm", (100, 250))
+        '', '',
+        self.img1_ = wx.Image('pic/TRILOBULAR.png', wx.BITMAP_TYPE_PNG).Scale(100, 100).ConvertToBitmap()
+        self.img2_ = wx.Image('pic/TORXPLUS.png', wx.BITMAP_TYPE_PNG).Scale(100, 100).ConvertToBitmap()
+        self.img3_ = wx.Image('pic/TORX.png', wx.BITMAP_TYPE_PNG).Scale(100, 100).ConvertToBitmap()
+        
+        px = 20
+        py = 10
+        btw = 100
+        t = wx.StaticText(self, -1, 'Code : ', pos=(px, py + 105))
+        t_px, t_py = t.GetPosition()
+        t_sx, t_sy = t.GetSize()
+        self.i_code = wx.TextCtrl(self, -1, 'cx31254', pos=(t_px + t_sx, t_py - 2), size=(65, 20))
+        px, py = self.i_code.GetPosition()
+        sx, sy = self.i_code.GetSize()
+        
+        t = wx.StaticText(self, -1, 'Sche Day : ', pos=(px + sx + 20, py + 2))
+        t_px, t_py = t.GetPosition()
+        t_sx, t_sy = t.GetSize()
+        
+        self.i_sche_day = wx.TextCtrl(self, -1, '11.12.11', pos=(t_px + t_sx, t_py - 2), size=(65, 20))
+        
+        button = wx.Button(self, -1, "Confirm", (t_px - 40, t_py + 25))
         self.Bind(wx.EVT_BUTTON, self.confirm, button)
+        
+        
+        self.Bind(wx.EVT_PAINT, self.drawing)
+        self.Bind(wx.EVT_LEFT_DOWN, self.OnProcessClick)
+    
+    def drawing(self, _):
+        dc = wx.PaintDC(self)
+        self.PrepareDC(dc)
+        global selected_item_id
+        
+        px = 20
+        py = 10
+        btw = 100
+        self.img1 = dc.DrawBitmap(self.img1_, px, py)
+        self.img2 = dc.DrawBitmap(self.img2_, px + btw, py)
+        self.img3 = dc.DrawBitmap(self.img3_, px + btw * 2, py)
+        
+        if selected_item_id != None:
+            px = 20 + selected_item_id * 100
+#            old_pen = dc.GetPen()
+            dc.SetPen(wx.Pen(wx.BLUE, 3))
+            p1 = (px - 2, py - 2) 
+            p2 = (px + 102, py - 2)
+            p3 = (px - 2, py + 102)
+            p4 = (px + 102, py + 102)
+            dc.DrawLine(p1[0], p1[1], p2[0], p2[1])
+            dc.DrawLine(p1[0], p1[1], p3[0], p3[1])
+            dc.DrawLine(p2[0], p2[1], p4[0], p4[1])
+            dc.DrawLine(p3[0], p3[1], p4[0], p4[1])
+#        dc.SetPen(old_pen)
+        dc.EndDrawing()
+    
+    def OnProcessClick(self, e):
+        x, y = e.GetX(), e.GetY()
+        px = 20
+        btw = 100
+        global selected_item_id
+        if px <= x <= px + btw:
+            selected_item_id = 0
+        elif px <= x <= px + btw * 2:
+            selected_item_id = 1
+        elif px + btw * 2 <= x:
+            selected_item_id = 2
+        self.Refresh()
+        
     def confirm(self, event):
+        global code
+        code = self.i_code.GetValue()
+        global sche_day
+        sche_day = self.i_sche_day.GetValue() 
         self.Destroy()
             
 class Item_info_Viewer(wx.Dialog):
     def __init__(self, selected_item):
         wx.Dialog.__init__(self, None, -1, 'Item information', pos=(100, 100) , size=(400, 300))
-        wx.StaticText(self, -1, selected_item, (10, 10))
         img = wx.Image('pic/' + selected_item + '.png', wx.BITMAP_TYPE_PNG).ConvertToBitmap()
         w = img.GetWidth()
         h = img.GetHeight()
         wx.StaticBitmap(self, -1, img, (10, 50), (w, h))
         button = wx.Button(self, -1, "Confirm", (100, 150))
         self.Bind(wx.EVT_BUTTON, self.confirm, button)
+        
+#        if 
+#        item_info = wx.TextCtrl(self.base, -1, 'HeadFirst', pos=(id_p_px + id_p_sx, id_p_py), size=id_and_pw_input_size)
+        
     def confirm(self, event):
         self.Destroy()
 
@@ -463,4 +635,6 @@ if __name__ == '__main__':
     app = wx.PySimpleApp()
     mv = M_frame(None, -1, 'POSCO', pos=(100, 50), size=(1024, 768))
     mv.Show(True)
+#    mv = Item_Select_Viewer()
+#    mv.Show(True)
     app.MainLoop()
