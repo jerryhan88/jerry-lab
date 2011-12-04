@@ -1,11 +1,12 @@
 from __future__ import division
 
 import wx, datetime, math
+from process import Process_info_Viewer
 
 class M_frame(wx.Frame):
     def __init__(self, parent, ID, title, pos, size, style=wx.DEFAULT_FRAME_STYLE):
         wx.Frame.__init__(self, parent, ID, title, pos, size, style)
-        self.selected_item = 1
+        self.selected_item = None
         f_size_x, f_size_y = size
         wx.Panel(self, -1)
         self.t_b_color = wx.Colour(64, 117, 180, 100)
@@ -32,9 +33,9 @@ class M_frame(wx.Frame):
         RTM_img = wx.Image('pic/RTM.png', wx.BITMAP_TYPE_PNG)
         wx.StaticBitmap(t_msg_p, -1, wx.BitmapFromImage(RTM_img))
         
-        
         self.notice_view = wx.TextCtrl(msg_p, -1, "", pos=(t_msg_p_px, t_msg_p_py + t_msg_p_sy),
                            size=(t_msg_p_sx, msg_p_sy - t_msg_p_sy - 50), style=wx.TE_MULTILINE | wx.TE_PROCESS_ENTER)
+        
         self.notice_view.SetEditable(False)
         self.notice_view.SetBackgroundColour(wx.Colour(220, 230, 242, 100))
         self.notice_view.write('-------------------------------------------------------------');
@@ -343,7 +344,7 @@ class M_frame(wx.Frame):
         
         
 #        self.plus_btn = wx.BitmapButton(btn_p, id= -1, bitmap=minus_img, pos=(pro_p_sx - 50, 2), size=(30, 30))
-        self.imgs_name = ['TORX', 'TORXPLUS', 'TRILOBULAR', 'TORXPLUS']
+        self.imgs_name = ['TORX', 'TORXPLUS', 'TRILOBULAR']
         last_px = 25
         diminish_size = 0.8
         c_t = wx.StaticText(self, -1, 'Code', (10, 237))
@@ -358,7 +359,7 @@ class M_frame(wx.Frame):
         product_info_font = wx.Font(11, wx.FONTFAMILY_ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
         product_name_b_color = wx.Colour(144, 124, 138)
         
-        sds = ['11.12.11', '11.12.13', '11.12.11', '11.12.14']
+        sds = ['11.12.11', '11.12.13', '11.12.11']
         product_sd_b_color = wx.Colour(88, 74, 78)
         
         for i, name in enumerate(self.imgs_name):
@@ -406,10 +407,28 @@ class M_frame(wx.Frame):
         item_info_view.Show(True)
         
     def item_add(self, evt):
-        pass
+        item_select_view = Item_Select_Viewer()
+        item_select_view.Show(True)
     
     def item_remove(self, evt):
         pass
+
+
+class Item_Select_Viewer(wx.Dialog):
+    def __init__(self):
+        wx.Dialog.__init__(self, None, -1, 'Items', pos=(100, 100) , size=(400, 300))
+#        wx.StaticText(self, -1, selected_item, (10, 10))
+        '', '', 
+        img1 = wx.Image('pic/TRILOBULAR.png', wx.BITMAP_TYPE_PNG).Scale(100,100).ConvertToBitmap()
+        img2 = wx.Image('pic/TORXPLUS.png', wx.BITMAP_TYPE_PNG).Scale(100,100).ConvertToBitmap()
+        img3 = wx.Image('pic/TORX.png', wx.BITMAP_TYPE_PNG).Scale(100,100).ConvertToBitmap()
+        wx.StaticBitmap(self, -1, img1, (0, 50))
+        wx.StaticBitmap(self, -1, img2, (100, 50))
+        wx.StaticBitmap(self, -1, img3, (200, 50))
+        button = wx.Button(self, -1, "Confirm", (100, 250))
+        self.Bind(wx.EVT_BUTTON, self.confirm, button)
+    def confirm(self, event):
+        self.Destroy()
             
 class Item_info_Viewer(wx.Dialog):
     def __init__(self, selected_item):
@@ -419,15 +438,6 @@ class Item_info_Viewer(wx.Dialog):
         w = img.GetWidth()
         h = img.GetHeight()
         wx.StaticBitmap(self, -1, img, (10, 50), (w, h))
-        button = wx.Button(self, -1, "Confirm", (100, 150))
-        self.Bind(wx.EVT_BUTTON, self.confirm, button)
-    def confirm(self, event):
-        self.Destroy()
-
-class Process_info_Viewer(wx.Dialog):
-    def __init__(self, selected_process):
-        wx.Dialog.__init__(self, None, -1, 'Process information', pos=(100, 100) , size=(400, 300))
-        wx.StaticText(self, -1, selected_process, (10, 10))
         button = wx.Button(self, -1, "Confirm", (100, 150))
         self.Bind(wx.EVT_BUTTON, self.confirm, button)
     def confirm(self, event):
