@@ -82,12 +82,12 @@ class L_frame(wx.Frame):
 #        pw_p.SetBackgroundColour(wx.Colour(64, 117, 180, 100))
         
     def log_in(self, evt):
-        mf = M_frame(None, -1, 'POSCO', pos=(100, 50), size=(1024, 768))
+        mf = M_frame(None, -1, 'POSCO', pos=(0, 0), size=(1024, 768))
         mf.Show(True)
         self.Close()
 
 if __name__ == '__main__':
     app = wx.PySimpleApp()
-    mv = L_frame(None, -1, 'POSCO', pos=(100, 50), size=(1024, 768))
+    mv = L_frame(None, -1, 'POSCO', pos=(0, 0), size=(1024, 768))
     mv.Show(True)
     app.MainLoop()
