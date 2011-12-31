@@ -188,8 +188,8 @@ class Frame(wx.Frame):
 
                 px = -uy;
                 py = ux;
-                dc.DrawLine(sx, sy, ex, ey);
                 
+                dc.DrawLine(sx, sy, ex, ey);
                 dc.DrawLine(ex, ey, ex - (int) (ux * 5) + (int) (px * 3), ey
                         - (int) (uy * 5) + (int) (py * 3));
                 dc.DrawLine(ex, ey, ex - (int) (ux * 5) - (int) (px * 3), ey
