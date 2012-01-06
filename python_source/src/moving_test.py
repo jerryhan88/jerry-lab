@@ -10,6 +10,7 @@ class Node:
 #class Timer(threading.Thread):
 #    def __init__(self, seconds):
 #        self.runTime = seconds
+
 #        threading.Thread.__init__(self)
 #    def run(self):
 #        counter = self.runTime
@@ -36,11 +37,11 @@ class Frame(wx.Frame):
         print 'refresh'
         counter = self.runTime
         for sec in range(self.runTime):
-            print counter
+#            print counter
             self.n.x +=1
             self.base_p.Refresh()
             time.sleep(0.1)
-            counter -=1
+#            counter -=1
 #        if self.time != 5:
 #            self.n.x +=1
 #            self.base_p.Refresh()
