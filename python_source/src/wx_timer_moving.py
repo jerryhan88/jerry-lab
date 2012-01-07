@@ -1,6 +1,6 @@
 from __future__ import division
 import wx, time #threading
-from threading import Timer
+#from threading import Timer
 class Node:
     def __init__(self, id):
         self.id = id
