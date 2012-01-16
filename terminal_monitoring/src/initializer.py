@@ -32,7 +32,7 @@ def run():
             if vehicle[:2] == 'ST':
                 # QC evt
                 #  evt ex : '2011-08-23-10-00-00_STS01_OD1234_2011-08-23-09-45-00_TL_C01_SB05-05-12_ABCDEF_02_N'
-                _datetime, v_name, _, _, operation, c_id, position, vessel, voyage, state = ec
+                _datetime, v_name, _, _, operation, c_id, position, _, vessel, voyage, state = ec
                 if position == 'OCR':
                     continue
                 # TODO
@@ -52,7 +52,7 @@ def run():
                 # YC evt
                 #  evt ex : '2011-08-23-10-05-20_AYC01_OD1235AYC01_2011-08-23-10-05-05_TL_C09_B01-TP02_ABCDEF_02_N'
                 # ?? are vessel and voyage needed?
-                _datetime, v_name, _, _, operation, c_id, position, _, _, state = ec
+                _datetime, v_name, _, _, operation, c_id, position, _, _, _, state = ec
                 yc_id = vehicle[-2:] 
                 target_yc = None
                 for y in ycs:
@@ -65,7 +65,7 @@ def run():
                 target_yc.evt_seq.append((_datetime, position, c_id, operation))
             else:
                 # SC evt
-                _datetime, v_name, _, _, operation, c_id, position, _, _, state = ec
+                _datetime, v_name, _, _, operation, c_id, position, _, _, _, state = ec
                 sc_id = vehicle[-2:] 
                 target_sc = None
                 for s in scs:
