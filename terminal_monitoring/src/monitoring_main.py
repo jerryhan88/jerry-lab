@@ -188,7 +188,7 @@ class Control_Panel(wx.Panel):
 #        s_b = wx.BitmapButton(self, -1, s_bmp, (300, 10),
 #                       (s_bmp.GetWidth()+10, s_bmp.GetHeight()+10))
         
-        pa_img = wx.Image('pause.png', wx.BITMAP_TYPE_PNG)
+        pa_img = wx.Image('pic/pause.png', wx.BITMAP_TYPE_PNG)
         pa_btn = wx.BitmapButton(self, -1, bitmap=wx.BitmapFromImage(pa_img), pos=(450,10))
         
 #        r_bmp = wx.Bitmap("reverse.bmp", wx.BITMAP_TYPE_BMP)
