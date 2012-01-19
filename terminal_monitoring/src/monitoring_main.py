@@ -19,7 +19,7 @@ class MainFrame(wx.Frame):
         
         Input_Panel(self , (0, ip_py), (f_sx, ip_sy))
 #        bgp = wx.Panel(self , -1, (0, ip_py), (f_sx, ip_sy))
-        Viewer_Panel(self, (45, 8), (f_sx - 100, vp_sy - 20))
+#        Viewer_Panel(self, (45, 8), (f_sx - 100, vp_sy - 20))
         Control_Panel(self, (0, cp_py), (f_sx, cp_sy))
         
         self.Show(True)
@@ -29,13 +29,51 @@ class Input_Panel(wx.Panel):
         wx.Panel.__init__(self, parent, -1, pos, size)
         self.SetBackgroundColour(wx.Colour(255, 0, 0))
         wx.StaticText(self, -1, 'Vessel', (15, 10))
+        wx.StaticText(self, -1, 'Voyage', (150, 10))
+        wx.StaticText(self, -1, 'Date', (360, 10))
+        
         
         v_name = ['HANJIN', 'MAERSK']
-        self.sc_ch = wx.Choice(self, -1, (100, 10), choices=v_name)
+        self.sc_ch = wx.Choice(self, -1, (60, 10), choices=v_name)
         
-        self.input_sh = wx.TextCtrl(self, -1, '00', pos=(200, 10))
+        vo_name = ['01', '02', '03', '04', '05', '06', '07']
+        self.sc_ch = wx.Choice(self, -1, (200, 10), choices=vo_name)
         
-        b = wx.Button(self, -1, "setting", (300, 10))
+        y_name1 = ['2005', '2006', '2007', '2008', '2009', '2010', '2011']
+        self.sc_ch = wx.Choice(self, -1, (390, 10), choices=y_name1)
+        
+        m_name1 = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
+        self.sc_ch = wx.Choice(self, -1, (450, 10), choices=m_name1)
+        
+        d_name1 = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20','21', '22', '23', '24', '25', '26', '27', '28', '29', '30','31']
+        self.sc_ch = wx.Choice(self, -1, (495, 10), choices=d_name1)
+        
+        wx.TextCtrl(self, -1, "00", (540,10), size=(25, -1))
+        wx.StaticText(self, -1, ':', (566, 10))
+        wx.TextCtrl(self, -1, "00", (570,10), size=(25, -1))
+        wx.StaticText(self, -1, ':', (596, 10))
+        wx.TextCtrl(self, -1, "00", (600,10), size=(25, -1))
+        
+        wx.StaticText(self, -1, '-', (635, 10))
+    
+        y_name2 = ['2005', '2006', '2007', '2008', '2009', '2010', '2011']
+        self.sc_ch = wx.Choice(self, -1, (650, 10), choices=y_name2)
+        
+        m_name2 = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
+        self.sc_ch = wx.Choice(self, -1, (710, 10), choices=m_name2)
+        
+        d_name2 = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20','21', '22', '23', '24', '25', '26', '27', '28', '29', '30','31']
+        self.sc_ch = wx.Choice(self, -1, (755, 10), choices=d_name2)
+        
+        wx.TextCtrl(self, -1, "00", (800,10), size=(25, -1))
+        wx.StaticText(self, -1, ':', (826, 10))
+        wx.TextCtrl(self, -1, "00", (830,10), size=(25, -1))
+        wx.StaticText(self, -1, ':', (856, 10))
+        wx.TextCtrl(self, -1, "00", (860,10), size=(25, -1))
+        
+#        self.input_sh = wx.TextCtrl(self, -1, '00', pos=(200, 10))
+#        
+        b = wx.Button(self, -1, "setting", (900, 10))
         
 class Viewer_Panel(wx.Panel):
     def __init__(self, parent, pos, size):
@@ -146,10 +184,23 @@ class Control_Panel(wx.Panel):
         
         slider = wx.Slider(self, -1, 1, 12.5, 100, (30, 10), (250, -1), wx.SL_HORIZONTAL)
         
-        s_b = wx.Button(self, -1, "stop", (300, 10))
-        pu_b = wx.Button(self, -1, "stop", (350, 10))
-        r_b = wx.Button(self, -1, "reverse", (400, 10))
-        pl_b = wx.Button(self, -1, "play", (450, 10))
+#        s_bmp = wx.Bitmap("stop.bmp", wx.BITMAP_TYPE_BMP)
+#        s_b = wx.BitmapButton(self, -1, s_bmp, (300, 10),
+#                       (s_bmp.GetWidth()+10, s_bmp.GetHeight()+10))
+        
+        pa_img = wx.Image('pause.png', wx.BITMAP_TYPE_PNG)
+        pa_btn = wx.BitmapButton(self, -1, bitmap=wx.BitmapFromImage(pa_img), pos=(450,10))
+        
+#        r_bmp = wx.Bitmap("reverse.bmp", wx.BITMAP_TYPE_BMP)
+#        r_b = wx.BitmapButton(self, -1, r_bmp, (350, 10),
+#                       (r_bmp.GetWidth()+10, r_bmp.GetHeight()+10))
+#        pa_bmp = wx.Bitmap("pause.bmp", wx.BITMAP_TYPE_BMP)
+#        pa_b = wx.BitmapButton(self, -1, pa_bmp, (400, 10),
+#                       (pa_bmp.GetWidth()+10, pa_bmp.GetHeight()+10))
+#        pl_bmp = wx.Bitmap("play.bmp", wx.BITMAP_TYPE_BMP)
+#        pl_b = wx.BitmapButton(self, -1, pl_bmp, (450, 10),
+#                       (pl_bmp.GetWidth()+10, pl_bmp.GetHeight()+10))
+#        
         
 #        slider.Bind(wx.EVT_SCROLL_CHANGED, self.onChanged)
 

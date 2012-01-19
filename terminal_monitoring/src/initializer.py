@@ -110,7 +110,3 @@ if __name__ == '__main__':
     print ''
     for c in cs:
         print c._id, ':', c.moving_seq
-    
-    print 'sfsfsf'
-    print 'sfsfsf'
-    print 'sfsfsf'
