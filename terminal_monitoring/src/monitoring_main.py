@@ -190,9 +190,8 @@ class Control_Panel(wx.Panel):
         wx.Panel.__init__(self, parent, -1, pos, size)
         self.SetConstraints(anchors.LayoutAnchors(self, True, False, True, True))
 #        self.SetBackgroundColour(wx.Colour(0, 0, 255))
-        
         self.time_flow = wx.Slider(self, -1, 1, 12.5, 100, (30, 10), (250, -1), wx.SL_HORIZONTAL)
-        
+        self.diplay_time()
         s_bmp = wx.Bitmap('pic/stop.bmp', wx.BITMAP_TYPE_BMP)
         s_button = wx.BitmapButton(self, -1, s_bmp, (450, 10), (s_bmp.GetWidth() + 10, s_bmp.GetHeight() + 10))
         
