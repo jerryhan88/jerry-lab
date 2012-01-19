@@ -193,9 +193,20 @@ class Control_Panel(wx.Panel):
         
         self.time_flow = wx.Slider(self, -1, 1, 12.5, 100, (30, 10), (250, -1), wx.SL_HORIZONTAL)
         
-        pa_img = wx.Image('pic/pause.png', wx.BITMAP_TYPE_PNG)
-        pa_btn = wx.BitmapButton(self, -1, bitmap=wx.BitmapFromImage(pa_img), pos=(450, 10))
-        self.diplay_time()
+        s_bmp = wx.Bitmap('pic/stop.bmp', wx.BITMAP_TYPE_BMP)
+        s_button = wx.BitmapButton(self, -1, s_bmp, (450, 10), (s_bmp.GetWidth() + 10, s_bmp.GetHeight() + 10))
+        
+        r_bmp = wx.Bitmap("pic/reverse.bmp", wx.BITMAP_TYPE_BMP)
+        r_button = wx.BitmapButton(self, -1, r_bmp, (350, 10),
+                       (r_bmp.GetWidth()+10, r_bmp.GetHeight()+10))
+        
+        pa_bmp = wx.Bitmap("pic/pause.bmp", wx.BITMAP_TYPE_BMP)
+        pa_button = wx.BitmapButton(self, -1, pa_bmp, (400, 10),
+                       (pa_bmp.GetWidth()+10, pa_bmp.GetHeight()+10))
+        
+        pl_bmp = wx.Bitmap("pic/play.bmp", wx.BITMAP_TYPE_BMP)
+        pl_button = wx.BitmapButton(self, -1, pl_bmp, (450, 10),
+                       (pl_bmp.GetWidth()+10, pl_bmp.GetHeight()+10))
         
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
