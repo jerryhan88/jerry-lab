@@ -1,6 +1,8 @@
 from __future__ import division
 import wx, time
 import  wx.lib.anchors as anchors
+from datetime import datetime, timedelta
+frame_milsec = 1000 / 15
 
 class Node:
     def __init__(self, id):
@@ -51,7 +53,7 @@ class Input_dialog(wx.Dialog):
         wx.StaticText(self, -1, ':', (826, 10))
         wx.TextCtrl(self, -1, "00", (830, 10), size=(25, -1))
         wx.StaticText(self, -1, ':', (856, 10))
-        self.input_t=wx.TextCtrl(self, -1, "00", (860, 10), size=(25, -1))
+        self.input_t = wx.TextCtrl(self, -1, "00", (860, 10), size=(25, -1))
         setting_btn = wx.Button(self, -1, "setting", (900, 10))
         setting_btn.SetConstraints(anchors.LayoutAnchors(setting_btn, False, True, False, False))
         
@@ -72,24 +74,45 @@ class Input_dialog(wx.Dialog):
 class MainFrame(wx.Frame):
     def __init__(self, input_info):
         self.input_info = input_info
-        wx.Frame.__init__(self, None, -1, 'test', size=(1024, 768))
+        wx.Frame.__init__(self, None, -1, 'Monitoring', size=(1024, 768))
         f_sx, f_sy = self.GetSize()
         self.SetBackgroundColour(wx.Colour(236, 233, 216))
         self.SetAutoLayout(True)
+        self.start_time = datetime(2011,1,20,16,20,30)
+        self.cur_time = datetime(2011,1,20,16,20,30)
+          
+        self.timer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
+        self.timer.Start(frame_milsec)
+        
         ip_py, ip_sy = 0 , 50
         vp_py, vp_sy = ip_py + ip_sy , 600
         cp_py, cp_sy = vp_py + vp_sy , f_sy - (vp_sy + ip_sy)
         
         Input_View_Panel(self , (0, ip_py), (f_sx, ip_sy))
-        Viewer_Panel(self, (45, vp_py), (f_sx - 100, vp_sy))
-        Control_Panel(self, (0, cp_py), (f_sx, cp_sy))
+        self.vp = Viewer_Panel(self, (45, vp_py), (f_sx - 100, vp_sy))
+        self.cp = Control_Panel(self, (0, cp_py), (f_sx, cp_sy))
         self.Show(True)
         self.Bind(wx.EVT_CLOSE, self.OnClose)
+        
+        self.saved_time = time.localtime(time.time())
+        self.isReverse_play = False
+        
+    def OnTimer(self, evt):
+        saved_sec = self.saved_time[5]
+        cur_sec = time.localtime(time.time())[5]
+        if abs(saved_sec - cur_sec) >= 1 :
+            if not self.isReverse_play:
+                self.cur_time += timedelta(seconds=1)
+            else:
+                self.cur_time -= timedelta(seconds=1)
+            self.saved_time = time.localtime(time.time())
+        self.vp.OnTimer(evt)
+        self.cp.OnTimer(evt)
         
     def OnClose(self, event):
         self.input_info.Destroy()
         self.Destroy()
-        
         
         
 class Input_View_Panel(wx.Panel):
@@ -120,7 +143,7 @@ class Input_View_Panel(wx.Panel):
         c4 = wx.StaticText(self, -1, ':', (854, 10))
         s2 = wx.StaticText(self, -1, "00", (860, 10), size=(25, -1))
         
-        for x in [v, vo, d, v_name, vo_name, y_name1, m_name1, d_name1, t1,c1,m1,c2,s1,l,y_name2,m_name2,d_name2,t2,c3,m2,c4,s2]:
+        for x in [v, vo, d, v_name, vo_name, y_name1, m_name1, d_name1, t1, c1, m1, c2, s1, l, y_name2, m_name2, d_name2, t2, c3, m2, c4, s2]:
             x.SetConstraints(anchors.LayoutAnchors(x, False, True, False, False))
         
 #        v.SetConstraints(anchors.LayoutAnchors(v, False, True, False, False))
@@ -163,12 +186,13 @@ class Viewer_Panel(wx.Panel):
         self.translate_mode = False
         self.translate_x, self.translate_y = 0, 0
         self.scale = 1.0
-        self.timer = wx.Timer(self)
-        self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
-        self.timer.Start(1000)
-        self.n = Node(0);
         
+        self.n = Node(0);
         self.InitBuffer()
+        
+    def OnTimer(self, evt):
+        self.n.x += 1
+        self.RefreshGC()
         
     def OnSize(self, evt):
         self.InitBuffer()
@@ -192,10 +216,6 @@ class Viewer_Panel(wx.Panel):
         if self.translate_mode:
             self.translate_mode = False
             self.ReleaseMouse()
-    
-    def OnTimer(self, evt):
-        self.n.x += 1
-        self.RefreshGC()
             
     def OnPaint(self, evt):
         dc = wx.BufferedPaintDC(self, self._buffer)
@@ -235,9 +255,10 @@ class Viewer_Panel(wx.Panel):
     def Draw(self, gc):
         gc.Translate(self.translate_x, self.translate_y)
         gc.Scale(self.scale, self.scale)
-        
-        t = time.localtime(time.time())
-        st = time.strftime("%I:%M:%S", t)
+
+        c_hour, c_min, c_sec = self.Parent.cur_time.hour, self.Parent.cur_time.minute, self.Parent.cur_time.second
+         
+        st = '%s : %s : %s' % (c_hour, c_min, c_sec)
         gc.SetFont(wx.Font(30, wx.SWISS, wx.NORMAL, wx.NORMAL))
         gc.DrawText(st, 10, 150)
         
@@ -252,43 +273,70 @@ class Control_Panel(wx.Panel):
         wx.Panel.__init__(self, parent, -1, pos, size)
         self.SetConstraints(anchors.LayoutAnchors(self, True, False, True, True))
 #        self.SetBackgroundColour(wx.Colour(0, 0, 255))
-        self.time_flow = wx.Slider(self, -1, 1, 12.5, 100, (30, 10), (250, -1), wx.SL_HORIZONTAL)
+
+        self.time_flow = wx.Slider(self, -1, 1, 12.5, 1000, (30, 10), (250, -1), wx.SL_HORIZONTAL)
         self.diplay_time()
 
         s_img = wx.Image('pic/stop.bmp', wx.BITMAP_TYPE_BMP)
-        s_bmp = s_img.Scale(20,20)
-        s_button = wx.BitmapButton(self, -1, wx.BitmapFromImage(s_bmp), (180, 30), (s_bmp.GetWidth() + 2, s_bmp.GetHeight() + 2))
-#        self.Bind(wx.EVT_BUTTON, self.test, s_button)
-        
+        s_bmp = s_img.Scale(20, 20)
         r_img = wx.Image("pic/reverse.bmp", wx.BITMAP_TYPE_BMP)
-        r_bmp = r_img.Scale(20,20)
-        r_button = wx.BitmapButton(self, -1, wx.BitmapFromImage(r_bmp), (200, 30),(r_bmp.GetWidth()+2, r_bmp.GetHeight()+2))
-        
+        r_bmp = r_img.Scale(20, 20)
         pa_img = wx.Image("pic/pause.bmp", wx.BITMAP_TYPE_BMP)
-        pa_bmp = pa_img.Scale(20,20)
-        pa_button = wx.BitmapButton(self, -1, wx.BitmapFromImage(pa_bmp), (220, 30),(pa_bmp.GetWidth()+2, pa_bmp.GetHeight()+2))
-        
+        pa_bmp = pa_img.Scale(20, 20)
         pl_img = wx.Image("pic/play.bmp", wx.BITMAP_TYPE_BMP)
-        pl_bmp = pl_img.Scale(20,20)
-        pl_button = wx.BitmapButton(self, -1, wx.BitmapFromImage(pl_bmp), (240, 30),(pl_bmp.GetWidth()+2, pl_bmp.GetHeight()+2))
+        pl_bmp = pl_img.Scale(20, 20)
         
-        self.timer = wx.Timer(self)
-        self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
-        self.timer.Start(1000)
+        s_btn = wx.BitmapButton(self, -1, wx.BitmapFromImage(s_bmp), (180, 30), (s_bmp.GetWidth() + 2, s_bmp.GetHeight() + 2))
+        r_btn = wx.BitmapButton(self, -1, wx.BitmapFromImage(r_bmp), (200, 30), (r_bmp.GetWidth() + 2, r_bmp.GetHeight() + 2))
+        pa_btn = wx.BitmapButton(self, -1, wx.BitmapFromImage(pa_bmp), (220, 30), (pa_bmp.GetWidth() + 2, pa_bmp.GetHeight() + 2))
+        pl_btn = wx.BitmapButton(self, -1, wx.BitmapFromImage(pl_bmp), (240, 30), (pl_bmp.GetWidth() + 2, pl_bmp.GetHeight() + 2))
+        
+        self.Bind(wx.EVT_BUTTON, self.time_flow_stop, s_btn)
+        self.Bind(wx.EVT_BUTTON, self.time_flow_reverse, r_btn)
+        self.Bind(wx.EVT_BUTTON, self.time_flow_pause, pa_btn)
+        self.Bind(wx.EVT_BUTTON, self.time_flow_play, pl_btn)
+        
+        self.dispaly_counter = 0
+        self.timer = parent.timer
+        self.saved_time = time.localtime(time.time())
+        
+    def time_flow_stop(self, evt):
+        self.time_flow.SetValue(0)
+        self.Parent.cur_time = self.Parent.start_time
+        self.timer.Stop() 
+        
+    def time_flow_reverse(self, evt):
+        self.Parent.isReverse_play = True
+        if not self.timer.IsRunning():
+            self.timer.Start(frame_milsec)
+        
+    def time_flow_pause(self, evt):
+        self.timer.Stop()
+    
+    def time_flow_play(self, evt):
+        self.Parent.isReverse_play = False
+        self.timer.Start(frame_milsec)
 
     def OnTimer(self, evt):
-        self.diplay_time()
-        self.time_flow.SetValue(self.time_flow.GetValue() + 1)
+        saved_sec = self.saved_time[5]
+        cur_sec = time.localtime(time.time())[5]
+        if abs(saved_sec - cur_sec) >= 1 :
+            self.diplay_time()
+            self.saved_time = time.localtime(time.time())
+        if self.Parent.isReverse_play:
+            self.time_flow.SetValue(self.time_flow.GetValue() - 1)
+        else: 
+            self.time_flow.SetValue(self.time_flow.GetValue() + 1)
         
     def diplay_time(self):
-        t = time.localtime(time.time())
-        st = time.strftime("%I:%M:%S", t)
+        c_year, c_month, c_day = self.Parent.cur_time.year, self.Parent.cur_time.month, self.Parent.cur_time.day
+        c_hour, c_min, c_sec = self.Parent.cur_time.hour, self.Parent.cur_time.minute, self.Parent.cur_time.second
+        st = '%s : %s : %s' % (c_hour, c_min, c_sec)
         self.c_time = wx.StaticText(self, -1, st, (600, 20))
-        
         
 if __name__ == '__main__':
     app = wx.PySimpleApp()
-    td= Input_dialog(None, 'dialog test')
-#    app.frame = MainFrame()
+#    td= Input_dialog(None, 'dialog test')
+    app.frame = MainFrame(1)
     app.MainLoop()
 #    run()
