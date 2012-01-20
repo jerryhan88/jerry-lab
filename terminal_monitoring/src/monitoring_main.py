@@ -8,10 +8,9 @@ class Node:
         self.x = 20
         self.y = 20
 
-class TestDialog(wx.Dialog):
+class Input_dialog(wx.Dialog):
     def __init__(self, parent, name, size=(1000, 250), pos=(100, 50)):
         wx.Dialog.__init__(self, None, -1, 'Monitoring Input', pos , size)
-         
         wx.StaticText(self, -1, 'Vessel', (15, 10))
         wx.StaticText(self, -1, 'Voyage', (150, 10))
         wx.StaticText(self, -1, 'Date', (360, 10))
@@ -53,110 +52,99 @@ class TestDialog(wx.Dialog):
         wx.TextCtrl(self, -1, "00", (830, 10), size=(25, -1))
         wx.StaticText(self, -1, ':', (856, 10))
         self.input_t=wx.TextCtrl(self, -1, "00", (860, 10), size=(25, -1))
-        b = wx.Button(self, -1, "setting", (900, 10))
-        b.SetConstraints(anchors.LayoutAnchors(b, False, True, False, False))
-#        self.Bind(wx.EVT_BUTTON, self.confirm, b)
+        setting_btn = wx.Button(self, -1, "setting", (900, 10))
+        setting_btn.SetConstraints(anchors.LayoutAnchors(setting_btn, False, True, False, False))
         
-        self.input = None
+        self.Bind(wx.EVT_BUTTON, self.confirm, setting_btn)
+        self.Bind(wx.EVT_CLOSE, self.OnClose)
+        
+#        self.input = None
         self.Show(True)
+    def OnClose(self, event):
+        self.Destroy()
         
-#    def confirm(self, event):
+    def confirm(self, event):
 #        self.input = self.input_t.GetValue() 
-#        win = MainFrame(None, -1, 'Hello wxPython', (100,100), (200,200), self)
-2#        win.Show(True)
-#        self.Show(False)
+        win = MainFrame(self)
+        win.Show(True)
+        self.Show(False)
 
 class MainFrame(wx.Frame):
-    def __init__(self):
+    def __init__(self, input_info):
+        self.input_info = input_info
         wx.Frame.__init__(self, None, -1, 'test', size=(1024, 768))
         f_sx, f_sy = self.GetSize()
         self.SetBackgroundColour(wx.Colour(236, 233, 216))
         self.SetAutoLayout(True)
-
         ip_py, ip_sy = 0 , 50
         vp_py, vp_sy = ip_py + ip_sy , 600
         cp_py, cp_sy = vp_py + vp_sy , f_sy - (vp_sy + ip_sy)
         
-        Input_Panel(self , (0, ip_py), (f_sx, ip_sy))
+        Input_View_Panel(self , (0, ip_py), (f_sx, ip_sy))
         Viewer_Panel(self, (45, vp_py), (f_sx - 100, vp_sy))
         Control_Panel(self, (0, cp_py), (f_sx, cp_sy))
-
         self.Show(True)
-
+        self.Bind(wx.EVT_CLOSE, self.OnClose)
         
-
-#       
-
+    def OnClose(self, event):
+        self.input_info.Destroy()
+        self.Destroy()
         
-class Input_Panel(wx.Panel):
+        
+        
+class Input_View_Panel(wx.Panel):
     def __init__(self, parent, pos, size):
         wx.Panel.__init__(self, parent, -1, pos, size)
         self.SetConstraints(anchors.LayoutAnchors(self, True, True, True, False))
-#        self.SetBackgroundColour(wx.Colour(255, 0, 0))
-
-
-
         
         v = wx.StaticText(self, -1, 'Vessel', (15, 10))
-        v.SetConstraints(anchors.LayoutAnchors(v, False, True, False, False))
-        
         vo = wx.StaticText(self, -1, 'Voyage', (150, 10))
-        vo.SetConstraints(anchors.LayoutAnchors(vo, False, True, False, False))
-        
         d = wx.StaticText(self, -1, 'Date', (360, 10))
-        d.SetConstraints(anchors.LayoutAnchors(d, False, True, False, False))
-        
         v_name = wx.StaticText(self, -1, "HANJIN", (60, 10), size=(65, -1))
-        v_name.SetConstraints(anchors.LayoutAnchors(v_name, False, True, False, False))
-        
         vo_name = wx.StaticText(self, -1, "01", (200, 10), size=(25, -1))
-        vo_name.SetConstraints(anchors.LayoutAnchors(vo_name, False, True, False, False))
-                
         y_name1 = wx.StaticText(self, -1, "2011", (390, 10), size=(40, -1))
         m_name1 = wx.StaticText(self, -1, "11", (450, 10), size=(25, -1))
         d_name1 = wx.StaticText(self, -1, "07", (495, 10), size=(25, -1))
-        y_name1 .SetConstraints(anchors.LayoutAnchors(y_name1 , False, True, False, False))
-        m_name1.SetConstraints(anchors.LayoutAnchors(m_name1, False, True, False, False))
-        d_name1.SetConstraints(anchors.LayoutAnchors(d_name1, False, True, False, False))
-        
-        
         t1 = wx.StaticText(self, -1, "00", (540, 10), size=(25, -1))
         c1 = wx.StaticText(self, -1, ':', (564, 10))
         m1 = wx.StaticText(self, -1, "00", (570, 10), size=(25, -1))
         c2 = wx.StaticText(self, -1, ':', (594, 10))
         s1 = wx.StaticText(self, -1, "00", (600, 10), size=(25, -1))
-        t1.SetConstraints(anchors.LayoutAnchors(t1, False, True, False, False))
-        c1.SetConstraints(anchors.LayoutAnchors(c1, False, True, False, False))
-        m1.SetConstraints(anchors.LayoutAnchors(m1, False, True, False, False))
-        c2.SetConstraints(anchors.LayoutAnchors(c2, False, True, False, False))
-        s1.SetConstraints(anchors.LayoutAnchors(s1, False, True, False, False))
-        
-        l = wx.StaticText(self, -1, '-', (635, 10))
-        l.SetConstraints(anchors.LayoutAnchors(l, False, True, False, False))
-        
+        l = wx.StaticText(self, -1, '-', (635, 10))        
         y_name2 = wx.StaticText(self, -1, "2011", (650, 10), size=(40, -1))
         m_name2 = wx.StaticText(self, -1, "11", (710, 10), size=(25, -1))
         d_name2 = wx.StaticText(self, -1, "07", (755, 10), size=(25, -1))
-        y_name2 .SetConstraints(anchors.LayoutAnchors(y_name2 , False, True, False, False))
-        m_name2.SetConstraints(anchors.LayoutAnchors(m_name2, False, True, False, False))
-        d_name2.SetConstraints(anchors.LayoutAnchors(d_name2, False, True, False, False))
-        
         t2 = wx.StaticText(self, -1, "00", (800, 10), size=(25, -1))
         c3 = wx.StaticText(self, -1, ':', (824, 10))
         m2 = wx.StaticText(self, -1, "00", (830, 10), size=(25, -1))
         c4 = wx.StaticText(self, -1, ':', (854, 10))
         s2 = wx.StaticText(self, -1, "00", (860, 10), size=(25, -1))
-        t2.SetConstraints(anchors.LayoutAnchors(t2, False, True, False, False))
-        c3.SetConstraints(anchors.LayoutAnchors(c3, False, True, False, False))
-        m2.SetConstraints(anchors.LayoutAnchors(m2, False, True, False, False))
-        c4.SetConstraints(anchors.LayoutAnchors(c4, False, True, False, False))
-        s2.SetConstraints(anchors.LayoutAnchors(s2, False, True, False, False))
         
-   
+        for x in [v, vo, d, v_name, vo_name, y_name1, m_name1, d_name1, t1,c1,m1,c2,s1,l,y_name2,m_name2,d_name2,t2,c3,m2,c4,s2]:
+            x.SetConstraints(anchors.LayoutAnchors(x, False, True, False, False))
         
-        
-
-        
+#        v.SetConstraints(anchors.LayoutAnchors(v, False, True, False, False))
+#        vo.SetConstraints(anchors.LayoutAnchors(vo, False, True, False, False))
+#        d.SetConstraints(anchors.LayoutAnchors(d, False, True, False, False))
+#        v_name.SetConstraints(anchors.LayoutAnchors(v_name, False, True, False, False))
+#        vo_name.SetConstraints(anchors.LayoutAnchors(vo_name, False, True, False, False))
+#        y_name1 .SetConstraints(anchors.LayoutAnchors(y_name1 , False, True, False, False))
+#        m_name1.SetConstraints(anchors.LayoutAnchors(m_name1, False, True, False, False))
+#        d_name1.SetConstraints(anchors.LayoutAnchors(d_name1, False, True, False, False))
+#        t1.SetConstraints(anchors.LayoutAnchors(t1, False, True, False, False))
+#        c1.SetConstraints(anchors.LayoutAnchors(c1, False, True, False, False))
+#        m1.SetConstraints(anchors.LayoutAnchors(m1, False, True, False, False))
+#        c2.SetConstraints(anchors.LayoutAnchors(c2, False, True, False, False))
+#        s1.SetConstraints(anchors.LayoutAnchors(s1, False, True, False, False))
+#        l.SetConstraints(anchors.LayoutAnchors(l, False, True, False, False))
+#        y_name2 .SetConstraints(anchors.LayoutAnchors(y_name2 , False, True, False, False))
+#        m_name2.SetConstraints(anchors.LayoutAnchors(m_name2, False, True, False, False))
+#        d_name2.SetConstraints(anchors.LayoutAnchors(d_name2, False, True, False, False))
+#        t2.SetConstraints(anchors.LayoutAnchors(t2, False, True, False, False))
+#        c3.SetConstraints(anchors.LayoutAnchors(c3, False, True, False, False))
+#        m2.SetConstraints(anchors.LayoutAnchors(m2, False, True, False, False))
+#        c4.SetConstraints(anchors.LayoutAnchors(c4, False, True, False, False))
+#        s2.SetConstraints(anchors.LayoutAnchors(s2, False, True, False, False))
         
 class Viewer_Panel(wx.Panel):
     def __init__(self, parent, pos, size):
@@ -172,8 +160,6 @@ class Viewer_Panel(wx.Panel):
         self.Bind(wx.EVT_LEFT_UP, self.OnLeftUp)
         self.Bind(wx.EVT_MOUSEWHEEL, self.OnMouseWheel)
         
-#        self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
-        
         self.translate_mode = False
         self.translate_x, self.translate_y = 0, 0
         self.scale = 1.0
@@ -183,9 +169,6 @@ class Viewer_Panel(wx.Panel):
         self.n = Node(0);
         
         self.InitBuffer()
-        
-#    def OnKeyDown(self, evt):
-#        print 11
         
     def OnSize(self, evt):
         self.InitBuffer()
@@ -255,12 +238,10 @@ class Viewer_Panel(wx.Panel):
         
         t = time.localtime(time.time())
         st = time.strftime("%I:%M:%S", t)
-#        gc.Clear()
         gc.SetFont(wx.Font(30, wx.SWISS, wx.NORMAL, wx.NORMAL))
         gc.DrawText(st, 10, 150)
         
         gc.SetPen(wx.Pen("black", 1))
-#        gc.DrawRectangle(10,10,100,100)
         r, g, b = (255, 0, 0)
         brushclr = wx.Colour(r, g, b, 100)
         gc.SetBrush(wx.Brush(brushclr))
@@ -294,9 +275,6 @@ class Control_Panel(wx.Panel):
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
         self.timer.Start(1000)
-        
-    def test(self, e):
-        print 1
 
     def OnTimer(self, evt):
         self.diplay_time()
@@ -310,7 +288,7 @@ class Control_Panel(wx.Panel):
         
 if __name__ == '__main__':
     app = wx.PySimpleApp()
-    td= TestDialog(None, 'dialog test')
+    td= Input_dialog(None, 'dialog test')
 #    app.frame = MainFrame()
     app.MainLoop()
 #    run()
