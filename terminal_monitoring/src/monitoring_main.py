@@ -8,6 +8,64 @@ class Node:
         self.x = 20
         self.y = 20
 
+class TestDialog(wx.Dialog):
+    def __init__(self, parent, name, size=(1000, 250), pos=(100, 50)):
+        wx.Dialog.__init__(self, None, -1, 'Monitoring Input', pos , size)
+         
+        wx.StaticText(self, -1, 'Vessel', (15, 10))
+        wx.StaticText(self, -1, 'Voyage', (150, 10))
+        wx.StaticText(self, -1, 'Date', (360, 10))
+        
+        v_name = ['HANJIN', 'MAERSK']
+        self.sc_ch = wx.Choice(self, -1, (60, 10), choices=v_name)
+        
+        vo_name = ['01', '02', '03', '04', '05', '06', '07']
+        self.sc_ch = wx.Choice(self, -1, (200, 10), choices=vo_name)
+        
+        y_name1 = ['2005', '2006', '2007', '2008', '2009', '2010', '2011']
+        self.sc_ch = wx.Choice(self, -1, (390, 10), choices=y_name1)
+        
+        m_name1 = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
+        self.sc_ch = wx.Choice(self, -1, (450, 10), choices=m_name1)
+        
+        d_name1 = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31']
+        self.sc_ch = wx.Choice(self, -1, (495, 10), choices=d_name1)
+        
+        wx.TextCtrl(self, -1, "00", (540, 10), size=(25, -1))
+        wx.StaticText(self, -1, ':', (566, 10))
+        wx.TextCtrl(self, -1, "00", (570, 10), size=(25, -1))
+        wx.StaticText(self, -1, ':', (596, 10))
+        wx.TextCtrl(self, -1, "00", (600, 10), size=(25, -1))
+        
+        wx.StaticText(self, -1, '-', (635, 10))
+    
+        y_name2 = ['2005', '2006', '2007', '2008', '2009', '2010', '2011']
+        self.sc_ch = wx.Choice(self, -1, (650, 10), choices=y_name2)
+        
+        m_name2 = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
+        self.sc_ch = wx.Choice(self, -1, (710, 10), choices=m_name2)
+        
+        d_name2 = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31']
+        self.sc_ch = wx.Choice(self, -1, (755, 10), choices=d_name2)
+        
+        wx.TextCtrl(self, -1, "00", (800, 10), size=(25, -1))
+        wx.StaticText(self, -1, ':', (826, 10))
+        wx.TextCtrl(self, -1, "00", (830, 10), size=(25, -1))
+        wx.StaticText(self, -1, ':', (856, 10))
+        self.input_t=wx.TextCtrl(self, -1, "00", (860, 10), size=(25, -1))
+        b = wx.Button(self, -1, "setting", (900, 10))
+        b.SetConstraints(anchors.LayoutAnchors(b, False, True, False, False))
+#        self.Bind(wx.EVT_BUTTON, self.confirm, b)
+        
+        self.input = None
+        self.Show(True)
+        
+#    def confirm(self, event):
+#        self.input = self.input_t.GetValue() 
+#        win = MainFrame(None, -1, 'Hello wxPython', (100,100), (200,200), self)
+2#        win.Show(True)
+#        self.Show(False)
+
 class MainFrame(wx.Frame):
     def __init__(self):
         wx.Frame.__init__(self, None, -1, 'test', size=(1024, 768))
@@ -24,8 +82,12 @@ class MainFrame(wx.Frame):
         Control_Panel(self, (0, cp_py), (f_sx, cp_sy))
 
         self.Show(True)
+
         
 
+#       
+
+        
 class Input_Panel(wx.Panel):
     def __init__(self, parent, pos, size):
         wx.Panel.__init__(self, parent, -1, pos, size)
@@ -33,53 +95,7 @@ class Input_Panel(wx.Panel):
 #        self.SetBackgroundColour(wx.Colour(255, 0, 0))
 
 
-#======================Input=======================================
-#        wx.StaticText(self, -1, 'Vessel', (15, 10))
-#        wx.StaticText(self, -1, 'Voyage', (150, 10))
-#        wx.StaticText(self, -1, 'Date', (360, 10))
-#        
-#        v_name = ['HANJIN', 'MAERSK']
-#        self.sc_ch = wx.Choice(self, -1, (60, 10), choices=v_name)
-#        
-#        vo_name = ['01', '02', '03', '04', '05', '06', '07']
-#        self.sc_ch = wx.Choice(self, -1, (200, 10), choices=vo_name)
-#        
-#        y_name1 = ['2005', '2006', '2007', '2008', '2009', '2010', '2011']
-#        self.sc_ch = wx.Choice(self, -1, (390, 10), choices=y_name1)
-#        
-#        m_name1 = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
-#        self.sc_ch = wx.Choice(self, -1, (450, 10), choices=m_name1)
-#        
-#        d_name1 = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31']
-#        self.sc_ch = wx.Choice(self, -1, (495, 10), choices=d_name1)
-#        
-#        wx.TextCtrl(self, -1, "00", (540, 10), size=(25, -1))
-#        wx.StaticText(self, -1, ':', (566, 10))
-#        wx.TextCtrl(self, -1, "00", (570, 10), size=(25, -1))
-#        wx.StaticText(self, -1, ':', (596, 10))
-#        wx.TextCtrl(self, -1, "00", (600, 10), size=(25, -1))
-#        
-#        wx.StaticText(self, -1, '-', (635, 10))
-#    
-#        y_name2 = ['2005', '2006', '2007', '2008', '2009', '2010', '2011']
-#        self.sc_ch = wx.Choice(self, -1, (650, 10), choices=y_name2)
-#        
-#        m_name2 = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
-#        self.sc_ch = wx.Choice(self, -1, (710, 10), choices=m_name2)
-#        
-#        d_name2 = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31']
-#        self.sc_ch = wx.Choice(self, -1, (755, 10), choices=d_name2)
-#        
-#        wx.TextCtrl(self, -1, "00", (800, 10), size=(25, -1))
-#        wx.StaticText(self, -1, ':', (826, 10))
-#        wx.TextCtrl(self, -1, "00", (830, 10), size=(25, -1))
-#        wx.StaticText(self, -1, ':', (856, 10))
-#        wx.TextCtrl(self, -1, "00", (860, 10), size=(25, -1))
-#        
-# #        self.input_sh = wx.TextCtrl(self, -1, '00', pos=(200, 10))
-# #        
-#        b = wx.Button(self, -1, "setting", (900, 10))
-#===============================================================================
+
         
         v = wx.StaticText(self, -1, 'Vessel', (15, 10))
         v.SetConstraints(anchors.LayoutAnchors(v, False, True, False, False))
@@ -91,36 +107,57 @@ class Input_Panel(wx.Panel):
         d.SetConstraints(anchors.LayoutAnchors(d, False, True, False, False))
         
         v_name = wx.StaticText(self, -1, "HANJIN", (60, 10), size=(65, -1))
+        v_name.SetConstraints(anchors.LayoutAnchors(v_name, False, True, False, False))
         
         vo_name = wx.StaticText(self, -1, "01", (200, 10), size=(25, -1))
+        vo_name.SetConstraints(anchors.LayoutAnchors(vo_name, False, True, False, False))
                 
         y_name1 = wx.StaticText(self, -1, "2011", (390, 10), size=(40, -1))
         m_name1 = wx.StaticText(self, -1, "11", (450, 10), size=(25, -1))
         d_name1 = wx.StaticText(self, -1, "07", (495, 10), size=(25, -1))
+        y_name1 .SetConstraints(anchors.LayoutAnchors(y_name1 , False, True, False, False))
+        m_name1.SetConstraints(anchors.LayoutAnchors(m_name1, False, True, False, False))
+        d_name1.SetConstraints(anchors.LayoutAnchors(d_name1, False, True, False, False))
         
         
-        wx.StaticText(self, -1, "00", (540, 10), size=(25, -1))
-        wx.StaticText(self, -1, ':', (564, 10))
-        wx.StaticText(self, -1, "00", (570, 10), size=(25, -1))
-        wx.StaticText(self, -1, ':', (594, 10))
-        wx.StaticText(self, -1, "00", (600, 10), size=(25, -1))
+        t1 = wx.StaticText(self, -1, "00", (540, 10), size=(25, -1))
+        c1 = wx.StaticText(self, -1, ':', (564, 10))
+        m1 = wx.StaticText(self, -1, "00", (570, 10), size=(25, -1))
+        c2 = wx.StaticText(self, -1, ':', (594, 10))
+        s1 = wx.StaticText(self, -1, "00", (600, 10), size=(25, -1))
+        t1.SetConstraints(anchors.LayoutAnchors(t1, False, True, False, False))
+        c1.SetConstraints(anchors.LayoutAnchors(c1, False, True, False, False))
+        m1.SetConstraints(anchors.LayoutAnchors(m1, False, True, False, False))
+        c2.SetConstraints(anchors.LayoutAnchors(c2, False, True, False, False))
+        s1.SetConstraints(anchors.LayoutAnchors(s1, False, True, False, False))
         
-        wx.StaticText(self, -1, '-', (635, 10))
-    
+        l = wx.StaticText(self, -1, '-', (635, 10))
+        l.SetConstraints(anchors.LayoutAnchors(l, False, True, False, False))
+        
         y_name2 = wx.StaticText(self, -1, "2011", (650, 10), size=(40, -1))
         m_name2 = wx.StaticText(self, -1, "11", (710, 10), size=(25, -1))
         d_name2 = wx.StaticText(self, -1, "07", (755, 10), size=(25, -1))
+        y_name2 .SetConstraints(anchors.LayoutAnchors(y_name2 , False, True, False, False))
+        m_name2.SetConstraints(anchors.LayoutAnchors(m_name2, False, True, False, False))
+        d_name2.SetConstraints(anchors.LayoutAnchors(d_name2, False, True, False, False))
+        
+        t2 = wx.StaticText(self, -1, "00", (800, 10), size=(25, -1))
+        c3 = wx.StaticText(self, -1, ':', (824, 10))
+        m2 = wx.StaticText(self, -1, "00", (830, 10), size=(25, -1))
+        c4 = wx.StaticText(self, -1, ':', (854, 10))
+        s2 = wx.StaticText(self, -1, "00", (860, 10), size=(25, -1))
+        t2.SetConstraints(anchors.LayoutAnchors(t2, False, True, False, False))
+        c3.SetConstraints(anchors.LayoutAnchors(c3, False, True, False, False))
+        m2.SetConstraints(anchors.LayoutAnchors(m2, False, True, False, False))
+        c4.SetConstraints(anchors.LayoutAnchors(c4, False, True, False, False))
+        s2.SetConstraints(anchors.LayoutAnchors(s2, False, True, False, False))
+        
+   
         
         
-        wx.StaticText(self, -1, "00", (800, 10), size=(25, -1))
-        wx.StaticText(self, -1, ':', (824, 10))
-        wx.StaticText(self, -1, "00", (830, 10), size=(25, -1))
-        wx.StaticText(self, -1, ':', (854, 10))
-        wx.StaticText(self, -1, "00", (860, 10), size=(25, -1))
+
         
- #        self.input_sh = wx.TextCtrl(self, -1, '00', pos=(200, 10))
- #        
-        b = wx.Button(self, -1, "setting", (900, 10))
+        
 class Viewer_Panel(wx.Panel):
     def __init__(self, parent, pos, size):
         wx.Panel.__init__(self, parent, -1, pos, size, style=wx.SIMPLE_BORDER)
@@ -239,20 +276,20 @@ class Control_Panel(wx.Panel):
 
         s_img = wx.Image('pic/stop.bmp', wx.BITMAP_TYPE_BMP)
         s_bmp = s_img.Scale(20,20)
-        s_button = wx.BitmapButton(self, -1, wx.BitmapFromImage(s_bmp), (300, 10), (s_bmp.GetWidth() + 2, s_bmp.GetHeight() + 2))
-        self.Bind(wx.EVT_BUTTON, self.test, s_button)
+        s_button = wx.BitmapButton(self, -1, wx.BitmapFromImage(s_bmp), (180, 30), (s_bmp.GetWidth() + 2, s_bmp.GetHeight() + 2))
+#        self.Bind(wx.EVT_BUTTON, self.test, s_button)
         
-        r_img = wx.Bitmap("pic/reverse.bmp", wx.BITMAP_TYPE_BMP)
+        r_img = wx.Image("pic/reverse.bmp", wx.BITMAP_TYPE_BMP)
         r_bmp = r_img.Scale(20,20)
-        r_button = wx.BitmapButton(self, -1, wx.BitmapFromImage(r_bmp), (350, 10),(r_bmp.GetWidth()+2, r_bmp.GetHeight()+2))
+        r_button = wx.BitmapButton(self, -1, wx.BitmapFromImage(r_bmp), (200, 30),(r_bmp.GetWidth()+2, r_bmp.GetHeight()+2))
         
-        pa_img = wx.Bitmap("pic/pause.bmp", wx.BITMAP_TYPE_BMP)
+        pa_img = wx.Image("pic/pause.bmp", wx.BITMAP_TYPE_BMP)
         pa_bmp = pa_img.Scale(20,20)
-        pa_button = wx.BitmapButton(self, -1, wx.BitmapFromImage(pa_bmp), (350, 10),(pa_bmp.GetWidth()+2, pa_bmp.GetHeight()+2))
+        pa_button = wx.BitmapButton(self, -1, wx.BitmapFromImage(pa_bmp), (220, 30),(pa_bmp.GetWidth()+2, pa_bmp.GetHeight()+2))
         
-        pl_img = wx.Bitmap("pic/play.bmp", wx.BITMAP_TYPE_BMP)
+        pl_img = wx.Image("pic/play.bmp", wx.BITMAP_TYPE_BMP)
         pl_bmp = pl_img.Scale(20,20)
-        pl_button = wx.BitmapButton(self, -1, wx.BitmapFromImage(pl_bmp), (350, 10),(pl_bmp.GetWidth()+2, pl_bmp.GetHeight()+2))
+        pl_button = wx.BitmapButton(self, -1, wx.BitmapFromImage(pl_bmp), (240, 30),(pl_bmp.GetWidth()+2, pl_bmp.GetHeight()+2))
         
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
@@ -271,9 +308,9 @@ class Control_Panel(wx.Panel):
         self.c_time = wx.StaticText(self, -1, st, (600, 20))
         
         
-        
 if __name__ == '__main__':
     app = wx.PySimpleApp()
-    app.frame = MainFrame()
+    td= TestDialog(None, 'dialog test')
+#    app.frame = MainFrame()
     app.MainLoop()
 #    run()
