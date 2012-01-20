@@ -14,7 +14,3 @@ p.Bind(wx.EVT_BUTTON, print_hello, b)
 win.Show(True)
 
 app.MainLoop()
-
-
-
-

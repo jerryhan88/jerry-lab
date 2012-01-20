@@ -28,13 +28,16 @@ class MyPanel(wx.Panel):
         self.translate_mode = False
         self.translate_x, self.translate_y = 0, 0
         self.scale = 1.0
+    
     def OnSize(self, evt):
         self.InitBuffer()
         evt.Skip()
+    
     def OnLeftDown(self, evt):
         self.translate_mode = True
         self.prev_x, self.prev_y = evt.m_x, evt.m_y
         self.CaptureMouse()
+        
     def OnMotion(self, evt):
         if self.translate_mode:
             dx, dy = evt.m_x - self.prev_x, evt.m_y - self.prev_y
@@ -42,9 +45,11 @@ class MyPanel(wx.Panel):
             self.translate_y += dy
             self.prev_x, self.prev_y = evt.m_x, evt.m_y
             self.RefreshGC()
+            
     def OnLeftUp(self, evt):
         self.translate_mode = False
         self.ReleaseMouse()
+        
     def OnPaint(self, evt):
         dc = wx.BufferedPaintDC(self, self._buffer)
     def OnMouseWheel(self, evt):

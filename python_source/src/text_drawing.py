@@ -5,14 +5,14 @@ class Main_viewer(wx.Frame):
     def __init__(self, parent, ID, title, pos, size, style=wx.DEFAULT_FRAME_STYLE):
         wx.Frame.__init__(self, parent, ID, title, pos, size, style)
         self.p = wx.Panel(self, -1, pos=(0, 0), size=(810, 730))
-        self.p.Bind(wx.EVT_PAINT, self.OnViewPaint_yard)
+        self.p.Bind(wx.EVT_PAINT, self.OnPaint)
         
-    def OnViewPaint_yard(self, _):
+    def OnPaint(self, _):
         dc = wx.PaintDC(self.p)
         self.p.PrepareDC(dc)
         
-        r, g, b = (200, 200, 200)
-        brushclr = wx.Colour(r, g, b, 128)
+        r, g, b = (255, 0, 0)
+        brushclr = wx.Colour(r, g, b)
         dc.SetBrush(wx.Brush(brushclr))
         
         old_pen = dc.GetPen()
@@ -26,8 +26,6 @@ class Main_viewer(wx.Frame):
               
         
         dc.DrawText('123', 200, 150)
-               
-        
         dc.SetPen(old_pen)
         
         old_pen = dc.GetPen()

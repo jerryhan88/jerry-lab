@@ -26,6 +26,7 @@ class MyPanel(wx.Panel):
         self.Bind(wx.EVT_MOTION, self.OnMotion)
         self.Bind(wx.EVT_LEFT_UP, self.OnLeftUp)
         self.Bind(wx.EVT_MOUSEWHEEL, self.OnMouseWheel)
+        
         self.translate_mode = False
         self.translate_x, self.translate_y = 0, 0
         self.scale = 1.0
@@ -65,14 +66,20 @@ class MyPanel(wx.Panel):
     def OnMouseWheel(self, evt):
         # TODO scaling based on mouse position (evt.m_x, evt.m_y)
         zoom_scale = 1.2
+        old_scale = self.scale 
         if evt.m_wheelRotation > 0:
             self.scale *= zoom_scale
-            self.translate_x -= evt.m_x * (zoom_scale - 1)
-            self.translate_y -= evt.m_y * (zoom_scale - 1)
+            self.translate_x = evt.m_x - self.scale/old_scale *(evt.m_x - self.translate_x)
+            self.translate_y = evt.m_y - self.scale/old_scale *(evt.m_y - self.translate_y) 
+            
+#            self.translate_x -= evt.m_x * (zoom_scale - 1)
+#            self.translate_y -= evt.m_y * (zoom_scale - 1)
         else:
             self.scale /= zoom_scale
-            self.translate_x += evt.m_x * (zoom_scale - 1)
-            self.translate_y += evt.m_y * (zoom_scale - 1)
+            self.translate_x = evt.m_x - self.scale/old_scale *(evt.m_x - self.translate_x)
+            self.translate_y = evt.m_y - self.scale/old_scale *(evt.m_y - self.translate_y)
+#            self.translate_x += evt.m_x * (zoom_scale - 1)
+#            self.translate_y += evt.m_y * (zoom_scale - 1)
         self.RefreshGC()
         
     def InitBuffer(self):
