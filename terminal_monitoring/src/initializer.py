@@ -2,8 +2,16 @@ from __future__ import division
 from input import Evts
 from classes import Vessel, QC, YC, SC, Container
 
-def run():
-    E = Evts
+
+def read_DB(start_time, end_time):
+    pass
+
+def run(start_time, end_time, db_read = False):
+    if db_read:
+#        E = read_DB(start_time, end_time)
+        E = Evts
+    else:
+        E = Evts
     vechicles = []
     vessels = []
     qcs = []
@@ -95,7 +103,7 @@ def run():
     
 #yard = [objects of Yard_block]
 if __name__ == '__main__':
-    vs, cs = run()
+    vs, cs = run(1,2)
     for v in vs:
         for x in v:
             if isinstance(x, Vessel):
