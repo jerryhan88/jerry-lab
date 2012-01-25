@@ -5,8 +5,6 @@ import wx
 class Vessel:
     pass
 
-        
-
 class QC:
     pass
 
@@ -22,7 +20,6 @@ class Frame(wx.Frame):
         self.p = wx.Panel(self, -1, pos=(0, 0), size=(1000, 1000))
         self.p.Bind(wx.EVT_PAINT, self.drawing)
 
-
     def drawing(self, _):
         dc =wx.PaintDC(self.p)
         self.p.PrepareDC(dc)
@@ -34,12 +31,12 @@ class Frame(wx.Frame):
         brushclr = wx.Colour(r, g, b, 100)
         dc.SetBrush(wx.Brush(brushclr))
         
-        #모니터
+        #monitor
         dc.DrawLine(670, 0, 670, 600)
         dc.DrawLine(0, 85, 670, 85)
         dc.DrawLine(0, 600, 670, 600)
         
-        #vessel 그리기
+        #vessel drawing
         dc.DrawRectangle(70, 30, 200, 50)
         dc.DrawRectangle(400, 30, 200, 50)
 
@@ -51,7 +48,7 @@ class Frame(wx.Frame):
         dc.DrawRectangle(480, 20, 30, 150)
         dc.DrawRectangle(530, 20, 30, 150)
         
-        #yard 그리기
+        #yard drawing
         dc.DrawRectangle(20, 300, 60, 200)
         dc.DrawRectangle(160, 300, 60, 200)
         dc.DrawRectangle(300, 300, 60, 200)
