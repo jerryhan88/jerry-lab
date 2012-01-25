@@ -31,15 +31,17 @@ class Vessel(object):
         self.name = name
         self.voyage = voyage
         self.evt_seq = []
+        self.px, self.py = (0,0)
+        
     def __repr__(self):
         return self.name + ' : ' + str(self.voyage)
 #        self.block# = object of Block
-
 
 class QC(object):
     def __init__(self, name):
         self.name = name
         self.evt_seq = []
+        self.px, self.py = (0,0)
 #        self.sequence# = [(vessel, bay, column, time), ]
     def __repr__(self):
         return self.name
@@ -48,6 +50,7 @@ class YC(object):
     def __init__(self, name):
         self.name = name
         self.evt_seq = []
+        self.px, self.py = (0,0)
 #        self.sequence# = [(bay, column, time), ]
     def __repr__(self):
         return self.name
@@ -56,6 +59,7 @@ class SC(object):
     def __init__(self, name):
         self.name = name
         self.evt_seq = []
+        self.px, self.py = (0,0)
 #        self.sequence #= [(qc, block, time), ]
     def __repr__(self):
         return self.name
