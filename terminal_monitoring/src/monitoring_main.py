@@ -21,29 +21,30 @@ class Input_dialog(wx.Dialog):
         wx.StaticText(self, -1, 'Voyage', (450, 10))
         wx.StaticText(self, -1, 'Date', (15, 50))
         
+        
         v_name = ['HANJIN', 'MAERSK']
         self.v_name_ch = wx.Choice(self, -1, (60, 10), choices=v_name)
         self.v_name_ch.SetSelection(0)
         
         vo_name = ['01', '02', '03', '04', '05', '06', '07']
         self.vo_name_ch = wx.Choice(self, -1, (510, 10), choices=vo_name)
-        self.vo_name_ch.SetSelection(0)
+        self.vo_name_ch.SetSelection(1)
         
         y_name1 = ['2005', '2006', '2007', '2008', '2009', '2010', '2011']
         self.y_name1_ch = wx.Choice(self, -1, (60, 50), choices=y_name1)
-        self.y_name1_ch.SetSelection(0)
+        self.y_name1_ch.SetSelection(6)
         
         m_name1 = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
         self.m_name1_ch = wx.Choice(self, -1, (120, 50), choices=m_name1)
-        self.m_name1_ch.SetSelection(0)
+        self.m_name1_ch.SetSelection(7)
         
         d_name1 = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31']
         self.d_name1_ch = wx.Choice(self, -1, (165, 50), choices=d_name1)
-        self.d_name1_ch.SetSelection(0)
+        self.d_name1_ch.SetSelection(22)
         
-        self.t1 = wx.TextCtrl(self, -1, "00", (210, 50), size=(25, -1))
+        self.t1 = wx.TextCtrl(self, -1, "09", (210, 50), size=(25, -1))
         wx.StaticText(self, -1, ':', (236, 50))
-        self.mi1 = wx.TextCtrl(self, -1, "00", (240, 50), size=(25, -1))
+        self.mi1 = wx.TextCtrl(self, -1, "35", (240, 50), size=(25, -1))
         wx.StaticText(self, -1, ':', (266, 50))
         self.s1 = wx.TextCtrl(self, -1, "00", (270, 50), size=(25, -1))
         
@@ -51,39 +52,27 @@ class Input_dialog(wx.Dialog):
         
         y_name2 = ['2005', '2006', '2007', '2008', '2009', '2010', '2011']
         self.y_name2_ch = wx.Choice(self, -1, (320, 50), choices=y_name2)
-        self.y_name2_ch.SetSelection(0)
+        self.y_name2_ch.SetSelection(6)
         
         m_name2 = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
         self.m_name2_ch = wx.Choice(self, -1, (380, 50), choices=m_name2)
-        self.m_name2_ch.SetSelection(0)
+        self.m_name2_ch.SetSelection(7)
         
         d_name2 = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31']
         self.d_name2_ch = wx.Choice(self, -1, (425, 50), choices=d_name2)
-        self.d_name2_ch.SetSelection(0)
+        self.d_name2_ch.SetSelection(22)
         
-        self.t2 = wx.TextCtrl(self, -1, "00", (470, 50), size=(25, -1))
+        self.t2 = wx.TextCtrl(self, -1, "15", (470, 50), size=(25, -1))
         wx.StaticText(self, -1, ':', (496, 50))
-        self.mi2 = wx.TextCtrl(self, -1, "00", (500, 50), size=(25, -1))
+        self.mi2 = wx.TextCtrl(self, -1, "10", (500, 50), size=(25, -1))
         wx.StaticText(self, -1, ':', (526, 50))
-        self.s2 = wx.TextCtrl(self, -1, "00", (530, 50), size=(25, -1))
+        self.s2 = wx.TextCtrl(self, -1, "20", (530, 50), size=(25, -1))
         setting_btn = wx.Button(self, -1, "setting", (480, 90))
         setting_btn.SetConstraints(anchors.LayoutAnchors(setting_btn, False, True, False, False))
         
         self.Bind(wx.EVT_BUTTON, self.setting, setting_btn)
-#        self.Bind(wx.EVT_CHOICE, self.EvtChoice_v, self.v_name_ch)
         self.Bind(wx.EVT_CLOSE, self.OnClose)
-        print self.v_name_ch.GetSelection()
-        print self.vo_name_ch.GetString(self.vo_name_ch.GetSelection())
-        
-        print  self.v_name_ch.GetString(self.v_name_ch.GetSelection())
-        
-        self.input = None
-        
         self.Show(True)
-        
-#    def EvtChoice_v(self, event):
-#        print self.v_name_ch.GetSelection()
-#        print self.v_name_ch.GetString(self.v_name_ch.GetSelection())
         
     def OnClose(self, event):
         self.Destroy()
@@ -291,35 +280,81 @@ class Viewer_Panel(wx.Panel):
     def Draw(self, gc):
         gc.Translate(self.translate_x, self.translate_y)
         gc.Scale(self.scale, self.scale)
+#===============================================================================
+# 
+#        c_hour, c_min, c_sec = self.Parent.cur_time.hour, self.Parent.cur_time.minute, self.Parent.cur_time.second
+#         
+#        st = '%s : %s : %s' % (c_hour, c_min, c_sec)
+#        gc.SetFont(wx.Font(30, wx.SWISS, wx.NORMAL, wx.NORMAL))
+#        gc.DrawText(st, 10, 150)
+#        
+#        gc.SetPen(wx.Pen("black", 1))
+#        r, g, b = (255, 0, 0)
+#        brushclr = wx.Colour(r, g, b, 100)
+#        gc.SetBrush(wx.Brush(brushclr))
+#        gc.DrawRectangle(self.n.x, self.n.y, 100, 100)
+#===============================================================================
 
-        c_hour, c_min, c_sec = self.Parent.cur_time.hour, self.Parent.cur_time.minute, self.Parent.cur_time.second
-         
-        st = '%s : %s : %s' % (c_hour, c_min, c_sec)
-        gc.SetFont(wx.Font(30, wx.SWISS, wx.NORMAL, wx.NORMAL))
-        gc.DrawText(st, 10, 150)
-        
-        gc.SetPen(wx.Pen("black", 1))
-        r, g, b = (255, 0, 0)
-        brushclr = wx.Colour(r, g, b, 100)
-        gc.SetBrush(wx.Brush(brushclr))
-        gc.DrawRectangle(self.n.x, self.n.y, 100, 100)
         
         #draw Background
-        l_sx = self.GetSize()[0]
-        l1_py = 100
-        l2_py = l1_py + container_sy * 2.5
+        # draw Shuttle Carrier Line
+        l_sx = container_sx * 54.8
+        l0_py = container_sy * 31.2
+        ## draw Bit
+        r, g, b = (0, 0, 0)
+        brushclr = wx.Colour(r, g, b, 100)
+        gc.SetBrush(wx.Brush(brushclr))
+        gc.SetPen(wx.Pen("white", 0))
+        bit_sx, bit_sy = container_sx * 0.26, container_sy * 0.8
+        bit0_px = container_sx * 0.7
+        bits_px = [bit0_px + container_sx * 2.95 * i for i in xrange(19)]
+        for px in bits_px:
+            gc.DrawRectangle(px, l0_py, bit_sx, bit_sy)
+        ##
+        l1_py = l0_py + container_sy
+        l2_py = l1_py + container_sy * 0.5
+        l3_py = l2_py + container_sy * 0.5
+        l4_py = l3_py + container_sy * 2.2
+        l5_py = l4_py + container_sy * 6
+        l6_py = l5_py + container_sy * 2.4
+        l7_py = l6_py + container_sy
+        l8_py = l7_py + container_sy * 2.2
+        l9_py = l8_py + container_sy * 2.2
+        l10_py = l9_py + container_sy * 2.2
+        gc.SetPen(wx.Pen("black", 1))
+        for x in xrange(11):
+            if x == 4:
+                gc.SetPen(wx.Pen("black", 2))
+                gc.DrawLines([(0, eval('l%d_py' % x)), (l_sx, eval('l%d_py' % x))])
+                gc.SetPen(wx.Pen("black", 1))
+            else:
+                gc.DrawLines([(0, eval('l%d_py' % x)), (l_sx, eval('l%d_py' % x))])
+        # draw Block
+        r, g, b = (255, 255, 255)
+        brushclr = wx.Colour(r, g, b, 100)
+        gc.SetBrush(wx.Brush(brushclr))
+        block0_px, block0_py = bits_px[3], l10_py + container_sy * 29.75
+        for b_px_i in xrange(15):
+            b_px = block0_px + b_px_i * container_sx * 2.8
+            gc.DrawRectangle(b_px, block0_py, container_sy * 8, container_sx * 22)
+            gc.SetPen(wx.Pen("black", 0.5))
+            for i in xrange(7):
+                gc.DrawLines([(b_px + container_sy * (i + 1) , block0_py + 1), (b_px + container_sy * (i + 1), block0_py + container_sx * 22)])
+            for i in xrange(21):
+                gc.DrawLines([(b_px , block0_py + container_sx * (i + 1)), (b_px + container_sy * 8  , block0_py + container_sx * (i + 1))])
+            gc.SetPen(wx.Pen("black", 1))
         
+        #draw vehicle
         
-        gc.DrawLines([(0, l1_py), (l_sx, l1_py)])
-        gc.DrawRectangle(0, l1_py, container_sx, container_sy)
-        gc.DrawLines([(0, l2_py), (l_sx, l2_py)])
+        gc.DrawRectangle(container_sx * 0.4 , l0_py - container_sy * 12.5, container_sx * 15.79, container_sy * 11)
+        gc.DrawRectangle(container_sx * 20.66 , l0_py - container_sy * 12.5, container_sx * 15.79, container_sy * 11)
+        
         
 
 class Control_Panel(wx.Panel):
     def __init__(self, parent, pos, size):
         wx.Panel.__init__(self, parent, -1, pos, size)
         self.SetConstraints(anchors.LayoutAnchors(self, True, False, True, True))
-#        self.SetBackgroundColour(wx.Colour(0, 0, 255))
 
         self.time_flow = wx.Slider(self, -1, 1, 12.5, 1000, (30, 10), (950, -1), wx.SL_HORIZONTAL)
         self.diplay_time()
