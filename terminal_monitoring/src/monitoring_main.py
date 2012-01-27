@@ -13,6 +13,10 @@ class Node:
         self.id = id
         self.x = 20
         self.y = 20
+        
+class SC:
+    def __init__(self, moving_seq):
+        self.moving_seq = moving_seq
 
 class Input_dialog(wx.Dialog):
     def __init__(self, parent, name, size=(570, 180), pos=(400, 300)):
@@ -25,7 +29,6 @@ class Input_dialog(wx.Dialog):
         v_name = ['HANJIN', 'MAERSK']
         self.v_name_ch = wx.Choice(self, -1, (60, 10), choices=v_name)
         self.v_name_ch.SetSelection(0)
-        
         vo_name = ['01', '02', '03', '04', '05', '06', '07']
         self.vo_name_ch = wx.Choice(self, -1, (510, 10), choices=vo_name)
         self.vo_name_ch.SetSelection(1)
@@ -158,32 +161,46 @@ class Input_View_Panel(wx.Panel):
         
         v = wx.StaticText(self, -1, 'Vessel', (15, 10))
         v.SetFont(wx.Font(13, wx.SWISS, wx.NORMAL, wx.NORMAL))
+        
         vo = wx.StaticText(self, -1, 'Voyage', (150, 10))
         vo.SetFont(wx.Font(13, wx.SWISS, wx.NORMAL, wx.NORMAL))
         d = wx.StaticText(self, -1, 'Date', (360, 10))
         d.SetFont(wx.Font(13, wx.SWISS, wx.NORMAL, wx.NORMAL))
         v_name = wx.StaticText(self, -1, in_d.input_v, (65, 10), size=(65, -1))
-        v_name.SetFont(wx.Font(13, wx.SWISS, wx.NORMAL, wx.NORMAL))
+        v_name.SetFont(wx.Font(13, wx.SWISS, wx.ITALIC, wx.NORMAL))
         vo_name = wx.StaticText(self, -1, in_d.input_vo, (215, 10), size=(25, -1))
-        vo_name.SetFont(wx.Font(13, wx.SWISS, wx.NORMAL, wx.NORMAL))
-        y_name1 = wx.StaticText(self, -1, in_d.input_y1, (390, 10), size=(40, -1))
-        m_name1 = wx.StaticText(self, -1, in_d.input_m1, (450, 10), size=(25, -1))
-        d_name1 = wx.StaticText(self, -1, in_d.input_d1, (495, 10), size=(25, -1))
+        vo_name.SetFont(wx.Font(13, wx.SWISS, wx.ITALIC, wx.NORMAL))
         
-        t1 = wx.StaticText(self, -1, in_d.input_t1, (540, 10), size=(25, -1))
-        c1 = wx.StaticText(self, -1, ':', (564, 10))
-        m1 = wx.StaticText(self, -1, in_d.input_mi1, (570, 10), size=(25, -1))
-        c2 = wx.StaticText(self, -1, ':', (594, 10))
-        s1 = wx.StaticText(self, -1, in_d.input_s1, (600, 10), size=(25, -1))
-        l = wx.StaticText(self, -1, '-', (635, 10))        
-        y_name2 = wx.StaticText(self, -1, in_d.input_y2, (650, 10), size=(40, -1))
-        m_name2 = wx.StaticText(self, -1, in_d.input_m2, (710, 10), size=(25, -1))
-        d_name2 = wx.StaticText(self, -1, in_d.input_d2, (755, 10), size=(25, -1))
-        t2 = wx.StaticText(self, -1, in_d.input_t2, (800, 10), size=(25, -1))
-        c3 = wx.StaticText(self, -1, ':', (824, 10))
-        m2 = wx.StaticText(self, -1, in_d.input_mi2, (830, 10), size=(25, -1))
-        c4 = wx.StaticText(self, -1, ':', (854, 10))
-        s2 = wx.StaticText(self, -1, in_d.input_s2, (860, 10), size=(25, -1))
+        #Date/Time
+        y_name1_px = 410
+        
+        y_name1 = wx.StaticText(self, -1, in_d.input_y1, (y_name1_px, 10), size=(40, -1))
+        m_name1 = wx.StaticText(self, -1, in_d.input_m1, (y_name1_px + 40, 10), size=(25, -1))
+        d_name1 = wx.StaticText(self, -1, in_d.input_d1, (y_name1_px + 70, 10), size=(25, -1))
+
+        t1 = wx.StaticText(self, -1, in_d.input_t1, (y_name1_px + 100, 10), size=(25, -1))
+        c1 = wx.StaticText(self, -1, ':', (y_name1_px + 120, 10))
+        m1 = wx.StaticText(self, -1, in_d.input_mi1, (y_name1_px + 135, 10), size=(25, -1))
+        c2 = wx.StaticText(self, -1, ':', (y_name1_px + 155, 10))
+        s1 = wx.StaticText(self, -1, in_d.input_s1, (y_name1_px + 170, 10), size=(25, -1))
+        
+        l = wx.StaticText(self, -1, '-', (620, 10))        
+        
+        y_name2_px = 640
+        
+        y_name2 = wx.StaticText(self, -1, in_d.input_y2, (y_name2_px, 10), size=(40, -1))
+        m_name2 = wx.StaticText(self, -1, in_d.input_m2, (y_name2_px + 40, 10), size=(25, -1))
+        d_name2 = wx.StaticText(self, -1, in_d.input_d2, (y_name2_px + 60, 10), size=(25, -1))
+        t2 = wx.StaticText(self, -1, in_d.input_t2, (y_name2_px + 100, 10), size=(25, -1))
+        
+        c3 = wx.StaticText(self, -1, ':', (y_name2_px + 120, 10))
+        m2 = wx.StaticText(self, -1, in_d.input_mi2, (y_name2_px + 135, 10), size=(25, -1))
+        c4 = wx.StaticText(self, -1, ':', (y_name2_px + 155, 10))
+        s2 = wx.StaticText(self, -1, in_d.input_s2, (y_name2_px + 170, 10), size=(25, -1))
+
+        for x in [y_name1, m_name1, d_name1, t1, c1, m1, c2, s1, l, y_name2, m_name2, d_name2, t2, c3, m2, c4, s2]:
+            x.SetFont(wx.Font(10, wx.SWISS, wx.ITALIC, wx.NORMAL))
+        
         
         for x in [v, vo, d, v_name, vo_name, y_name1, m_name1, d_name1, t1, c1, m1, c2, s1, l, y_name2, m_name2, d_name2, t2, c3, m2, c4, s2]:
             x.SetConstraints(anchors.LayoutAnchors(x, False, True, False, False))
@@ -208,15 +225,18 @@ class Viewer_Panel(wx.Panel):
         self.translate_mode = False
         self.translate_x, self.translate_y = 0, 0
         self.scale = 1.0
-        
+    
         self.n = Node(0);
         self.InitBuffer()
         
+#        sc = SC[('2011-08-23-10-03-55', 'STS02-Lane01', 'C09', 'TL'), ('2011-08-23-10-05-00', 'B01-TP02', 'C09', 'TU'), ('2011-08-23-10-36-00', 'STS02-Lane04', 'C14', 'TL'), ('2011-08-23-10-37-10', 'B02-TP01', 'C14', 'TU')]
+#        print sc
+        
     def OnTimer(self, evt):
-        if self.Parent.isReverse_play:
-            self.n.x -= 1
-        else:
-            self.n.x += 1
+#        if self.Parent.isReverse_play:
+#            self.n.x -= 1
+#        else:
+#            self.n.x += 1
         self.RefreshGC()
         
     def OnSize(self, evt):
@@ -280,21 +300,20 @@ class Viewer_Panel(wx.Panel):
     def Draw(self, gc):
         gc.Translate(self.translate_x, self.translate_y)
         gc.Scale(self.scale, self.scale)
-#===============================================================================
-# 
-#        c_hour, c_min, c_sec = self.Parent.cur_time.hour, self.Parent.cur_time.minute, self.Parent.cur_time.second
-#         
-#        st = '%s : %s : %s' % (c_hour, c_min, c_sec)
-#        gc.SetFont(wx.Font(30, wx.SWISS, wx.NORMAL, wx.NORMAL))
-#        gc.DrawText(st, 10, 150)
-#        
-#        gc.SetPen(wx.Pen("black", 1))
-#        r, g, b = (255, 0, 0)
-#        brushclr = wx.Colour(r, g, b, 100)
-#        gc.SetBrush(wx.Brush(brushclr))
-#        gc.DrawRectangle(self.n.x, self.n.y, 100, 100)
-#===============================================================================
-
+        
+        '''        
+        c_hour, c_min, c_sec = self.Parent.cur_time.hour, self.Parent.cur_time.minute, self.Parent.cur_time.second
+         
+        st = '%s : %s : %s' % (c_hour, c_min, c_sec)
+        gc.SetFont(wx.Font(30, wx.SWISS, wx.NORMAL, wx.NORMAL))
+        gc.DrawText(st, 10, 150)
+        
+        gc.SetPen(wx.Pen("black", 1))
+        r, g, b = (255, 0, 0)
+        brushclr = wx.Colour(r, g, b, 100)
+        gc.SetBrush(wx.Brush(brushclr))
+        gc.DrawRectangle(self.n.x, self.n.y, 100, 100)
+        '''
         
         #draw Background
         # draw Shuttle Carrier Line
@@ -349,6 +368,8 @@ class Viewer_Panel(wx.Panel):
         gc.DrawRectangle(container_sx * 0.4 , l0_py - container_sy * 12.5, container_sx * 15.79, container_sy * 11)
         gc.DrawRectangle(container_sx * 20.66 , l0_py - container_sy * 12.5, container_sx * 15.79, container_sy * 11)
         
+        #draw sc
+        
         
 
 class Control_Panel(wx.Panel):
@@ -356,8 +377,10 @@ class Control_Panel(wx.Panel):
         wx.Panel.__init__(self, parent, -1, pos, size)
         self.SetConstraints(anchors.LayoutAnchors(self, True, False, True, True))
 
-        self.time_flow = wx.Slider(self, -1, 1, 12.5, 1000, (30, 10), (950, -1), wx.SL_HORIZONTAL)
+        slider = self.time_flow = wx.Slider(self, -1, 1, 12.5, 1000, (30, 10), (950, -1), wx.SL_HORIZONTAL)
+        slider.SetConstraints(anchors.LayoutAnchors(slider, True, False, True, False))
         self.diplay_time()
+        self.c_time.SetConstraints(anchors.LayoutAnchors(self.c_time, True, False, True, False))
 
         s_img = wx.Image('pic/stop.bmp', wx.BITMAP_TYPE_BMP)
         s_bmp = s_img.Scale(30, 30)
@@ -368,10 +391,14 @@ class Control_Panel(wx.Panel):
         pl_img = wx.Image("pic/play.bmp", wx.BITMAP_TYPE_BMP)
         pl_bmp = pl_img.Scale(30, 30)
         
-        s_btn = wx.BitmapButton(self, -1, wx.BitmapFromImage(s_bmp), (760, 30), (s_bmp.GetWidth() + 2, s_bmp.GetHeight() + 2))
-        r_btn = wx.BitmapButton(self, -1, wx.BitmapFromImage(r_bmp), (790, 30), (r_bmp.GetWidth() + 2, r_bmp.GetHeight() + 2))
-        pa_btn = wx.BitmapButton(self, -1, wx.BitmapFromImage(pa_bmp), (820, 30), (pa_bmp.GetWidth() + 2, pa_bmp.GetHeight() + 2))
-        pl_btn = wx.BitmapButton(self, -1, wx.BitmapFromImage(pl_bmp), (850, 30), (pl_bmp.GetWidth() + 2, pl_bmp.GetHeight() + 2))
+        s_btn = wx.BitmapButton(self, -1, wx.BitmapFromImage(s_bmp), (760, 35), (s_bmp.GetWidth() + 2, s_bmp.GetHeight() + 2))
+        r_btn = wx.BitmapButton(self, -1, wx.BitmapFromImage(r_bmp), (790, 35), (r_bmp.GetWidth() + 2, r_bmp.GetHeight() + 2))
+        pa_btn = wx.BitmapButton(self, -1, wx.BitmapFromImage(pa_bmp), (820, 35), (pa_bmp.GetWidth() + 2, pa_bmp.GetHeight() + 2))
+        pl_btn = wx.BitmapButton(self, -1, wx.BitmapFromImage(pl_bmp), (850, 35), (pl_bmp.GetWidth() + 2, pl_bmp.GetHeight() + 2))
+        
+        for x in [s_btn, r_btn, pa_btn, pl_btn]:
+            x.SetConstraints(anchors.LayoutAnchors(x, False, False, True, True))
+            
         
         self.Bind(wx.EVT_BUTTON, self.time_flow_stop, s_btn)
         self.Bind(wx.EVT_BUTTON, self.time_flow_reverse, r_btn)
@@ -414,7 +441,8 @@ class Control_Panel(wx.Panel):
         c_year, c_month, c_day = self.Parent.cur_time.year, self.Parent.cur_time.month, self.Parent.cur_time.day
         c_hour, c_min, c_sec = self.Parent.cur_time.hour, self.Parent.cur_time.minute, self.Parent.cur_time.second
         st = '%s : %s : %s' % (c_hour, c_min, c_sec)
-        self.c_time = wx.StaticText(self, -1, st, (900, 30))
+        self.c_time = wx.StaticText(self, -1, '(' + st + ')', (100, 40))
+        
         
 if __name__ == '__main__':
     app = wx.PySimpleApp()
