@@ -3,6 +3,7 @@ import wx, time
 import  wx.lib.anchors as anchors
 from datetime import datetime, timedelta
 import initializer
+from classes import Block, Bay, Stack
 
 frame_milsec = 1000 / 15
 container_sx = 20
@@ -107,6 +108,8 @@ class Input_dialog(wx.Dialog):
 class MainFrame(wx.Frame):
     def __init__(self, input_info):
         self.input_info = input_info
+        self.saved_time = time.localtime(time.time())
+        self.isReverse_play = False
         
         wx.Frame.__init__(self, None, -1, 'Monitoring', size=(1024, 768))
         f_sx, f_sy = self.GetSize()
@@ -118,10 +121,6 @@ class MainFrame(wx.Frame):
         ###########
         self.evts = initializer.run(self.start_time, self.end_time)
         self.cur_time = datetime(2011, 1, 20, 16, 20, 30)
-          
-        self.timer = wx.Timer(self)
-        self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
-        self.timer.Start(frame_milsec)
         
         ip_py, ip_sy = 0 , 50
         vp_py, vp_sy = ip_py + ip_sy , 600
@@ -129,12 +128,12 @@ class MainFrame(wx.Frame):
         
         Input_View_Panel(self , (0, ip_py), (f_sx, ip_sy), self.input_info)
         self.vp = Viewer_Panel(self, (45, vp_py), (f_sx - 100, vp_sy), self.evts)
+        self.timer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
+        self.timer.Start(frame_milsec)
         self.cp = Control_Panel(self, (0, cp_py), (f_sx, cp_sy))
         self.Show(True)
         self.Bind(wx.EVT_CLOSE, self.OnClose)
-        
-        self.saved_time = time.localtime(time.time())
-        self.isReverse_play = False
         
     def OnTimer(self, evt):
         saved_sec = self.saved_time[5]
@@ -221,22 +220,57 @@ class Viewer_Panel(wx.Panel):
         self.Bind(wx.EVT_MOTION, self.OnMotion)
         self.Bind(wx.EVT_LEFT_UP, self.OnLeftUp)
         self.Bind(wx.EVT_MOUSEWHEEL, self.OnMouseWheel)
-        
         self.translate_mode = False
         self.translate_x, self.translate_y = 0, 0
         self.scale = 1.0
     
         self.n = Node(0);
+        # initialize
+        ## set Background position
+        ### set SC Lines position
+        l0_py = container_sy * 31.2
+        l1_py = l0_py + container_sy
+        l2_py = l1_py + container_sy * 0.5
+        l3_py = l2_py + container_sy * 0.5
+        l4_py = l3_py + container_sy * 2.2
+        l5_py = l4_py + container_sy * 6
+        l6_py = l5_py + container_sy * 2.4
+        l7_py = l6_py + container_sy
+        l8_py = l7_py + container_sy * 2.2
+        l9_py = l8_py + container_sy * 2.2
+        l10_py = l9_py + container_sy * 2.2
+        self.lines_py = [eval('l%d_py' % x) for x in xrange(11)]
+        ###
+        ### set bits position
+        bit0_px = container_sx * 0.7
+        self.bits_px = [bit0_px + container_sx * 2.95 * i for i in xrange(19)]
+        ###
+        ### set and make yard blocks position
+        block0_px, block0_py = self.bits_px[3], self.lines_py[-1] + container_sy * 29.75
+        self.blocks = []
+        for b_id in xrange(15):
+            b = Block(b_id, block0_px + b_id * container_sx * 2.8, block0_py)
+            self.blocks.append(b)
+        ###
+        
+        ### set container position
+        for c in self.containers:
+            c.cur_position = c.moving_seq[0][1]
+            c.cur_index_in_ms = 0
+            if c.cur_position[0] == 'B':
+                block_id = int(c.cur_position[1:3])
+                self.blocks[block_id].holding_container.append(c)
+        
+        print [b.holding_container for b in self.blocks]
+                
+        self.pyslot = lambda x: (int(x[4:6]), int(x[7:9]), int(x[10:12]))
         self.InitBuffer()
         
-#        sc = SC[('2011-08-23-10-03-55', 'STS02-Lane01', 'C09', 'TL'), ('2011-08-23-10-05-00', 'B01-TP02', 'C09', 'TU'), ('2011-08-23-10-36-00', 'STS02-Lane04', 'C14', 'TL'), ('2011-08-23-10-37-10', 'B02-TP01', 'C14', 'TU')]
-#        print sc
-        
     def OnTimer(self, evt):
-#        if self.Parent.isReverse_play:
-#            self.n.x -= 1
-#        else:
-#            self.n.x += 1
+        if self.Parent.isReverse_play:
+            self.n.x -= 1
+        else:
+            self.n.x += 1
         self.RefreshGC()
         
     def OnSize(self, evt):
@@ -301,7 +335,7 @@ class Viewer_Panel(wx.Panel):
         gc.Translate(self.translate_x, self.translate_y)
         gc.Scale(self.scale, self.scale)
         
-        '''        
+#        '''        
         c_hour, c_min, c_sec = self.Parent.cur_time.hour, self.Parent.cur_time.minute, self.Parent.cur_time.second
          
         st = '%s : %s : %s' % (c_hour, c_min, c_sec)
@@ -313,7 +347,7 @@ class Viewer_Panel(wx.Panel):
         brushclr = wx.Colour(r, g, b, 100)
         gc.SetBrush(wx.Brush(brushclr))
         gc.DrawRectangle(self.n.x, self.n.y, 100, 100)
-        '''
+#        '''
         
         #draw Background
         # draw Shuttle Carrier Line
@@ -325,43 +359,46 @@ class Viewer_Panel(wx.Panel):
         gc.SetBrush(wx.Brush(brushclr))
         gc.SetPen(wx.Pen("white", 0))
         bit_sx, bit_sy = container_sx * 0.26, container_sy * 0.8
-        bit0_px = container_sx * 0.7
-        bits_px = [bit0_px + container_sx * 2.95 * i for i in xrange(19)]
-        for px in bits_px:
+#        bit0_px = container_sx * 0.7
+#        bits_px = [bit0_px + container_sx * 2.95 * i for i in xrange(19)]
+        for px in self.bits_px:
             gc.DrawRectangle(px, l0_py, bit_sx, bit_sy)
-        ##
-        l1_py = l0_py + container_sy
-        l2_py = l1_py + container_sy * 0.5
-        l3_py = l2_py + container_sy * 0.5
-        l4_py = l3_py + container_sy * 2.2
-        l5_py = l4_py + container_sy * 6
-        l6_py = l5_py + container_sy * 2.4
-        l7_py = l6_py + container_sy
-        l8_py = l7_py + container_sy * 2.2
-        l9_py = l8_py + container_sy * 2.2
-        l10_py = l9_py + container_sy * 2.2
+            
         gc.SetPen(wx.Pen("black", 1))
-        for x in xrange(11):
-            if x == 4:
+        for i, py in enumerate(self.lines_py):
+            if i == 4:
                 gc.SetPen(wx.Pen("black", 2))
-                gc.DrawLines([(0, eval('l%d_py' % x)), (l_sx, eval('l%d_py' % x))])
+                gc.DrawLines([(0, py), (l_sx, py)])
                 gc.SetPen(wx.Pen("black", 1))
             else:
-                gc.DrawLines([(0, eval('l%d_py' % x)), (l_sx, eval('l%d_py' % x))])
+                gc.DrawLines([(0, py), (l_sx, py)])
         # draw Block
         r, g, b = (255, 255, 255)
         brushclr = wx.Colour(r, g, b, 100)
         gc.SetBrush(wx.Brush(brushclr))
-        block0_px, block0_py = bits_px[3], l10_py + container_sy * 29.75
-        for b_px_i in xrange(15):
-            b_px = block0_px + b_px_i * container_sx * 2.8
-            gc.DrawRectangle(b_px, block0_py, container_sy * 8, container_sx * 22)
+        for b in self.blocks:
+            b_px, b_py = b.px, b.py
+            gc.DrawRectangle(b_px, b_py, container_sy * 8, container_sx * 22)
             gc.SetPen(wx.Pen("black", 0.5))
             for i in xrange(7):
-                gc.DrawLines([(b_px + container_sy * (i + 1) , block0_py + 1), (b_px + container_sy * (i + 1), block0_py + container_sx * 22)])
+                gc.DrawLines([(b_px + container_sy * (i + 1) , b_py + 1), (b_px + container_sy * (i + 1), b_py + container_sx * 22)])
             for i in xrange(21):
-                gc.DrawLines([(b_px , block0_py + container_sx * (i + 1)), (b_px + container_sy * 8  , block0_py + container_sx * (i + 1))])
+                gc.DrawLines([(b_px , b_py + container_sx * (i + 1)), (b_px + container_sy * 8  , b_py + container_sx * (i + 1))])
             gc.SetPen(wx.Pen("black", 1))
+            brushclr = wx.Colour(228, 108, 10)
+            gc.SetBrush(wx.Brush(brushclr))
+            for c in b.holding_container:
+                bay_id, stack_id, _ = self.pyslot(c.cur_position)
+                if bay_id % 2 == 0:
+                    px , py = b_px + (stack_id -1) * container_sy, b_py + (bay_id / 2 - 1) * container_sx  
+                    gc.DrawRectangle(px , py, container_sy, container_sx)
+            brushclr = wx.Colour(255, 255, 255)
+            gc.SetBrush(wx.Brush(brushclr))    
+                
+        
+        #draw container
+        
+        
         
         #draw vehicle
         
