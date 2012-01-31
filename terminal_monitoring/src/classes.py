@@ -56,7 +56,7 @@ class Vessel(object):
         self.name = name
         self.voyage = voyage
         self.type = type
-        self.LOA = container_sx * 15
+        self.LOA = container_sx * 14
         self.B = container_sy * 10
         self.evt_seq = []
         self.px, self.py = None, None
@@ -90,13 +90,26 @@ class Vessel(object):
         gc.SetPen(wx.Pen("black", 0.5))
         for x in xrange(num_of_bay):
             if  x == num_of_bay - 1:
-                gc.DrawRectangle(b_p0 + container_sx * 1.1 * x, container_sy * 1.5, container_sx, container_sy * 3)
+                num_of_stack = 3
+                px, py = b_p0 + container_sx * 1.1 * x, container_sy * 1.5
+                gc.DrawRectangle(px, py, container_sx, container_sy * 3)
+                self.draw_stack(gc, px, py, num_of_stack)
                 
-                gc.DrawRectangle(b_p0 + container_sx * 1.1 * x, self.B / 2 + container_sy * 0.5, container_sx, container_sy * 3)
+                px, py = b_p0 + container_sx * 1.1 * x, self.B / 2 + container_sy * 0.5
+                gc.DrawRectangle(px, py, container_sx, container_sy * 3)
+                self.draw_stack(gc, px, py, num_of_stack)
             else:
-                gc.DrawRectangle(b_p0 + container_sx * 1.1 * x, container_sy * 0.5, container_sx, container_sy * 4)
+                num_of_stack = 4
+                px, py = b_p0 + container_sx * 1.1 * x, container_sy * 0.5
+                gc.DrawRectangle(px, py, container_sx, container_sy * 4)
+                self.draw_stack(gc, px, py, num_of_stack)
                 
-                gc.DrawRectangle(b_p0 + container_sx * 1.1 * x, self.B / 2 + container_sy * 0.5, container_sx, container_sy * 4)
+                px, py = b_p0 + container_sx * 1.1 * x, self.B / 2 + container_sy * 0.5
+                gc.DrawRectangle(px, py, container_sx, container_sy * 4)
+                self.draw_stack(gc, px, py, num_of_stack)
+    def draw_stack(self, gc, px, py, num_of_stack):
+        for i in xrange(num_of_stack - 1):
+            gc.DrawLines([(px, py + (i + 1) * container_sy), (px + container_sx, py + (i + 1) * container_sy)])
         
 
 class QC(object):
