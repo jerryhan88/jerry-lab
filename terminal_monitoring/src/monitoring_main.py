@@ -3,21 +3,18 @@ import wx, time
 import  wx.lib.anchors as anchors
 from datetime import datetime, timedelta
 import initializer
-from classes import Block, Bay, Stack
+from classes import Block
+import classes
 
 frame_milsec = 1000 / 15
-container_sx = 20
-container_sy = 5
+container_sx = classes.container_sx
+container_sy = classes.container_sy
 
-class Node:
-    def __init__(self, id):
-        self.id = id
-        self.x = 20
-        self.y = 20
-        
-class SC:
-    def __init__(self, moving_seq):
-        self.moving_seq = moving_seq
+#class Node:
+#    def __init__(self, id):
+#        self.id = id
+#        self.x = 20
+#        self.y = 20
 
 class Input_dialog(wx.Dialog):
     def __init__(self, parent, name, size=(570, 180), pos=(400, 300)):
@@ -48,9 +45,9 @@ class Input_dialog(wx.Dialog):
         
         self.t1 = wx.TextCtrl(self, -1, "09", (210, 50), size=(25, -1))
         wx.StaticText(self, -1, ':', (236, 50))
-        self.mi1 = wx.TextCtrl(self, -1, "35", (240, 50), size=(25, -1))
+        self.mi1 = wx.TextCtrl(self, -1, "34", (240, 50), size=(25, -1))
         wx.StaticText(self, -1, ':', (266, 50))
-        self.s1 = wx.TextCtrl(self, -1, "00", (270, 50), size=(25, -1))
+        self.s1 = wx.TextCtrl(self, -1, "50", (270, 50), size=(25, -1))
         
         wx.StaticText(self, -1, '-', (305, 50))
         
@@ -70,7 +67,7 @@ class Input_dialog(wx.Dialog):
         wx.StaticText(self, -1, ':', (496, 50))
         self.mi2 = wx.TextCtrl(self, -1, "10", (500, 50), size=(25, -1))
         wx.StaticText(self, -1, ':', (526, 50))
-        self.s2 = wx.TextCtrl(self, -1, "20", (530, 50), size=(25, -1))
+        self.s2 = wx.TextCtrl(self, -1, "30", (530, 50), size=(25, -1))
         setting_btn = wx.Button(self, -1, "setting", (480, 90))
         setting_btn.SetConstraints(anchors.LayoutAnchors(setting_btn, False, True, False, False))
         
@@ -208,6 +205,8 @@ class Viewer_Panel(wx.Panel):
     def __init__(self, parent, pos, size, Evts):
         vehicles, self.containers = Evts
         self.vessels, self.qcs, self.ycs, self.scs = vehicles
+        num_of_blocks = 15
+        num_of_bitts = 19
         
         wx.Panel.__init__(self, parent, -1, pos, size, style=wx.SIMPLE_BORDER)
         self.SetConstraints(anchors.LayoutAnchors(self, True, True, True, True))
@@ -224,7 +223,8 @@ class Viewer_Panel(wx.Panel):
         self.translate_x, self.translate_y = 0, 0
         self.scale = 1.0
     
-        self.n = Node(0);
+#        self.n = Node(0);
+
         # initialize
         ## set Background position
         ### set SC Lines position
@@ -241,36 +241,41 @@ class Viewer_Panel(wx.Panel):
         l10_py = l9_py + container_sy * 2.2
         self.lines_py = [eval('l%d_py' % x) for x in xrange(11)]
         ###
-        ### set bits position
-        bit0_px = container_sx * 0.7
-        self.bits_px = [bit0_px + container_sx * 2.95 * i for i in xrange(19)]
+        ### set bitts position
+        bitt0_px = container_sx * 0.7
+        self.bitts_px = [bitt0_px + container_sx * 2.95 * i for i in xrange(num_of_bitts)]
         ###
         ### set and make yard blocks position
-        block0_px, block0_py = self.bits_px[3], self.lines_py[-1] + container_sy * 29.75
+        block0_px, block0_py = self.bitts_px[3], self.lines_py[-1] + container_sy * 29.75
         self.blocks = []
-        for b_id in xrange(15):
+        for b_id in xrange(num_of_blocks):
             b = Block(b_id, block0_px + b_id * container_sx * 2.8, block0_py)
             self.blocks.append(b)
         ###
+        
+        ### set vehicles position
+        for v in self.vessels:
+            bitt_p = v.evt_seq[0][2]
+            bitt_id = int(bitt_p[-2:])
+            v.set_position(self.bitts_px[bitt_id], l0_py) 
         
         ### set container position
         for c in self.containers:
             c.cur_position = c.moving_seq[0][1]
             c.cur_index_in_ms = 0
             if c.cur_position[0] == 'B':
+                #container in block
                 block_id = int(c.cur_position[1:3])
                 self.blocks[block_id].holding_container.append(c)
-        
-        print [b.holding_container for b in self.blocks]
-                
-        self.pyslot = lambda x: (int(x[4:6]), int(x[7:9]), int(x[10:12]))
+            if c.cur_position[:2] == 'SB':
+                pass
         self.InitBuffer()
         
     def OnTimer(self, evt):
-        if self.Parent.isReverse_play:
-            self.n.x -= 1
-        else:
-            self.n.x += 1
+#        if self.Parent.isReverse_play:
+#            self.n.x -= 1
+#        else:
+#            self.n.x += 1
         self.RefreshGC()
         
     def OnSize(self, evt):
@@ -335,7 +340,7 @@ class Viewer_Panel(wx.Panel):
         gc.Translate(self.translate_x, self.translate_y)
         gc.Scale(self.scale, self.scale)
         
-#        '''        
+        '''        
         c_hour, c_min, c_sec = self.Parent.cur_time.hour, self.Parent.cur_time.minute, self.Parent.cur_time.second
          
         st = '%s : %s : %s' % (c_hour, c_min, c_sec)
@@ -347,22 +352,22 @@ class Viewer_Panel(wx.Panel):
         brushclr = wx.Colour(r, g, b, 100)
         gc.SetBrush(wx.Brush(brushclr))
         gc.DrawRectangle(self.n.x, self.n.y, 100, 100)
-#        '''
+        '''
         
         #draw Background
         # draw Shuttle Carrier Line
         l_sx = container_sx * 54.8
         l0_py = container_sy * 31.2
-        ## draw Bit
+        ## draw bitt
         r, g, b = (0, 0, 0)
         brushclr = wx.Colour(r, g, b, 100)
         gc.SetBrush(wx.Brush(brushclr))
         gc.SetPen(wx.Pen("white", 0))
-        bit_sx, bit_sy = container_sx * 0.26, container_sy * 0.8
-#        bit0_px = container_sx * 0.7
-#        bits_px = [bit0_px + container_sx * 2.95 * i for i in xrange(19)]
-        for px in self.bits_px:
-            gc.DrawRectangle(px, l0_py, bit_sx, bit_sy)
+        bitt_sx, bitt_sy = container_sx * 0.26, container_sy * 0.8
+        gc.SetFont(wx.Font(3, wx.SWISS, wx.NORMAL, wx.NORMAL))
+        for i, px in enumerate(self.bitts_px):
+            gc.DrawText(str(i), px + bitt_sx, l0_py - bitt_sy * 1.1)
+            gc.DrawRectangle(px, l0_py, bitt_sx, bitt_sy)
             
         gc.SetPen(wx.Pen("black", 1))
         for i, py in enumerate(self.lines_py):
@@ -372,41 +377,25 @@ class Viewer_Panel(wx.Panel):
                 gc.SetPen(wx.Pen("black", 1))
             else:
                 gc.DrawLines([(0, py), (l_sx, py)])
+
         # draw Block
         r, g, b = (255, 255, 255)
         brushclr = wx.Colour(r, g, b, 100)
         gc.SetBrush(wx.Brush(brushclr))
+        old_tr = gc.GetTransform()
+        
         for b in self.blocks:
-            b_px, b_py = b.px, b.py
-            gc.DrawRectangle(b_px, b_py, container_sy * 8, container_sx * 22)
-            gc.SetPen(wx.Pen("black", 0.5))
-            for i in xrange(7):
-                gc.DrawLines([(b_px + container_sy * (i + 1) , b_py + 1), (b_px + container_sy * (i + 1), b_py + container_sx * 22)])
-            for i in xrange(21):
-                gc.DrawLines([(b_px , b_py + container_sx * (i + 1)), (b_px + container_sy * 8  , b_py + container_sx * (i + 1))])
-            gc.SetPen(wx.Pen("black", 1))
-            brushclr = wx.Colour(228, 108, 10)
-            gc.SetBrush(wx.Brush(brushclr))
-            for c in b.holding_container:
-                bay_id, stack_id, _ = self.pyslot(c.cur_position)
-                if bay_id % 2 == 0:
-                    px , py = b_px + (stack_id -1) * container_sy, b_py + (bay_id / 2 - 1) * container_sx  
-                    gc.DrawRectangle(px , py, container_sy, container_sx)
-            brushclr = wx.Colour(255, 255, 255)
-            gc.SetBrush(wx.Brush(brushclr))    
-                
-        
-        #draw container
-        
-        
+            gc.Translate(b.px, b.py)
+            b.draw(gc)
+            gc.SetTransform(old_tr)
         
         #draw vehicle
-        
-        gc.DrawRectangle(container_sx * 0.4 , l0_py - container_sy * 12.5, container_sx * 15.79, container_sy * 11)
-        gc.DrawRectangle(container_sx * 20.66 , l0_py - container_sy * 12.5, container_sx * 15.79, container_sy * 11)
-        
+        for v in self.vessels:
+            gc.Translate(v.px, v.py)
+            v.draw(gc)
+            gc.SetTransform(old_tr)
+            
         #draw sc
-        
         
 
 class Control_Panel(wx.Panel):
