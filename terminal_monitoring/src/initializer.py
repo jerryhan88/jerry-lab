@@ -90,7 +90,7 @@ def run(start_time, end_time, db_read = False):
             target_c_id = c_id
             target_c = None
             for c in containers:
-                if c._id == target_c_id:
+                if c.id == target_c_id:
                     target_c = c
                     break
             else:
@@ -117,6 +117,7 @@ if __name__ == '__main__':
             elif isinstance(x, SC):
                 print 'sc ',
             print x.name, ':', x.evt_seq
+            
     print ''
     for c in cs:
-        print c._id, ':', c.moving_seq
+        print c, ':', c.moving_seq

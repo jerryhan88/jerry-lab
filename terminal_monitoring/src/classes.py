@@ -1,49 +1,65 @@
 from __future__ import division
 import wx
 
+#standard size of 40ft container
 container_sx = 20
 container_sy = 5
 
+#lambda function
+pyslot = lambda x: (int(x[4:6]), int(x[7:9]), int(x[10:12]))
+
 class Container(object):
-    def __init__(self, _id):
-        self._id = _id
+    def __init__(self, id):
+        self.id = id
         self.moving_seq = []
         self.cur_position = None
         self.cur_index_in_ms = None
+        self.px, self.py = None, None
+        self.size = None
+        self.direction = None
         
     def __repr__(self):
-        return self._id
+        return str(self.id)
+    
+    def draw(self, gc):
+        if self.direction == 'vertical':
+            gc.DrawRectangle(self.px, self.py, container_sy, container_sx)
+        elif self.direction =='horizontal':
+            gc.DrawRectangle(self.px, self.py, container_sx, container_sy)
+#        else:
+#            assert False
 
 class Block(object):
     def __init__(self, id, px, py):
         self.id = id
         self.px, self.py = px, py
         self.holding_container = []
-        self.pyslot = lambda x: (int(x[4:6]), int(x[7:9]), int(x[10:12]))
         self.num_of_bays = 22
         self.num_of_stacks = 8
         
     def draw(self, gc):
-        gc.SetPen(wx.Pen("black", 1))
-        brushclr = wx.Colour(255, 255, 255)
-        gc.SetBrush(wx.Brush(brushclr))
-        gc.DrawRectangle(0, 0, container_sy * 8, container_sx * 22)
-        
         gc.SetPen(wx.Pen("black", 0.5))
-        for i in xrange(self.num_of_stacks - 1):
-            gc.DrawLines([(container_sy * (i + 1) , 0), (container_sy * (i + 1), container_sx * 22)])
-        for i in xrange(self.num_of_bays - 1):
-            gc.DrawLines([(0 , 0 + container_sx * (i + 1)), (container_sy * 8  , container_sx * (i + 1))])
-        #draw containers in Block
-        gc.SetPen(wx.Pen("black", 0))    
-        brushclr = wx.Colour(228, 108, 10)
-        gc.SetBrush(wx.Brush(brushclr))
-        for c in self.holding_container:
-            bay_id, stack_id, _ = self.pyslot(c.cur_position)
-            if bay_id % 2 == 0:
-                px , py = (stack_id - 1) * container_sy, (bay_id / 2 - 1) * container_sx  
-                gc.DrawRectangle(px , py, container_sy, container_sx)
+        for x in xrange(self.num_of_bays + 1):
+            gc.DrawLines([(0, container_sx * x), (container_sy * self.num_of_stacks , container_sx * x)])
+        for x in xrange(self.num_of_stacks + 1):
+            gc.DrawLines([(container_sy * x, 0), (container_sy * x , container_sx * self.num_of_bays)])
 
+    def set_container_position(self):
+        for c in self.holding_container:
+            c.direction = 'vertical'
+            bay_id, stack_id, _ = pyslot(c.cur_position)
+            if bay_id % 2 == 0:
+                c.size = '40ft'   
+                c.px, c.py = self.px + (stack_id - 1) * container_sy, self.py + (bay_id // 2 - 1) * container_sx 
+            else:
+                c.size = '20ft'
+                if bay_id // 4 == 1:
+                    c.px, c.py = self.px + (stack_id - 1) * container_sy, self.py + (bay_id // 4) * container_sx
+                elif bay_id // 4 == 3:
+                    c.px, c.py = self.px + (stack_id - 1) * container_sy, self.py + (bay_id // 4 + 1 / 2) * container_sx
+                else:
+                    assert False
+            print c.px, c.py, c.direction
 class Yard_block(Block):
     def __init__(self):
         self.sea_side_TP# = object of TP
