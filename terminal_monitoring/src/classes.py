@@ -16,15 +16,30 @@ class Container(object):
         self.cur_index_in_ms = None
         self.px, self.py = None, None
         self.size = None
-        self.direction = None
+        self.location = None
         
     def __repr__(self):
         return str(self.id)
     
+    def set_position_location(self, px, py, location):
+        self.location = location
+        bay_id, stack_id, _ = pyslot(self.cur_position)
+        if bay_id % 2 == 0:
+            self.size = '40ft'   
+            self.px, self.py = px + (stack_id - 1) * container_sy, py + (bay_id // 2 - 1) * container_sx 
+        else:
+            self.size = '20ft'
+            if bay_id // 4 == 1:
+                self.px, self.py = px + (stack_id - 1) * container_sy, py + (bay_id // 4) * container_sx
+            elif bay_id // 4 == 3:
+                self.px, self.py = px + (stack_id - 1) * container_sy, py + (bay_id // 4 + 1 / 2) * container_sx
+            else:
+                assert False
+    
     def draw(self, gc):
-        if self.direction == 'vertical':
+        if self.location == 'block':
             gc.DrawRectangle(self.px, self.py, container_sy, container_sx)
-        elif self.direction =='horizontal':
+        elif self.location == 'vessel':
             gc.DrawRectangle(self.px, self.py, container_sx, container_sy)
 #        else:
 #            assert False
@@ -46,20 +61,8 @@ class Block(object):
 
     def set_container_position(self):
         for c in self.holding_container:
-            c.direction = 'vertical'
-            bay_id, stack_id, _ = pyslot(c.cur_position)
-            if bay_id % 2 == 0:
-                c.size = '40ft'   
-                c.px, c.py = self.px + (stack_id - 1) * container_sy, self.py + (bay_id // 2 - 1) * container_sx 
-            else:
-                c.size = '20ft'
-                if bay_id // 4 == 1:
-                    c.px, c.py = self.px + (stack_id - 1) * container_sy, self.py + (bay_id // 4) * container_sx
-                elif bay_id // 4 == 3:
-                    c.px, c.py = self.px + (stack_id - 1) * container_sy, self.py + (bay_id // 4 + 1 / 2) * container_sx
-                else:
-                    assert False
-            print c.px, c.py, c.direction
+            c.set_position_location(self.px, self.py, 'block')
+            
 class Yard_block(Block):
     def __init__(self):
         self.sea_side_TP# = object of TP
@@ -83,6 +86,10 @@ class Vessel(object):
     
     def set_position(self, px, py):
         self.px, self.py = px - self.LOA * 1 / 3 , py - self.B * 1.1
+    
+    def set_container_position(self):
+        for c in self.holding_container:
+            c.set_position_location(self.px, self.py, 'block')
     
     def draw(self, gc):
         gc.SetPen(wx.Pen("black", 1))
@@ -123,6 +130,7 @@ class Vessel(object):
                 px, py = b_p0 + container_sx * 1.1 * x, self.B / 2 + container_sy * 0.5
                 gc.DrawRectangle(px, py, container_sx, container_sy * 4)
                 self.draw_stack(gc, px, py, num_of_stack)
+                
     def draw_stack(self, gc, px, py, num_of_stack):
         for i in xrange(num_of_stack - 1):
             gc.DrawLines([(px, py + (i + 1) * container_sy), (px + container_sx, py + (i + 1) * container_sy)])

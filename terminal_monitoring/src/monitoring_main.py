@@ -276,9 +276,9 @@ class Viewer_Panel(wx.Panel):
                     assert False , 'there is no target_v'
                 target_v.holding_containers.append(c)
         
-        for b in self.blocks:
-            b.set_container_position()
-                
+        for x in self.blocks + self.vessels:
+            x.set_container_position()
+
         self.InitBuffer()
         
     def OnTimer(self, evt):
@@ -478,7 +478,6 @@ class Control_Panel(wx.Panel):
         c_hour, c_min, c_sec = self.Parent.cur_time.hour, self.Parent.cur_time.minute, self.Parent.cur_time.second
         st = '%s : %s : %s' % (c_hour, c_min, c_sec)
         self.c_time = wx.StaticText(self, -1, '(' + st + ')', (100, 40))
-        
         
 if __name__ == '__main__':
     app = wx.PySimpleApp()
