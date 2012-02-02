@@ -7,6 +7,7 @@ container_sy = 5
 
 #lambda function
 pyslot = lambda x: (int(x[4:6]), int(x[7:9]), int(x[10:12]))
+pvslot = lambda x: (int(x[2:4]), int(x[5:7]), int(x[8:10]))
 
 class Container(object):
     def __init__(self, id):
@@ -23,18 +24,23 @@ class Container(object):
     
     def set_position_location(self, px, py, location):
         self.location = location
-        bay_id, stack_id, _ = pyslot(self.cur_position)
-        if bay_id % 2 == 0:
-            self.size = '40ft'   
-            self.px, self.py = px + (stack_id - 1) * container_sy, py + (bay_id // 2 - 1) * container_sx 
-        else:
-            self.size = '20ft'
-            if bay_id // 4 == 1:
-                self.px, self.py = px + (stack_id - 1) * container_sy, py + (bay_id // 4) * container_sx
-            elif bay_id // 4 == 3:
-                self.px, self.py = px + (stack_id - 1) * container_sy, py + (bay_id // 4 + 1 / 2) * container_sx
+        if self.location == 'block': 
+            bay_id, stack_id, _ = pyslot(self.cur_position)
+            # TODO  arrange container's position
+            if bay_id % 2 == 0:
+                self.size = '40ft'   
+                self.px, self.py = px + (stack_id - 1) * container_sy, py + (bay_id // 2 - 1) * container_sx 
             else:
-                assert False
+                self.size = '20ft'
+                if bay_id // 4 == 1:
+                    self.px, self.py = px + (stack_id - 1) * container_sy, py + (bay_id // 4) * container_sx
+                elif bay_id // 4 == 3:
+                    self.px, self.py = px + (stack_id - 1) * container_sy, py + (bay_id // 4 + 1 / 2) * container_sx
+                else:
+                    assert False
+        elif self.location == 'vessel':
+            bay_id, stack_id, _ = pvslot(self.cur_position)
+            print bay_id, stack_id
     
     def draw(self, gc):
         if self.location == 'block':
@@ -48,27 +54,39 @@ class Block(object):
     def __init__(self, id, px, py):
         self.id = id
         self.px, self.py = px, py
-        self.holding_container = []
+        self.holding_containers = []
         self.num_of_bays = 22
         self.num_of_stacks = 8
         
     def draw(self, gc):
         gc.SetPen(wx.Pen("black", 0.5))
-        for x in xrange(self.num_of_bays + 1):
-            gc.DrawLines([(0, container_sx * x), (container_sy * self.num_of_stacks , container_sx * x)])
+        for x in xrange(self.num_of_bays * 2 + 1):
+            gc.DrawLines([(0, container_sx * x / 2), (container_sy * self.num_of_stacks , container_sx * x / 2)])
         for x in xrange(self.num_of_stacks + 1):
             gc.DrawLines([(container_sy * x, 0), (container_sy * x , container_sx * self.num_of_bays)])
 
     def set_container_position(self):
-        for c in self.holding_container:
+        for c in self.holding_containers:
             c.set_position_location(self.px, self.py, 'block')
-            
-class Yard_block(Block):
-    def __init__(self):
-        self.sea_side_TP# = object of TP
-        self.land_side_TP# = object of TP
-        self.waiting_sc# = object of SC
-        self.qc_buffer# = object of QC_buffer
+
+class TP(object):
+    def __init__(self, id, px, py):
+        self.id = id
+        self.px, self.py = px, py
+        self.holding_containers = []
+        self.num_of_stack = 4
+        self.rec_points = [(2 * container_sy, 0), ((self.num_of_stack + 2) * container_sy, 0), 
+                           ((self.num_of_stack + 2) * container_sy, container_sx), (2 * container_sy, container_sx), (2 * container_sy, 0)]
+    
+    def draw(self, gc):
+        gc.SetPen(wx.Pen("black", 0.1))
+        gc.DrawLines(self.rec_points)
+#        for x in xrange(self.num_of_bays * 2 + 1):
+#            gc.DrawLines([(0, container_sx * x / 2), (container_sy * self.num_of_stacks , container_sx * x / 2)])
+#            pass
+#        for x in xrange(self.num_of_stacks + 1):
+#            gc.DrawLines([(container_sy * x, 0), (container_sy * x , container_sx * self.num_of_bays)])
+#            pass
 
 class Vessel(object):
     def __init__(self, name, voyage, type=0):
@@ -88,8 +106,8 @@ class Vessel(object):
         self.px, self.py = px - self.LOA * 1 / 3 , py - self.B * 1.1
     
     def set_container_position(self):
-        for c in self.holding_container:
-            c.set_position_location(self.px, self.py, 'block')
+        for c in self.holding_containers:
+            c.set_position_location(self.px, self.py, 'vessel')
     
     def draw(self, gc):
         gc.SetPen(wx.Pen("black", 1))
@@ -134,7 +152,6 @@ class Vessel(object):
     def draw_stack(self, gc, px, py, num_of_stack):
         for i in xrange(num_of_stack - 1):
             gc.DrawLines([(px, py + (i + 1) * container_sy), (px + container_sx, py + (i + 1) * container_sy)])
-        
 
 class QC(object):
     def __init__(self, name):
@@ -179,9 +196,6 @@ class SC(object):
 class Buffer(object):
     def __init__(self):
         self.holding_containers #= [objects of Container]
-
-class TP(Buffer):
-    pass
 
 class QC_buffer(Buffer):
     pass
