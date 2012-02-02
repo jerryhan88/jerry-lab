@@ -167,6 +167,12 @@ class SC(object):
     def __repr__(self):
         return self.name
     
+    def update(self, evt):
+        pass
+    
+    def set_position(self, px, py):
+        self.px, self.py = px, py
+    
     def draw(self, gc):
         pass
 

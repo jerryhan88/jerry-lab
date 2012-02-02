@@ -249,13 +249,17 @@ class Viewer_Panel(wx.Panel):
             self.blocks.append(b)
         ###
         
-        ### set vehicles position
+        ### set vessel position
         for v in self.vessels:
             bitt_p = v.evt_seq[0][2]
             bitt_id = int(bitt_p[-2:])
             v.set_position(self.bitts_px[bitt_id], l0_py)
         
-        ### set container position
+        ### set sc position
+        for s in self.scs:
+            s.set_position(self.blocks[1].px - 30, self.blocks[1].py - 30)
+        
+        ### set container location
         for c in self.containers:
             c.cur_position = c.moving_seq[0][1]
             c.cur_index_in_ms = 0
@@ -276,7 +280,7 @@ class Viewer_Panel(wx.Panel):
                     assert False , 'there is no target_v'
                 target_v.holding_containers.append(c)
         
-        for x in self.blocks + self.vessels:
+        for x in self.blocks:# + self.vessels:
             x.set_container_position()
 
         self.InitBuffer()
@@ -401,6 +405,11 @@ class Viewer_Panel(wx.Panel):
         
         #draw sc
         
+        for s in self.scs:
+            gc.Translate(s.px, s.py)
+            s.draw(gc)
+            gc.SetTransform(old_tr)
+            
         gc.SetPen(wx.Pen("black", 0))    
         brushclr = wx.Colour(228, 108, 10)
         gc.SetBrush(wx.Brush(brushclr))
