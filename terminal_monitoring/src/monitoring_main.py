@@ -3,7 +3,7 @@ import wx, time
 import  wx.lib.anchors as anchors
 from datetime import datetime, timedelta
 import initializer
-from classes import Block#, Bay, Stack
+from classes import Block, TP#, Bay, Stack
 
 frame_milsec = 1000 / 15
 container_sx = 20
@@ -196,7 +196,6 @@ class Input_View_Panel(wx.Panel):
         for x in [y_name1, m_name1, d_name1, t1, c1, m1, c2, s1, l, y_name2, m_name2, d_name2, t2, c3, m2, c4, s2]:
             x.SetFont(wx.Font(10, wx.SWISS, wx.ITALIC, wx.NORMAL))
         
-        
         for x in [v, vo, d, v_name, vo_name, y_name1, m_name1, d_name1, t1, c1, m1, c2, s1, l, y_name2, m_name2, d_name2, t2, c3, m2, c4, s2]:
             x.SetConstraints(anchors.LayoutAnchors(x, False, True, False, False))
         
@@ -249,23 +248,19 @@ class Viewer_Panel(wx.Panel):
             self.blocks.append(b)
         ###
         
-        ### set vessel position
+        ### set vehicles position
         for v in self.vessels:
             bitt_p = v.evt_seq[0][2]
             bitt_id = int(bitt_p[-2:])
             v.set_position(self.bitts_px[bitt_id], l0_py)
         
-        ### set sc position
-        for s in self.scs:
-            s.set_position(self.blocks[1].px - 30, self.blocks[1].py - 30)
-        
-        ### set container location
+    ### set container position
         for c in self.containers:
             c.cur_position = c.moving_seq[0][1]
             c.cur_index_in_ms = 0
             if c.cur_position[0] == 'B':
                 _id = int(c.cur_position[1:3]) - 1 
-                self.blocks[_id].holding_container.append(c)
+                self.blocks[_id].holding_containers.append(c)
             if c.cur_position[:2] == 'SB':
                 # container in vessel
                 # ex of c.moving_seq[0]: ('2011-08-23-10-00-00', 'SB05-05-12', 'STS01', 'ABCDEF', '02')
@@ -279,10 +274,14 @@ class Viewer_Panel(wx.Panel):
                 else:
                     assert False , 'there is no target_v'
                 target_v.holding_containers.append(c)
-        
+        self.TPs = []
         for x in self.blocks:# + self.vessels:
+            self.TPs.append(TP(b.id, x.px, x.py - container_sx * 3 / 2))
             x.set_container_position()
-
+        
+#        for x in self.vessels:
+#            x.set_container_position()    
+            
         self.InitBuffer()
         
     def OnTimer(self, evt):
@@ -354,20 +353,6 @@ class Viewer_Panel(wx.Panel):
         gc.Translate(self.translate_x, self.translate_y)
         gc.Scale(self.scale, self.scale)
         
-        '''        
-        c_hour, c_min, c_sec = self.Parent.cur_time.hour, self.Parent.cur_time.minute, self.Parent.cur_time.second
-         
-        st = '%s : %s : %s' % (c_hour, c_min, c_sec)
-        gc.SetFont(wx.Font(30, wx.SWISS, wx.NORMAL, wx.NORMAL))
-        gc.DrawText(st, 10, 150)
-        
-        gc.SetPen(wx.Pen("black", 1))
-        r, g, b = (255, 0, 0)
-        brushclr = wx.Colour(r, g, b, 100)
-        gc.SetBrush(wx.Brush(brushclr))
-        gc.DrawRectangle(self.n.x, self.n.y, 100, 100)
-        '''
-        
         #draw Background
         # draw Shuttle Carrier Line
         l_sx = container_sx * 54.8
@@ -396,7 +381,15 @@ class Viewer_Panel(wx.Panel):
             gc.Translate(b.px, b.py)
             b.draw(gc)
             gc.SetTransform(old_tr)
-            
+        
+        r, g, b = (255, 255, 255)
+        brushclr = wx.Colour(r, g, b, 100)
+        gc.SetBrush(wx.Brush(brushclr))
+        for tp in self.TPs:
+            gc.Translate(tp.px, tp.py)
+            tp.draw(gc)
+            gc.SetTransform(old_tr)
+        
         #draw vessel
         for v in self.vessels:
             gc.Translate(v.px, v.py)
@@ -405,11 +398,6 @@ class Viewer_Panel(wx.Panel):
         
         #draw sc
         
-        for s in self.scs:
-            gc.Translate(s.px, s.py)
-            s.draw(gc)
-            gc.SetTransform(old_tr)
-            
         gc.SetPen(wx.Pen("black", 0))    
         brushclr = wx.Colour(228, 108, 10)
         gc.SetBrush(wx.Brush(brushclr))
