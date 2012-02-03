@@ -22,29 +22,32 @@ class Container(object):
     def __repr__(self):
         return str(self.id)
     
-    def set_position_location(self, px, py, location, sb_pos_info = None):
+    def set_position_location(self, location, sb_pos_info):
+#    def set_position_location(self, px, py, location, sb_pos_info = None):
         self.location = location
         if self.location == 'block': 
             bay_id, stack_id, _ = pyslot(self.cur_position)
             # TODO  arrange container's position
-            if bay_id % 4 == 0:
-                self.size = '40ft'
-                self.px, self.py = px + (stack_id - 1) * container_sy, py + (bay_id // 4 - 1 + 1 / 2) * container_sx
-                pass
-            elif bay_id % 2 == 0:
-                self.size = '40ft'   
-                self.px, self.py = px + (stack_id - 1) * container_sy, py + (bay_id // 2 - 1) * container_sx 
-            else:
-                self.size = '20ft'
-                self.px, self.py = px + (stack_id - 1) * container_sy, py + (bay_id // 2) * container_sx / 2
+            #   make bay and stack pos dic in Block
+####            if bay_id % 4 == 0:
+####                self.size = '40ft'
+####                self.px, self.py = px + (stack_id - 1) * container_sy, py + (bay_id // 4 - 1 + 1 / 2) * container_sx
+####                pass
+####            elif bay_id % 2 == 0:
+####                self.size = '40ft'   
+####                self.px, self.py = px + (stack_id - 1) * container_sy, py + (bay_id // 2 - 1) * container_sx 
+####            else:
+####                self.size = '20ft'
+####                self.px, self.py = px + (stack_id - 1) * container_sy, py + (bay_id // 2) * container_sx / 2
         elif self.location == 'vessel':
             bay_id, stack_id, _ = pvslot(self.cur_position)
             if bay_id % 2 == 0:
                 self.size = '40ft'
-                self.px, self.py = px + (stack_id - 1) * container_sy, py + (bay_id // 2 - 1) * container_sx  
+#                self.px, self.py = px + (stack_id - 1) * container_sy, py + (bay_id // 2 - 1) * container_sx
             else:
                 self.size = '20ft'
-#                self.px, self.py = 
+            bay_px, bay_py = sb_pos_info[bay_id]
+            self.px, self.py = bay_px, bay_py + (stack_id - 1) * container_sy   
     
     def draw(self, gc):
         if self.location == 'block':
@@ -54,24 +57,38 @@ class Container(object):
                 gc.DrawRectangle(self.px, self.py, container_sy, container_sx / 2)
             else:
                 assert False
-#        elif self.location == 'vessel':
-#            gc.DrawRectangle(self.px, self.py, container_sx, container_sy)
+        elif self.location == 'vessel':
+            if self.size == '40ft':
+                gc.DrawRectangle(self.px, self.py, container_sx, container_sy)
+            elif self.size == '20ft':
+                gc.DrawRectangle(self.px, self.py, container_sx / 2, container_sy)    
 #        else:
 #            assert False
 
 class Block(object):
-    def __init__(self, id, px, py):
+    def __init__(self, id):
         self.id = id
-        self.px, self.py = px, py
+        self.px, self.py = None, None
         self.holding_containers = []
-        # 
         self.num_of_bays = 22
         self.num_of_stacks = 8
+    
+    def set_position(self, px, py):
+        self.px, self.py = px , py
+#        for x in xrange(self.num_of_bay):
+#            if  x == self.num_of_bay - 1:
+#                margin_py = 1.8
+#            else:
+#                margin_py = 0.8
+#            self.bay_pos_info[(self.num_of_bay - (x + 1)) * 4 + 1] = (b_p0 + container_sx * 1.1 * x + container_sx / 2, container_sy * margin_py)
+#            self.bay_pos_info[(self.num_of_bay - (x + 1)) * 4 + 2] = (b_p0 + container_sx * 1.1 * x, container_sy * margin_py)
+#            self.bay_pos_info[(self.num_of_bay - (x + 1)) * 4 + 3] = (b_p0 + container_sx * 1.1 * x, container_sy * margin_py)
+#        self.even_num_bay_pos = [(k, v[0], v[1]) for k, v in self.bay_pos_info.items() if k % 2 == 0 ]
         
     def draw(self, gc):
         gc.SetPen(wx.Pen("black", 0.5))
-        for x in xrange(self.num_of_bays * 2 + 1):
-            gc.DrawLines([(0, container_sx * x / 2), (container_sy * self.num_of_stacks , container_sx * x / 2)])
+        for x in xrange(self.num_of_bays + 1):
+            gc.DrawLines([(0, container_sx * x), (container_sy * self.num_of_stacks , container_sx * x)])
         for x in xrange(self.num_of_stacks + 1):
             gc.DrawLines([(container_sy * x, 0), (container_sy * x , container_sx * self.num_of_bays)])
 
@@ -122,16 +139,22 @@ class Vessel(object):
     
     def set_position(self, px, py):
         self.px, self.py = px - self.LOA * 1 / 3 , py - self.B * 1.1
-        b_p0 = container_sx * 2
+        b0_px = container_sx * 2
+        b0_py = 0
         for x in xrange(self.num_of_bay):
             if  x == self.num_of_bay - 1:
-                self.bay_pos_info[(self.num_of_bay - (x + 1)) * 4 + 2] = (b_p0 + container_sx * 1.1 * x, container_sy * 1.8)
+                margin_py = 1.8
             else:
-                self.bay_pos_info[(self.num_of_bay - (x + 1)) * 4 + 2] = (b_p0 + container_sx * 1.1 * x, container_sy * 0.8)
+                margin_py = 0.8
+            self.bay_pos_info[(self.num_of_bay - (x + 1)) * 4 + 1] = (b0_px + container_sx * 1.1 * x + container_sx / 2, b0_py+ container_sy * margin_py)
+            self.bay_pos_info[(self.num_of_bay - (x + 1)) * 4 + 2] = (b0_px + container_sx * 1.1 * x, b0_py+ container_sy * margin_py)
+            self.bay_pos_info[(self.num_of_bay - (x + 1)) * 4 + 3] = (b0_px + container_sx * 1.1 * x, b0_py+ container_sy * margin_py)
+        self.even_num_bay_pos = [(k, v[0], v[1]) for k, v in self.bay_pos_info.items() if k % 2 == 0 ]
+        print self.even_num_bay_pos 
 
     def set_container_position(self):
         for c in self.holding_containers:
-            c.set_position_location(self.px, self.py, 'vessel')
+            c.set_position_location('vessel', self.bay_pos_info)
     
     def draw(self, gc):
         gc.SetPen(wx.Pen("black", 1))
@@ -139,24 +162,17 @@ class Vessel(object):
         gc.SetBrush(wx.Brush(brushclr))
         #draw vessel surface        
         gc.DrawLines(self.v_d_p)
-        
         gc.SetPen(wx.Pen("black", 0.5))
-        for k, v in self.bay_pos_info.items():
-            px, py = v
+        for k, px, py in self.even_num_bay_pos:
             if k == 2:
                 num_of_stack = 6
             else:
                 num_of_stack = 8
-            for x in xrange(num_of_stack // 2 + 1):
+            for x in xrange(num_of_stack + 1):
                 #draw stack and bay
                 gc.DrawLines([(px, py + x * container_sy), (px + container_sx, py + x * container_sy)])
-                gc.DrawLines([(px, py + (x + num_of_stack / 2 + 0.5) * container_sy), (px + container_sx, py + (x + num_of_stack / 2 + 0.5) * container_sy)])
-                
-                gc.DrawLines([(px, py), (px, py + num_of_stack / 2 * container_sy)])
-                gc.DrawLines([(px, py + (num_of_stack / 2 + 0.5) * container_sy), (px, py + (num_of_stack + 0.5) * container_sy)])
-                
-                gc.DrawLines([(px + container_sx, py), (px + container_sx, py + num_of_stack / 2 * container_sy)])
-                gc.DrawLines([(px + container_sx, py + (num_of_stack / 2 + 0.5) * container_sy), (px + container_sx, py + (num_of_stack + 0.5) * container_sy)])
+                gc.DrawLines([(px, py), (px, py + num_of_stack * container_sy)])
+                gc.DrawLines([(px + container_sx, py), (px + container_sx, py + num_of_stack * container_sy)])
 
 class QC(object):
     def __init__(self, name):
