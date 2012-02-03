@@ -9,12 +9,6 @@ frame_milsec = 1000 / 15
 container_sx = 20
 container_sy = 5
 
-class Node:
-    def __init__(self, id):
-        self.id = id
-        self.x = 20
-        self.y = 20
-
 class Input_dialog(wx.Dialog):
     def __init__(self, parent, name, size=(570, 180), pos=(400, 300)):
         wx.Dialog.__init__(self, None, -1, 'Monitoring Input', pos , size)
@@ -219,7 +213,6 @@ class Viewer_Panel(wx.Panel):
         self.translate_x, self.translate_y = 0, 0
         self.scale = 1.0
     
-        self.n = Node(0);
         # initialize
         ## set Background position
         ### set SC Lines position
@@ -245,7 +238,8 @@ class Viewer_Panel(wx.Panel):
         block0_px, block0_py = self.bitts_px[3], self.lines_py[-1] + container_sy * 29.75
         self.blocks = []
         for x in xrange(15):
-            b = Block((x + 1), block0_px + x * container_sx * 2.8, block0_py)
+            b = Block(x + 1)
+            b.set_position(block0_px + x * container_sx * 2.8, block0_py)
             self.blocks.append(b)
         ###
         
@@ -276,10 +270,10 @@ class Viewer_Panel(wx.Panel):
                     assert False , 'there is no target_v'
                 target_v.holding_containers.append(c)
         self.TPs = []
+        
         for x in self.blocks:# + self.vessels:
             self.TPs.append(TP(b.id, x.px, x.py - container_sx * 3 / 2))
-            x.set_container_position()
-        
+#            x.set_container_position()
         for x in self.vessels:
             x.set_container_position()    
             
