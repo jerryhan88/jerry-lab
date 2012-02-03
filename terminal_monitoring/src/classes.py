@@ -170,10 +170,14 @@ class YC(object):
         self.name = name
         self.evt_seq = []
         self.px, self.py = None, None
+#        self.num_of_bays = 22
+#        self.num_of_stacks = 8
     def __repr__(self):
         return self.name
     
     def draw(self, gc):
+#        gc.SetPen(wx.Pen("black", 0.5))
+#        gc.DrawRectangle(0, 0, container_sy*self.num_of_stacks, container_sx)
         pass
 
 class SC(object):
@@ -181,18 +185,49 @@ class SC(object):
         self.name = name
         self.evt_seq = []
         self.px, self.py = None, None
+        self.start_px, self.start_py = None, None
+        self.dest_px, self.dest_py = None, None
+        
+        self.turn1 = False
+        self.turn2 = False 
+    
     def __repr__(self):
         return self.name
-    
-    def update(self, evt):
-        pass
-    
+
     def set_position(self, px, py):
         self.px, self.py = px, py
+
+    def set_start_pos(self, px, py):
+        self.start_px, self.start_py = int(px), int(py)
+        self.set_position(int(px), int(py))
+
+    def set_destination_pos(self, px, py):
+        self.dest_px, self.dest_py = int(px), int(py)
+
+    def update(self, evt):
+        print 'cur : ' , self.px, self.py
+        print 'dest : ', self.dest_px, self.dest_py
+        
+        if self.px == self.start_px - 50:
+            self.turn1 = True
+        if self.py == self.dest_py:
+            self.turn2 = True
+            
+        if self.turn1:
+            if self.turn2:
+                self.set_position(self.px + 1, self.py)
+            else :
+                self.set_position(self.px, self.py - 1)
+        else:
+            self.set_position(self.px - 1, self.py)
     
     def draw(self, gc):
+        gc.SetPen(wx.Pen("black", 1))
+        r, g, b = (255, 0, 0)
+        brushclr = wx.Colour(r, g, b, 100)
+        gc.SetBrush(wx.Brush(brushclr))
+        gc.DrawRectangle(0, 0, container_sx * 1.1, container_sy * 1.1)
         pass
-
 class Buffer(object):
     def __init__(self):
         self.holding_containers #= [objects of Container]
