@@ -235,6 +235,7 @@ class Viewer_Panel(wx.Panel):
         l9_py = l8_py + container_sy * 2.2
         l10_py = l9_py + container_sy * 2.2
         self.lines_py = [eval('l%d_py' % x) for x in xrange(11)]
+        
         ###
         ### set bits position
         bit0_px = container_sx * 0.7
@@ -254,7 +255,7 @@ class Viewer_Panel(wx.Panel):
             bitt_id = int(bitt_p[-2:])
             v.set_position(self.bitts_px[bitt_id], l0_py)
         
-    ### set container position
+        ### set container position
         for c in self.containers:
             c.cur_position = c.moving_seq[0][1]
             c.cur_index_in_ms = 0
@@ -279,8 +280,8 @@ class Viewer_Panel(wx.Panel):
             self.TPs.append(TP(b.id, x.px, x.py - container_sx * 3 / 2))
             x.set_container_position()
         
-#        for x in self.vessels:
-#            x.set_container_position()    
+        for x in self.vessels:
+            x.set_container_position()    
             
         self.InitBuffer()
         
@@ -431,7 +432,6 @@ class Control_Panel(wx.Panel):
         
         for x in [s_btn, r_btn, pa_btn, pl_btn]:
             x.SetConstraints(anchors.LayoutAnchors(x, False, False, True, True))
-            
         
         self.Bind(wx.EVT_BUTTON, self.time_flow_stop, s_btn)
         self.Bind(wx.EVT_BUTTON, self.time_flow_reverse, r_btn)
