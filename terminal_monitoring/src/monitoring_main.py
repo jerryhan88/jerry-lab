@@ -2,12 +2,12 @@ from __future__ import division
 import wx, time
 import  wx.lib.anchors as anchors
 from datetime import datetime, timedelta
-import initializer
-from classes import Block, TP#, Bay, Stack
+from parameter_function import pyslot, pvslot
+from parameter_function import container_hs, container_vs, frame_milsec
 
-frame_milsec = 1000 / 15
-container_sx = 20
-container_sy = 5
+import initializer
+#TODO  make block and TP in initializer
+from classes import Block, TP
 
 class Input_dialog(wx.Dialog):
     def __init__(self, parent, name, size=(570, 180), pos=(400, 300)):
@@ -216,39 +216,32 @@ class Viewer_Panel(wx.Panel):
         # initialize
         ## set Background position
         ### set SC Lines position
-        l0_py = container_sy * 31.2
-        l1_py = l0_py + container_sy
-        l2_py = l1_py + container_sy * 0.5
-        l3_py = l2_py + container_sy * 0.5
-        l4_py = l3_py + container_sy * 2.2
-        l5_py = l4_py + container_sy * 6
-        l6_py = l5_py + container_sy * 2.4
-        l7_py = l6_py + container_sy
-        l8_py = l7_py + container_sy * 2.2
-        l9_py = l8_py + container_sy * 2.2
-        l10_py = l9_py + container_sy * 2.2
+        l0_py = container_vs * 31.2
+        l1_py = l0_py + container_vs
+        l2_py = l1_py + container_vs * 0.5
+        l3_py = l2_py + container_vs * 0.5
+        l4_py = l3_py + container_vs * 2.2
+        l5_py = l4_py + container_vs * 6
+        l6_py = l5_py + container_vs * 2.4
+        l7_py = l6_py + container_vs
+        l8_py = l7_py + container_vs * 2.2
+        l9_py = l8_py + container_vs * 2.2
+        l10_py = l9_py + container_vs * 2.2
         self.lines_py = [eval('l%d_py' % x) for x in xrange(11)]
         
         ###
         ### set bits position
-        bit0_px = container_sx * 0.7
-        self.bitts_px = [bit0_px + container_sx * 2.95 * i for i in xrange(19)]
+        bit0_px = container_hs * 0.7
+        self.bitts_px = [bit0_px + container_hs * 2.95 * i for i in xrange(19)]
         ###
         ### set and make yard blocks position
-        block0_px, block0_py = self.bitts_px[3], self.lines_py[-1] + container_sy * 29.75
+        block0_px, block0_py = self.bitts_px[3], self.lines_py[-1] + container_vs * 29.75
         self.blocks = []
         for x in xrange(15):
             b = Block(x + 1)
-            b.set_position(block0_px + x * container_sx * 2.8, block0_py)
+            b.set_position(block0_px + x * container_hs * 2.8, block0_py)
             self.blocks.append(b)
         ###
-        
-        ### set vehicles position
-        for v in self.vessels:
-            bitt_p = v.evt_seq[0][2]
-            bitt_id = int(bitt_p[-2:])
-            v.set_position(self.bitts_px[bitt_id], l0_py)
-        
         ### set container position
         for c in self.containers:
             c.cur_position = c.moving_seq[0][1]
@@ -256,7 +249,13 @@ class Viewer_Panel(wx.Panel):
             if c.cur_position[0] == 'B':
                 _id = int(c.cur_position[1:3]) - 1 
                 self.blocks[_id].holding_containers.append(c)
-            if c.cur_position[:2] == 'SB':
+                bay_id, _, _ = pyslot(c.cur_position)
+                c.hs = container_vs
+                c.vs = container_hs
+                if bay_id % 2 != 0:
+                    c.size = '20ft'
+                    c.vs /= 2
+            elif c.cur_position[:2] == 'SB':
                 # container in vessel
                 # ex of c.moving_seq[0]: ('2011-08-23-10-00-00', 'SB05-05-12', 'STS01', 'ABCDEF', '02')
                 target_v_name = c.moving_seq[0][3]
@@ -269,21 +268,26 @@ class Viewer_Panel(wx.Panel):
                 else:
                     assert False , 'there is no target_v'
                 target_v.holding_containers.append(c)
+                bay_id, _, _ = pvslot(c.cur_position)
+                if bay_id % 2 != 0:
+                    c.size = '20ft'
+                    c.hs /= 2
+                
+                
+                
+        ### set vehicles position
+        for v in self.vessels:
+            bitt_p = v.evt_seq[0][2]
+            bitt_id = int(bitt_p[-2:])
+            v.set_position(self.bitts_px[bitt_id], l0_py)
+        
         self.TPs = []
         
         for x in self.blocks:# + self.vessels:
-            self.TPs.append(TP(b.id, x.px, x.py - container_sx * 3 / 2))
-#            x.set_container_position()
-        for x in self.vessels:
-            x.set_container_position()    
-            
+            self.TPs.append(TP(b.id, x.px, x.py - container_hs * 3 / 2))
         self.InitBuffer()
         
     def OnTimer(self, evt):
-#        if self.Parent.isReverse_play:
-#            self.n.x -= 1
-#        else:
-#            self.n.x += 1
         self.RefreshGC()
         
     def OnSize(self, evt):
@@ -350,16 +354,16 @@ class Viewer_Panel(wx.Panel):
         
         #draw Background
         # draw Shuttle Carrier Line
-        l_sx = container_sx * 54.8
-        l0_py = container_sy * 31.2
+        l_sx = container_hs * 54.8
+        l0_py = container_vs * 31.2
         ## draw Bit
         r, g, b = (0, 0, 0)
         brushclr = wx.Colour(r, g, b, 100)
         gc.SetBrush(wx.Brush(brushclr))
         gc.SetPen(wx.Pen("white", 0))
-        bit_sx, bit_sy = container_sx * 0.26, container_sy * 0.8
-#        bit0_px = container_sx * 0.7
-#        bits_px = [bit0_px + container_sx * 2.95 * i for i in xrange(19)]
+        bit_sx, bit_sy = container_hs * 0.26, container_vs * 0.8
+#        bit0_px = container_hs * 0.7
+#        bits_px = [bit0_px + container_hs * 2.95 * i for i in xrange(19)]
         for px in self.bitts_px:
             gc.DrawRectangle(px, l0_py, bit_sx, bit_sy)
         gc.SetPen(wx.Pen("black", 1))
@@ -397,8 +401,8 @@ class Viewer_Panel(wx.Panel):
         brushclr = wx.Colour(228, 108, 10)
         gc.SetBrush(wx.Brush(brushclr))
         #draw container
-        for c in self.containers:
-            c.draw(gc)
+#        for c in self.containers:
+#            c.draw(gc)
 
 class Control_Panel(wx.Panel):
     def __init__(self, parent, pos, size):
