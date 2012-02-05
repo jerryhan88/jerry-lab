@@ -16,48 +16,6 @@ class Container(object):
         
     def __repr__(self):
         return str(self.id) + ' : ' + self.cur_position
-    
-#    def set_position_location(self, location, sb_pos_info):
-##    def set_position_location(self, px, py, location, sb_pos_info = None):
-#        self.location = location
-#        if self.location == 'block': 
-#            bay_id, stack_id, _ = pyslot(self.cur_position)
-            # TODO  arrange container's position
-            #   make bay and stack pos dic in Block
-####            if bay_id % 4 == 0:
-####                self.size = '40ft'
-####                self.px, self.py = px + (stack_id - 1) * container_vs, py + (bay_id // 4 - 1 + 1 / 2) * container_hs
-####                pass
-####            elif bay_id % 2 == 0:
-####                self.size = '40ft'   
-####                self.px, self.py = px + (stack_id - 1) * container_vs, py + (bay_id // 2 - 1) * container_hs 
-####            else:
-####                self.size = '20ft'
-####                self.px, self.py = px + (stack_id - 1) * container_vs, py + (bay_id // 2) * container_hs / 2
-#        elif self.location == 'vessel':
-#            bay_id, stack_id, _ = pvslot(self.cur_position)
-#            if bay_id % 2 == 0:
-##                self.px, self.py = px + (stack_id - 1) * container_vs, py + (bay_id // 2 - 1) * container_hs
-#            else:
-#                self.size = '20ft'
-#            bay_px, bay_py = sb_pos_info[bay_id]
-#            self.px, self.py = bay_px, bay_py + (stack_id - 1) * container_vs   
-    
-#    def draw(self, gc):
-#        if self.location == 'block':
-#            if self.size == '40ft':
-#                gc.DrawRectangle(self.px, self.py, container_vs, container_hs)
-#            elif self.size == '20ft':
-#                gc.DrawRectangle(self.px, self.py, container_vs, container_hs / 2)
-#            else:
-#                assert False
-#        elif self.location == 'vessel':
-#            if self.size == '40ft':
-#                gc.DrawRectangle(self.px, self.py, container_hs, container_vs)
-#            elif self.size == '20ft':
-#                gc.DrawRectangle(self.px, self.py, container_hs / 2, container_vs)    
-#        else:
-#            assert False
 
 class Block(object):
     def __init__(self, id):
@@ -67,13 +25,19 @@ class Block(object):
         self.num_of_bays = 45
         self.num_of_stacks = 8
         self.bay_pos_info = {}
-        ######################################## TODO
-        #############error
         for x in xrange(self.num_of_bays):
-            self.bay_pos_info[x * 4 + 1] = (0, container_hs * x)
-            self.bay_pos_info[x * 4 + 2] = (0, container_hs * x)
-            self.bay_pos_info[x * 4 + 3] = (0, container_hs * (x + 1 / 2))
-    
+            bay_id = x + 1
+            if bay_id % 4 == 0:
+                py = container_hs * ((bay_id // 4 - 1) + 1 / 2)
+            elif bay_id % 4 == 1:
+                py = container_hs * (bay_id // 4)
+            elif bay_id % 4 == 2:
+                py = container_hs * (bay_id // 4)
+            elif bay_id % 4 == 3:
+                py = container_hs * ((bay_id // 4) + 1 / 2)
+            else:
+                assert False
+            self.bay_pos_info[bay_id] = (0, py)
     def set_position(self, px, py):
         self.px, self.py = px , py
         
@@ -85,9 +49,8 @@ class Block(object):
             gc.DrawLines([(container_vs * x, 0), (container_vs * x , container_hs * self.num_of_bays)])
         
         change_b_color(gc, 'orange')
-        for c in self.holding_containers[:]:
+        for c in self.holding_containers:
             bay_id, stack_id, _ = pyslot(c.cur_position)
-            print bay_id 
             bay_px, bay_py = self.bay_pos_info[bay_id]
             px, py = bay_px + (stack_id - 1) * container_vs, bay_py
             gc.DrawRectangle(px, py, c.hs, c.vs)
@@ -113,7 +76,7 @@ class Vessel(object):
         self.voyage = voyage
         self.type = type
         self.LOA, self.B = container_hs * 14, container_vs * 10
-        self.num_of_bay = 9
+        self.num_of_bay_drawn = 9
         
         self.evt_seq = []
         self.px, self.py = None, None
@@ -121,14 +84,14 @@ class Vessel(object):
         self.bay_pos_info = {}
         
         margin_px = container_hs * 2
-        for x in xrange(self.num_of_bay):
-            if  x == self.num_of_bay - 1:
+        for x in xrange(self.num_of_bay_drawn):
+            if  x == self.num_of_bay_drawn - 1:
                 margin_py = 1.8
             else:
                 margin_py = 0.8
-            self.bay_pos_info[(self.num_of_bay - (x + 1)) * 4 + 1] = (margin_px + container_hs * 1.1 * x + container_hs / 2, container_vs * margin_py)
-            self.bay_pos_info[(self.num_of_bay - (x + 1)) * 4 + 2] = (margin_px + container_hs * 1.1 * x, container_vs * margin_py)
-            self.bay_pos_info[(self.num_of_bay - (x + 1)) * 4 + 3] = (margin_px + container_hs * 1.1 * x, container_vs * margin_py)
+            self.bay_pos_info[(self.num_of_bay_drawn - (x + 1)) * 4 + 1] = (margin_px + container_hs * 1.1 * x + container_hs / 2, container_vs * margin_py)
+            self.bay_pos_info[(self.num_of_bay_drawn - (x + 1)) * 4 + 2] = (margin_px + container_hs * 1.1 * x, container_vs * margin_py)
+            self.bay_pos_info[(self.num_of_bay_drawn - (x + 1)) * 4 + 3] = (margin_px + container_hs * 1.1 * x, container_vs * margin_py)
         self.even_num_bay_pos = [(k, v[0], v[1]) for k, v in self.bay_pos_info.items() if k % 2 == 0 ]
         
         self.v_d_p = [(0, container_vs * 2), (container_hs * 1.84 , 0), (container_hs * 11 , 0),
@@ -161,12 +124,11 @@ class Vessel(object):
                 gc.DrawLines([(px + container_hs, py), (px + container_hs, py + num_of_stack * container_vs)])
         
         change_b_color(gc, 'orange')
-        for c in self.holding_containers[:]:
+        for c in self.holding_containers:
             bay_id, stack_id, _ = pvslot(c.cur_position)
             bay_px, bay_py = self.bay_pos_info[bay_id]
             px, py = bay_px, bay_py + (stack_id - 1) * container_vs
             gc.DrawRectangle(px, py, c.hs, c.vs)
-
 
 class QC(object):
     def __init__(self, name):
