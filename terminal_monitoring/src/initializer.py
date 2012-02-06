@@ -100,7 +100,8 @@ def run(start_time, end_time, db_read = False):
     
     for v in [vessels, qcs, ycs, scs]:
         vechicles.append(v)
-        
+    
+    print containers
     return vechicles, containers
     
 #yard = [objects of Yard_block]
@@ -117,7 +118,6 @@ if __name__ == '__main__':
             elif isinstance(x, SC):
                 print 'sc ',
             print x.name, ':', x.evt_seq
-            
     print ''
     for c in cs:
         print c, ':', c.moving_seq
