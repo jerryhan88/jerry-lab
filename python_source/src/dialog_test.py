@@ -7,10 +7,10 @@ class TestDialog(wx.Dialog):
         self.input_t = wx.TextCtrl(self, -1, "123", pos=(20, 65), size=(60, 30))
         button = wx.Button(self, -1, "Confirm", (100, 150))
         self.Bind(wx.EVT_BUTTON, self.confirm, button)
-        
         self.input = None
         
         self.Show(True)
+        
     def confirm(self, event):
     #    self.Destroy()
         self.input = self.input_t.GetValue() 
@@ -23,9 +23,9 @@ class MyFrame(wx.Frame):
         wx.Frame.__init__(self, parent, ID, title, pos, size)
         self.p = wx.Panel(self,-1)
         wx.StaticText(self.p, -1, td.input, (10, 30))
-        
         button = wx.Button(self.p, -1, "Confirm", (100, 150))
         self.Bind(wx.EVT_BUTTON, self.confirm, button)
+        
     def confirm(self, event):
         td.Destroy()
         self.Destroy()
