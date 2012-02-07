@@ -2,7 +2,6 @@ from __future__ import division
 from input import Evts
 from classes import Vessel, QC, YC, SC, Container
 
-
 def read_DB(start_time, end_time):
     pass
 
@@ -12,12 +11,14 @@ def run(start_time, end_time, db_read = False):
         E = Evts
     else:
         E = Evts
+        
     vechicles = []
     vessels = []
     qcs = []
     ycs = []
     scs = []
     containers = []
+    
     for e in E:
         ec = e.split('_')
         if len(ec) == 5:

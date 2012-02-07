@@ -15,7 +15,7 @@ class Container(object):
         self.location = None
         
     def __repr__(self):
-        return str(self.id) + ' : ' + self.cur_position
+        return str(self.id)# + ' : ' + self.cur_position
 
 class Block(object):
     def __init__(self, id):

@@ -16,7 +16,6 @@ class Input_dialog(wx.Dialog):
         wx.StaticText(self, -1, 'Voyage', (450, 10))
         wx.StaticText(self, -1, 'Date', (15, 50))
         
-        
         v_name = ['HANJIN', 'MAERSK']
         self.v_name_ch = wx.Choice(self, -1, (60, 10), choices=v_name)
         self.v_name_ch.SetSelection(0)
@@ -105,11 +104,15 @@ class MainFrame(wx.Frame):
         f_sx, f_sy = self.GetSize()
         self.SetBackgroundColour(wx.Colour(236, 233, 216))
         self.SetAutoLayout(True)
+        
+        
         ###########
         self.start_time = datetime(2011, 1, 20, 16, 20, 30)
         self.end_time = datetime(2011, 1, 20, 16, 20, 30)
         ###########
+        
         self.evts = initializer.run(self.start_time, self.end_time)
+        
         self.cur_time = datetime(2011, 1, 20, 16, 20, 30)
         
         ip_py, ip_sy = 0 , 50
@@ -230,7 +233,7 @@ class Viewer_Panel(wx.Panel):
         self.lines_py = [eval('l%d_py' % x) for x in xrange(11)]
         
         ###
-        ### set bits position
+        ### set bitts position
         bit0_px = container_hs * 0.7
         self.bitts_px = [bit0_px + container_hs * 2.95 * i for i in xrange(19)]
         ###
@@ -242,6 +245,7 @@ class Viewer_Panel(wx.Panel):
             b.set_position(block0_px + x * container_hs * 2.8, block0_py)
             self.blocks.append(b)
         ###
+        
         ### set container position
         for c in self.containers:
             c.cur_position = c.moving_seq[0][1]
@@ -272,8 +276,6 @@ class Viewer_Panel(wx.Panel):
                 if bay_id % 2 != 0:
                     c.size = '20ft'
                     c.hs /= 2
-                
-                
                 
         ### set vehicles position
         for v in self.vessels:
@@ -375,6 +377,7 @@ class Viewer_Panel(wx.Panel):
             else:
                 gc.DrawLines([(0, py), (l_sx, py)])
         old_tr = gc.GetTransform()
+        
         #draw block
         for b in self.blocks:
             gc.Translate(b.px, b.py)
