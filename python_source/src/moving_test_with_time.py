@@ -1,34 +1,46 @@
 from __future__ import division
 import wx, time
+
 container_hs = 20
 container_vs = 5
-
 frame = 15.0
 
 class Vehicles(object):
     def __init__(self, id):
         self.id = id
         self.evt_seq = []
-        self.start_px, self.start_py = None, None
+        self.ce_px, self.ce_py = None, None
         self.px, self.py = None, None
-        self.dest_px, self.dest_py = None, None
-        self.moving_speed = None
-        
+        self.ne_px, self.ne_py = None, None
+
     def set_position(self, px, py):
         self.px, self.py = px, py
         
     def set_dest_position(self, px, py):
-        self.dest_px, self.dest_py = px, py
+        self.ne_px, self.ne_py = px, py
 
 class YC(Vehicles):
+    class Trolly(Vehicles):
+        def __init__(self, id):
+            Vehicles.__init__(self, id)
+            
+        def draw(self, gc):
+            tr, tg, tb = (4, 189, 252)
+            t_brushclr = wx.Colour(tr, tg, tb, 200)
+            ##draw trolly         
+            gc.SetPen(wx.Pen(t_brushclr, 0))
+            gc.SetBrush(wx.Brush(t_brushclr))
+            gc.DrawRectangle(0, 0, container_vs * 1.1, 12)
+            
     def __init__(self, id):
         Vehicles.__init__(self, id)
         self.id = id
         self.evt_seq = []
-        self.px, self.py = None, None
+        self.trolly = self.Trolly(1)
+        self.trolly.px, self.trolly.py = container_vs, (container_hs * 1.1 * 0.5) - 6
 
     def __repr__(self):
-        return self.name
+        return self.id
     
     def cur_evt_init(self):
         self.cur_evt = self.evt_seq[0]
@@ -42,15 +54,12 @@ class YC(Vehicles):
         self.ne_time = ne_time
     
     def OnTimer(self, evt, simul_time):
-        print self.py 
         if self.ce_time < simul_time < self.ne_time: 
             self.py = self.ce_py + (self.ne_py - self.ce_py) * (simul_time - self.ce_time) / (self.ne_time - self.ce_time)
     
     def draw(self, gc):
         yr, yg, yb = (90, 14, 160)
-        tr, tg, tb = (4, 189, 252)
         y_brushclr = wx.Colour(yr, yg, yb, 200)
-        t_brushclr = wx.Colour(tr, tg, tb, 200)
         gc.SetPen(wx.Pen(y_brushclr, 0))
         gc.SetBrush(wx.Brush(y_brushclr))
         
@@ -58,11 +67,10 @@ class YC(Vehicles):
         gc.DrawRectangle(container_vs * 9 - (container_vs * 1.1), 0, container_vs * 1.1, container_hs * 1.1)
         gc.DrawRectangle(container_vs * 0.1, (container_hs * 1.1 * 0.5) - 6, container_vs * 7.8, 3)
         gc.DrawRectangle(container_vs * 0.1, (container_hs * 1.1 * 0.5) + 3, container_vs * 7.8, 3)
-#        gc.DrawRectangle(container_vs*0.1, (container_hs*1.1*0.5)+3+50, container_vs * 7.8, 3)
-        ##draw trolly         
-        gc.SetPen(wx.Pen(t_brushclr, 0))
-        gc.SetBrush(wx.Brush(t_brushclr))
-        gc.DrawRectangle(container_vs, (container_hs * 1.1 * 0.5) - 6, container_vs * 1.1, 12)
+        old_tr = gc.GetTransform()
+        gc.Translate(self.trolly.px, self.trolly.py)
+        self.trolly.draw(gc)
+        gc.SetTransform(old_tr)
 
 class SC(Vehicles):
     def __init__(self, id):
@@ -209,7 +217,7 @@ class MyPanel(wx.Panel):
         #show time
         gc.SetFont(wx.Font(20, wx.SWISS, wx.NORMAL, wx.NORMAL))
         gc.SetPen(wx.Pen("black", 1))
-#        gc.DrawText(str(self.cur_time), 800, 600)
+        
         gc.DrawText(str(self.simul_clock), 100, 100)
         gc.DrawRectangle(100, 200, 10, 10)
         gc.DrawRectangle(120, 220, 10, 10)
@@ -235,24 +243,19 @@ class MyPanel(wx.Panel):
         qcs = []
         ycs = []
         scs = []
-        
         sc1 = SC(1)
         sc1.evt_seq = [(2.0, (100.0, 200.0), 'go',), (20.0, (120.0, 220.0), 'stop')]
         sc1.cur_evt_init()
         scs.append(sc1)
-        
         #spreader moving
         #trolly moving
-        
         yc1 = YC(1)
         yc1.evt_seq = [(1.0, (300.0, 200.0), 'S_go',), (10.0, (300.0, 220.0), 'S_stop'),
-                       (11.0, (300.0, 200.0), 'T_go',), (13.0, (300.0, 220.0), 'T_stop'),
+                       (11.0, (0.0, 0.0), 'T_go',), (13.0, (15.0, 0.0), 'T_stop'),
                        (14.0, (300.0, 200.0), 'S_go',), (17.0, (300.0, 220.0), 'S_stop')
                        ]
         yc1.cur_evt_init()
         ycs.append(yc1)
-        
-        
         return (vessels, qcs, ycs, scs)
 if __name__ == '__main__':
     app = wx.PySimpleApp()
