@@ -15,7 +15,7 @@ class Container(object):
         self.location = None
         
     def __repr__(self):
-        return str(self.id)# + ' : ' + self.cur_position
+        return str(self.id)
 
 class Block(object):
     def __init__(self, id):
@@ -149,9 +149,30 @@ class YC(object):
         self.px, self.py = None, None
     def __repr__(self):
         return self.name
-    
+
+    def set_position(self, px, py):
+        self.px, self.py = px, py
+
+    def set_destination_pos(self, px, py):
+        self.dest_px, self.dest_py = int(px), int(py)
+ 
     def draw(self, gc):
-        pass
+        r, g, b = (90, 14, 160)
+        brushclr = wx.Colour(r, g, b, 200)
+        gc.SetPen(wx.Pen(brushclr, 0))
+        gc.SetBrush(wx.Brush(brushclr))
+        ##1st yc
+        gc.DrawRectangle(-container_vs, 0, container_vs * 1.1, container_hs * 1.1)
+        gc.DrawRectangle(container_vs * 9 -(container_vs*1.1), 0, container_vs * 1.1, container_hs * 1.1)
+        gc.DrawRectangle(container_vs*0.1, (container_hs*1.1*0.5)-6, container_vs * 7.8, 3 )
+        gc.DrawRectangle(container_vs*0.1, (container_hs*1.1*0.5)+3, container_vs * 7.8, 3)
+        
+        ##2nd yc
+        gc.DrawRectangle(-container_vs, 50, container_vs * 1.1, container_hs * 1.1)
+        gc.DrawRectangle(container_vs * 9 -(container_vs*1.1), 50, container_vs * 1.1, container_hs * 1.1)
+        gc.DrawRectangle(container_vs*0.1, (container_hs*1.1*0.5)-6+50, container_vs * 7.8, 3 )
+        gc.DrawRectangle(container_vs*0.1, (container_hs*1.1*0.5)+3+50, container_vs * 7.8, 3)
+        
 
 class SC(object):
     def __init__(self, name):
@@ -200,7 +221,7 @@ class SC(object):
         brushclr = wx.Colour(r, g, b, 100)
         gc.SetBrush(wx.Brush(brushclr))
         gc.DrawRectangle(0, 0, container_hs * 1.1, container_vs * 1.1)
-        pass
+
 class Buffer(object):
     def __init__(self):
         self.holding_containers #= [objects of Container]
