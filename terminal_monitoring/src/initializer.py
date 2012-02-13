@@ -67,6 +67,7 @@ def run(start_time, end_time, db_read = False):
                 for y in ycs:
                     if y.name[-2:] == yc_id:
                         target_yc = y
+                        target_yc.id = yc_id
                         break
                 else:
                     target_yc = YC(processing_v)
@@ -102,7 +103,6 @@ def run(start_time, end_time, db_read = False):
     for v in [vessels, qcs, ycs, scs]:
         vechicles.append(v)
     
-    print containers
     return vechicles, containers
     
 #yard = [objects of Yard_block]
