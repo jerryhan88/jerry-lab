@@ -85,10 +85,6 @@ class Input_dialog(wx.Dialog):
         self.input_t2 = self.t2.GetValue()
         self.input_mi2 = self.mi2.GetValue()
         self.input_s2 = self.s2.GetValue()
-        
-#        for x in [input_v, input_vo, input_y_name1, input_m_name1, input_d_name1, input_t1, input_m1, input_s1, input_y_name2, input_m_name2, input_d_name2, input_t2, input_m2, input_s2]:
-#            self.x = self.vo_name_ch.GetString(self.y_name1_ch.SetSelection())
-        
 #        self.input = self.input_t2.GetValue()
         win = MainFrame(self)
         win.Show(True)
@@ -276,7 +272,13 @@ class Viewer_Panel(wx.Panel):
                 if bay_id % 2 != 0:
                     c.size = '20ft'
                     c.hs /= 2
-                
+
+        ### set yc position
+        for yc in self.ycs:
+            target_block = self.blocks[int(yc.id) // 2]
+            yc_px, yc_py = target_block.px, target_block.py + 50 
+            yc.set_position(yc_px, yc_py)
+
         ### set vehicles position
         for v in self.vessels:
             bitt_p = v.evt_seq[0][2]
@@ -287,6 +289,7 @@ class Viewer_Panel(wx.Panel):
         
         for x in self.blocks:# + self.vessels:
             self.TPs.append(TP(b.id, x.px, x.py - container_hs * 3 / 2))
+        
         self.InitBuffer()
         
     def OnTimer(self, evt):
@@ -392,6 +395,11 @@ class Viewer_Panel(wx.Panel):
             tp.draw(gc)
             gc.SetTransform(old_tr)
         
+        #draw yc
+        for yc in self.ycs:
+            gc.Translate(yc.px, yc.py)
+            yc.draw(gc)
+            gc.SetTransform(old_tr)
         #draw vessel
         for v in self.vessels:
             gc.Translate(v.px, v.py)
