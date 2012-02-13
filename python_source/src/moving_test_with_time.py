@@ -1,18 +1,15 @@
 from __future__ import division
-
-#from datetime import datetime, timedelta
-#from parameter_function import container_hs, container_vs, frame_milsec
-
 import wx, time
-
+container_hs = 20
+container_vs = 5
 
 frame = 15.0
-
 
 class Vehicles(object):
     def __init__(self, id):
         self.id = id
         self.evt_seq = []
+        self.start_px, self.start_py = None, None
         self.px, self.py = None, None
         self.dest_px, self.dest_py = None, None
         self.moving_speed = None
@@ -22,12 +19,55 @@ class Vehicles(object):
         
     def set_dest_position(self, px, py):
         self.dest_px, self.dest_py = px, py
+
+class YC(Vehicles):
+    def __init__(self, id):
+        Vehicles.__init__(self, id)
+        self.id = id
+        self.evt_seq = []
+        self.px, self.py = None, None
+
+    def __repr__(self):
+        return self.name
+    
+    def cur_evt_init(self):
+        self.cur_evt = self.evt_seq[0]
+        self.next_evt = self.evt_seq[1]
+        ce_time, ce_pos, ce_state = self.cur_evt
+        self.ce_px, self.ce_py = ce_pos
+        self.px, self.py = self.ce_px, self.ce_py
+        self.ce_time = ce_time
+        ne_time, ne_pos, ne_state = self.next_evt
+        self.ne_px, self.ne_py = ne_pos
+        self.ne_time = ne_time
+    
+    def OnTimer(self, evt, simul_time):
+        print self.py 
+        if self.ce_time < simul_time < self.ne_time: 
+            self.py = self.ce_py + (self.ne_py - self.ce_py) * (simul_time - self.ce_time) / (self.ne_time - self.ce_time)
+    
+    def draw(self, gc):
+        yr, yg, yb = (90, 14, 160)
+        tr, tg, tb = (4, 189, 252)
+        y_brushclr = wx.Colour(yr, yg, yb, 200)
+        t_brushclr = wx.Colour(tr, tg, tb, 200)
+        gc.SetPen(wx.Pen(y_brushclr, 0))
+        gc.SetBrush(wx.Brush(y_brushclr))
         
+        gc.DrawRectangle(-container_vs, 0, container_vs * 1.1, container_hs * 1.1)
+        gc.DrawRectangle(container_vs * 9 - (container_vs * 1.1), 0, container_vs * 1.1, container_hs * 1.1)
+        gc.DrawRectangle(container_vs * 0.1, (container_hs * 1.1 * 0.5) - 6, container_vs * 7.8, 3)
+        gc.DrawRectangle(container_vs * 0.1, (container_hs * 1.1 * 0.5) + 3, container_vs * 7.8, 3)
+#        gc.DrawRectangle(container_vs*0.1, (container_hs*1.1*0.5)+3+50, container_vs * 7.8, 3)
+        ##draw trolly         
+        gc.SetPen(wx.Pen(t_brushclr, 0))
+        gc.SetBrush(wx.Brush(t_brushclr))
+        gc.DrawRectangle(container_vs, (container_hs * 1.1 * 0.5) - 6, container_vs * 1.1, 12)
+
 class SC(Vehicles):
     def __init__(self, id):
         Vehicles.__init__(self, id)
         self.direction = None
-#        self.isVisualize = False
         
     def __repr__(self):
         return 'SC' + str(self.id) + self.evt_seq  
@@ -43,9 +83,9 @@ class SC(Vehicles):
         self.dest_px, self.dest_py = ne_pos
 
     def draw(self, gc):
+        brushclr = wx.Colour(255, 255, 255)
+        gc.SetBrush(wx.Brush(brushclr))
         gc.DrawRectangle(0, 0, 10, 10)
-#        st = 'SC' + str(self.id)
-#        gc.DrawText(st, -5, -5)
     
     def OnTimer(self, evt, simul_time):
         ce_time, ce_pos, ce_state = self.cur_evt
@@ -66,13 +106,10 @@ class SC(Vehicles):
         travel_time = ne_time - ce_time
         print travel_dist, travel_time, travel_dist / travel_time / frame 
         return (travel_dist / travel_time) / frame# +0.03
-     
-        
-#        v1.evt_seq = [(3, (100, 200), 'AR',), (10, (100, 200), 'DP')]
     
 class MainFrame(wx.Frame):
     def __init__(self):
-        wx.Frame.__init__(self, None, -1, 'test', size=(1024, 768))
+        wx.Frame.__init__(self, None, -1, 'test', size=(800, 600))
         MyPanel(self)
         self.Show(True)
 
@@ -90,11 +127,14 @@ class MyPanel(wx.Panel):
         self.translate_mode = False
         self.translate_x, self.translate_y = 0, 0
         self.scale = 1.0
+        
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
         self.timer.Start(1000 / frame)
-        self.cur_time = 0
-        self.saved_time = time.localtime(time.time())
+        
+        self.simul_clock = 0
+        self.saved_time = time.time()
+        
         self.vessels, self.qcs, self.ycs, self.scs = self.make_vehicle()
     
     def OnSize(self, evt):
@@ -119,18 +159,13 @@ class MyPanel(wx.Panel):
         self.ReleaseMouse()
     
     def OnTimer(self, evt):
-        saved_sec = self.saved_time[5]
-        cur_sec = time.localtime(time.time())[5]
-        
+        cur_time = time.time()
         for v in self.vessels, self.qcs, self.ycs, self.scs:
             for x in v:
-                x.OnTimer(evt, self.cur_time)
-                
-        if abs(saved_sec - cur_sec) >= 1 :
-            self.cur_time += 1
-            self.saved_time = time.localtime(time.time())
-        
-            
+                x.OnTimer(evt, self.simul_clock)
+        #        if abs(saved_sec - cur_sec) >= 1 :
+        self.simul_clock += abs(cur_time - self.saved_time)
+        self.saved_time = cur_time
         self.RefreshGC()
             
     def OnPaint(self, evt):
@@ -174,12 +209,20 @@ class MyPanel(wx.Panel):
         #show time
         gc.SetFont(wx.Font(20, wx.SWISS, wx.NORMAL, wx.NORMAL))
         gc.SetPen(wx.Pen("black", 1))
-        brushclr = wx.Colour(255, 255, 255)
-        gc.SetBrush(wx.Brush(brushclr))
 #        gc.DrawText(str(self.cur_time), 800, 600)
-        gc.DrawText(str(self.cur_time), 100, 100)
+        gc.DrawText(str(self.simul_clock), 100, 100)
         gc.DrawRectangle(100, 200, 10, 10)
         gc.DrawRectangle(120, 220, 10, 10)
+        
+        ##Lines
+        r, g, b = (0, 0, 0)
+        brushclr = wx.Colour(r, g, b, 100)
+        gc.SetPen(wx.Pen(brushclr, 1))
+        gc.SetBrush(wx.Brush(brushclr))
+        
+        gc.DrawLines([(200.0, 200.0), (400.0, 200.0)])
+        gc.DrawLines([(200.0, 220.0), (400.0, 220.0)])
+        
         old_tr = gc.GetTransform()
         for v in self.vessels, self.qcs, self.ycs, self.scs:
             for x in v:
@@ -198,15 +241,20 @@ class MyPanel(wx.Panel):
         sc1.cur_evt_init()
         scs.append(sc1)
         
-#        v2 = SC(2)
-#        v2.evt_seq = [(0, (100, 500), 'AR',), (10, (100, 500), 'DP')]
-#        vessels.append(v2)
+        #spreader moving
+        #trolly moving
         
-#        q1 = QC()
+        yc1 = YC(1)
+        yc1.evt_seq = [(1.0, (300.0, 200.0), 'S_go',), (10.0, (300.0, 220.0), 'S_stop'),
+                       (11.0, (300.0, 200.0), 'T_go',), (13.0, (300.0, 220.0), 'T_stop'),
+                       (14.0, (300.0, 200.0), 'S_go',), (17.0, (300.0, 220.0), 'S_stop')
+                       ]
+        yc1.cur_evt_init()
+        ycs.append(yc1)
+        
+        
         return (vessels, qcs, ycs, scs)
 if __name__ == '__main__':
     app = wx.PySimpleApp()
     app.frame = MainFrame()
     app.MainLoop()
-#    v = Vessel(1)
-#    print v.px, v.py 
