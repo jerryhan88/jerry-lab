@@ -172,7 +172,7 @@ class MyPanel(wx.Panel):
             for x in v:
                 x.OnTimer(evt, self.simul_clock)
         #        if abs(saved_sec - cur_sec) >= 1 :
-        self.simul_clock += abs(cur_time - self.saved_time)
+        self.simul_clock += abs(cur_time - self.saved_time) * 0.8
         self.saved_time = cur_time
         self.RefreshGC()
             
