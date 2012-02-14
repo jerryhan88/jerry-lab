@@ -24,13 +24,29 @@ class YC(Vehicles):
         def __init__(self, id):
             Vehicles.__init__(self, id)
             
+        def cur_evt_init(self):
+            pass
+        
+        def OnTimer(self, evt, simul_time):
+            self.t_px = self.t_ce_px + (self.t_ne_px - self.t_ce_px) * (simul_time - self.t_ce_time) / (self.t_ne_time - self.t_ce_time)
+            
         def draw(self, gc):
             tr, tg, tb = (4, 189, 252)
             t_brushclr = wx.Colour(tr, tg, tb, 200)
+            ##draw lines
+            r, g, b = (0, 0, 0)
+            brushclr = wx.Colour(r, g, b, 100)
+            gc.SetPen(wx.Pen(brushclr, 1))
+            gc.SetBrush(wx.Brush(brushclr))
+            gc.DrawLines([(0, -30), (0, 30)])
+            gc.DrawLines([(15, -30), (15, 30)])
+            
             ##draw trolly         
             gc.SetPen(wx.Pen(t_brushclr, 0))
             gc.SetBrush(wx.Brush(t_brushclr))
             gc.DrawRectangle(0, 0, container_vs * 1.1, 12)
+            
+            
             
     def __init__(self, id):
         Vehicles.__init__(self, id)
@@ -52,10 +68,24 @@ class YC(Vehicles):
         ne_time, ne_pos, ne_state = self.next_evt
         self.ne_px, self.ne_py = ne_pos
         self.ne_time = ne_time
-    
+        ##trolly
+        self.t_cur_evt=self.evt_seq[2]
+        self.t_next_evt=self.evt_seq[3]
+        t_ce_time, t_ce_pos, t_ce_state = self.t_cur_evt
+        self.t_ce_px, self.t_ce_py = t_ce_pos
+        self.t_px, self.t_py = self.t_ce_px, self.t_ce_py
+        self.t_ce_time = t_ce_time
+        t_ne_time, t_ne_pos, t_ne_state = self.t_next_evt
+        self.t_ne_px, self.t_ne_py = t_ne_pos
+        self.t_ne_time = t_ne_time
+        
     def OnTimer(self, evt, simul_time):
         if self.ce_time < simul_time < self.ne_time: 
             self.py = self.ce_py + (self.ne_py - self.ce_py) * (simul_time - self.ce_time) / (self.ne_time - self.ce_time)
+        
+        elif self.t_ce_time < simul_time < self.t_ne_time:
+            self.trolly.OnTimer(evt, simul_time)
+        
     
     def draw(self, gc):
         yr, yg, yb = (90, 14, 160)
@@ -231,6 +261,7 @@ class MyPanel(wx.Panel):
         gc.DrawLines([(200.0, 200.0), (400.0, 200.0)])
         gc.DrawLines([(200.0, 220.0), (400.0, 220.0)])
         
+        
         old_tr = gc.GetTransform()
         for v in self.vessels, self.qcs, self.ycs, self.scs:
             for x in v:
@@ -252,11 +283,12 @@ class MyPanel(wx.Panel):
         yc1 = YC(1)
         yc1.evt_seq = [(1.0, (300.0, 200.0), 'S_go',), (10.0, (300.0, 220.0), 'S_stop'),
                        (11.0, (0.0, 0.0), 'T_go',), (13.0, (15.0, 0.0), 'T_stop'),
-                       (14.0, (300.0, 200.0), 'S_go',), (17.0, (300.0, 220.0), 'S_stop')
+                       (14.0, (300.0, 220.0), 'S_go',), (17.0, (300.0, 200.0), 'S_stop')
                        ]
         yc1.cur_evt_init()
         ycs.append(yc1)
         return (vessels, qcs, ycs, scs)
+    
 if __name__ == '__main__':
     app = wx.PySimpleApp()
     app.frame = MainFrame()
