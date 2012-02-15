@@ -407,13 +407,11 @@ class Viewer_Panel(wx.Panel):
             gc.SetTransform(old_tr)
         
         #draw sc
-        
         gc.SetPen(wx.Pen("black", 0))    
         brushclr = wx.Colour(228, 108, 10)
         gc.SetBrush(wx.Brush(brushclr))
-        #draw container
-#        for c in self.containers:
-#            c.draw(gc)
+        
+        
 
 class Control_Panel(wx.Panel):
     def __init__(self, parent, pos, size):
@@ -447,7 +445,6 @@ class Control_Panel(wx.Panel):
         self.Bind(wx.EVT_BUTTON, self.time_flow_pause, pa_btn)
         self.Bind(wx.EVT_BUTTON, self.time_flow_play, pl_btn)
         
-        self.dispaly_counter = 0
         self.timer = parent.timer
         self.saved_time = time.localtime(time.time())
         
