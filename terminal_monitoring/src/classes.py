@@ -161,6 +161,7 @@ class YC(object):
         brushclr = wx.Colour(r, g, b, 200)
         gc.SetPen(wx.Pen(brushclr, 0))
         gc.SetBrush(wx.Brush(brushclr))
+        
         ##1st yc
         gc.DrawRectangle(-container_vs, 0, container_vs * 1.1, container_hs * 1.1)
         gc.DrawRectangle(container_vs * 9 -(container_vs*1.1), 0, container_vs * 1.1, container_hs * 1.1)
@@ -172,7 +173,6 @@ class YC(object):
         gc.DrawRectangle(container_vs * 9 -(container_vs*1.1), 50, container_vs * 1.1, container_hs * 1.1)
         gc.DrawRectangle(container_vs*0.1, (container_hs*1.1*0.5)-6+50, container_vs * 7.8, 3 )
         gc.DrawRectangle(container_vs*0.1, (container_hs*1.1*0.5)+3+50, container_vs * 7.8, 3)
-        
 
 class SC(object):
     def __init__(self, name):
