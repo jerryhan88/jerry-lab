@@ -84,7 +84,7 @@ class Block(object):
 
 
 class Vessel(object):
-    def __init__(self, name, voyage, type=0):
+    def __init__(self, name, voyage, type=0): 
         self.name = name
         self.voyage = voyage
         self.type = type

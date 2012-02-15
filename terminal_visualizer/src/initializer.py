@@ -91,12 +91,6 @@ def run(start_time, end_time):
             target_c.moving_seq.append((_datetime, position, processing_v, vessel_name, voyage))
     
     
-    
-    
-    
-    
-    
-    
     for v in [vessels, qcs, ycs, scs]:
         vechicles.append(v)
     
@@ -107,14 +101,6 @@ if __name__ == '__main__':
     vs, cs = run(1, 2)
     for v in vs:
         for x in v:
-            if isinstance(x, Vessel):
-                print 'vessel ',
-            elif isinstance(x, QC):
-                print 'qc ',
-            elif isinstance(x, YC):
-                print 'yc ',
-            elif isinstance(x, SC):
-                print 'sc ',
             print x.name, ':', x.evt_seq
     print ''
 
