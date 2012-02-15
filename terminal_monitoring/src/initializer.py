@@ -11,7 +11,6 @@ def run(start_time, end_time, db_read = False):
         E = Evts
     else:
         E = Evts
-        
     vechicles = []
     vessels = []
     qcs = []
@@ -88,7 +87,6 @@ def run(start_time, end_time, db_read = False):
                 target_sc.evt_seq.append((_datetime, position, c_id, operation))
             else:
                 assert False
-            
             target_c_id = c_id
             target_c = None
             for c in containers:
@@ -120,5 +118,6 @@ if __name__ == '__main__':
                 print 'sc ',
             print x.name, ':', x.evt_seq
     print ''
+
     for c in cs:
         print c, ':', c.moving_seq
