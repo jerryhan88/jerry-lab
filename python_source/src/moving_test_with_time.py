@@ -30,6 +30,7 @@ class QC(Vehicles):
             ##draw trolly         
             gc.SetPen(wx.Pen(t_brushclr, 0))
             gc.SetBrush(wx.Brush(t_brushclr))
+            gc.DrawRectangle(0, 0, container_hs * 0.5, container_hs * 0.5)
 
     def __init__(self, id):
         Vehicles.__init__(self, id)
@@ -37,7 +38,7 @@ class QC(Vehicles):
         self.evt_seq = []
         self.cur_evt_id = 0
         self.trolly = self.Trolly(1)
-        self.trolly.px, self.trolly.py = 0, 0
+        self.trolly.px, self.trolly.py = 200, 30
         self.isSpreaderMoving = False
         self.isTrollyMoving = False
 
@@ -69,7 +70,7 @@ class QC(Vehicles):
         if self.isSpreaderMoving:
             self.px, self.py = self.ce_px, self.ce_py
         elif self.isTrollyMoving:
-            self.trolly.px, self.trolly.py = self.ce_px, self.ce_py
+            self.trolly.px, self.trolly.py = self.ce_px+200, self.ce_py+30
         
     def OnTimer(self, evt, simul_time):
         if self.isSpreaderMoving:
@@ -189,6 +190,9 @@ class YC(Vehicles):
         gc.Translate(self.trolly.px, self.trolly.py)
         self.trolly.draw(gc)
         gc.SetTransform(old_tr)
+
+class SC(Vehicles):
+    pass
 
 class MainFrame(wx.Frame):
     def __init__(self):
@@ -341,8 +345,16 @@ class MyPanel(wx.Panel):
                        ]
         yc1.cur_evt_update(yc1.cur_evt_id)
         ycs.append(yc1)
+        
         #SC
 #        sc1 = SC(1)
+#        sc1.evt_seq = [(1.0, (300.0, 200.0), 'S_go',), (5.0, (300.0, 220.0), 'S_stop'),
+#                       (6.0, (0.0, 0.0), 'T_go',), (10.0, (15.0, 0.0), 'T_stop'),
+#                       (14.0, (300.0, 220.0), 'S_go',), (17.0, (300.0, 200.0), 'S_stop')
+#                       ]
+#        sc1.cur_evt_update(sc1.cur_evt_id)
+#        scs.append(sc1)
+        
         
         return (vessels, qcs, ycs, scs)
     
