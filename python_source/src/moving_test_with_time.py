@@ -5,6 +5,44 @@ container_hs = 20
 container_vs = 5
 frame = 15.0
 
+class Container(object):
+    def __init__(self, id):
+        self.id = id
+        self.hs, self.vs = container_hs , container_vs
+        self.size = '40ft'
+        
+    def __repr__(self):
+        return str(self.id)
+
+class Storage(object):
+    def __init__(self, id):
+        self.id = id
+        self.name = None
+        self.px, self.py = None, None
+        self.holding_containers = []
+
+class TP(Storage):
+    def __init__(self, id):
+        Storage.__init__(self, id)
+        self.name = 'TP'
+
+    def draw(self, gc):
+        r, g, b = (0, 0, 0)
+        penclr = wx.Colour(r, g, b)
+        r, g, b = (255, 255, 255)
+        bruclr = wx.Colour(r, g, b, 200)
+#
+        gc.SetPen(wx.Pen(penclr, 1))
+        gc.SetBrush(wx.Brush(bruclr))
+        gc.DrawRectangle(0, 0, container_vs*4, container_hs)
+        
+class QC_buffer(Storage):
+    def __init__(self, id):
+        Storage.__init__(self, id)
+        self.name = 'QC Buffer'
+    def draw(self, gc):
+        pass
+
 class Vehicles(object):
     def __init__(self, id):
         self.id = id
@@ -70,7 +108,7 @@ class QC(Vehicles):
         if self.isSpreaderMoving:
             self.px, self.py = self.ce_px, self.ce_py
         elif self.isTrollyMoving:
-            self.trolly.px, self.trolly.py = self.ce_px+200, self.ce_py+30
+            self.trolly.px, self.trolly.py = self.ce_px + 200, self.ce_py + 30
         
     def OnTimer(self, evt, simul_time):
         if self.isSpreaderMoving:
@@ -90,14 +128,14 @@ class QC(Vehicles):
         gc.SetPen(wx.Pen(brushclr, 1))
         gc.SetBrush(wx.Brush(paint))
         
-        gc.DrawRectangle(200,30, container_hs * 0.5, container_hs * 9)
-        gc.DrawLines([(200+(container_hs*0.5*0.25), 30),(200+(container_hs*0.5*0.25) ,30+container_hs * 9)])
-        gc.DrawLines([(200+(container_hs*0.5) ,30+container_hs * 9),(200+(container_hs*0.5)-(container_hs*0.5*0.75) ,30+container_hs * 9-(container_hs*0.5*1.41))])
+        gc.DrawRectangle(200, 30, container_hs * 0.5, container_hs * 9)
+        gc.DrawLines([(200 + (container_hs * 0.5 * 0.25), 30), (200 + (container_hs * 0.5 * 0.25) , 30 + container_hs * 9)])
+        gc.DrawLines([(200 + (container_hs * 0.5) , 30 + container_hs * 9), (200 + (container_hs * 0.5) - (container_hs * 0.5 * 0.75) , 30 + container_hs * 9 - (container_hs * 0.5 * 1.41))])
         
-        gc.DrawLines([(200+(container_hs*0.5*0.25) ,30+container_hs * 9-(container_hs*0.5*1.41)),(200+(container_hs*0.5) ,30+container_hs * 9-(container_hs*0.5*1.41))])
-        gc.DrawLines([(200+(container_hs*0.5) ,30+container_hs * 9-(container_hs*0.5*1.41)),(200+(container_hs*0.5)-(container_hs*0.5*0.75) ,30+container_hs * 9)])
+        gc.DrawLines([(200 + (container_hs * 0.5 * 0.25) , 30 + container_hs * 9 - (container_hs * 0.5 * 1.41)), (200 + (container_hs * 0.5) , 30 + container_hs * 9 - (container_hs * 0.5 * 1.41))])
+        gc.DrawLines([(200 + (container_hs * 0.5) , 30 + container_hs * 9 - (container_hs * 0.5 * 1.41)), (200 + (container_hs * 0.5) - (container_hs * 0.5 * 0.75) , 30 + container_hs * 9)])
         for i in range(9):
-            gc.DrawLines([(200+container_hs * 0.5*0.25, 30+container_hs*0.5*i),(200+container_hs * 0.5,30+container_hs*0.5*i)])
+            gc.DrawLines([(200 + container_hs * 0.5 * 0.25, 30 + container_hs * 0.5 * i), (200 + container_hs * 0.5, 30 + container_hs * 0.5 * i)])
             pass
         
         
@@ -225,6 +263,20 @@ class MyPanel(wx.Panel):
         self.saved_time = time.time()
         
         self.vessels, self.qcs, self.ycs, self.scs = self.make_vehicle()
+        self.containers = self.make_container()
+        self.tps, self.qbs = self.make_storage()
+        
+    def make_container(self):
+        c1 = Container(2)
+        c2 = Container(7)
+        return [c1, c2]    
+    
+    def make_storage(self):
+        qb = QC_buffer(1)
+        qb.px, qb.py = 200, 400
+        tp = TP(1)
+        tp.px, tp.py = 150, 300 
+        return ([tp], [qb])
     
     def OnSize(self, evt):
         self.InitBuffer()
@@ -314,7 +366,7 @@ class MyPanel(wx.Panel):
 #        gc.DrawLines([(15, -30), (15, 30)])
 
         old_tr = gc.GetTransform()
-        for v in self.vessels, self.qcs, self.ycs, self.scs:
+        for v in self.tps, self.qbs, self.vessels, self.qcs, self.ycs, self.scs:
             for x in v:
                 gc.Translate(x.px, x.py)
                 x.draw(gc)
@@ -347,10 +399,11 @@ class MyPanel(wx.Panel):
         ycs.append(yc1)
         
         #SC
-#        sc1 = SC(1)
-#        sc1.evt_seq = [(1.0, (300.0, 200.0), 'S_go',), (5.0, (300.0, 220.0), 'S_stop'),
-#                       (6.0, (0.0, 0.0), 'T_go',), (10.0, (15.0, 0.0), 'T_stop'),
-#                       (14.0, (300.0, 220.0), 'S_go',), (17.0, (300.0, 200.0), 'S_stop')
+#        sc1 = SC(2)
+#        sc1.evt_seq = [('2011-08-23-10-09-50', 'STS01-Lane03', 'C02', 'TL'), 
+#                       ('2011-08-23-10-10-30', 'B01-TP03', 'C02', 'TU'), 
+#                       ('2011-08-23-10-37-00', 'STS01-Lane02', 'C07', 'TL'), 
+#                       ('2011-08-23-10-38-40', 'B03-TP04', 'C07', 'TU')
 #                       ]
 #        sc1.cur_evt_update(sc1.cur_evt_id)
 #        scs.append(sc1)
