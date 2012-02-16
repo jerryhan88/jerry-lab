@@ -1,5 +1,4 @@
 from __future__ import division
-
 import wx, time
 
 class Node:
@@ -7,7 +6,6 @@ class Node:
         self.id = id
         self.x = 20
         self.y = 20
-
 
 class MainFrame(wx.Frame):
     def __init__(self):
