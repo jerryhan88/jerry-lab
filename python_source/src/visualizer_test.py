@@ -86,12 +86,27 @@ class SC(Vehicles):
     def __init__(self, id):
         Vehicles.__init__(self, id)
         self.name = 'SC'
+        self.isHoldingContainer = False
+        self.isClockWise = True
+        self.waypoint1_time = None
+        self.waypoint2_time = None
+        self.waypoint3_time = None
         
+        self.waypoint1_pos = (None, None)
+        self.waypoint2_pos = (None, None)
+        self.waypoint3_pos = (None, None)
+        
+        self.thr_wp1 = None
+        self.thr_wp2 = None
+        self.thr_wp3 = None
+        
+        self.rotate_angle = 0
     def __repr__(self):
         return self.name + str(self.id)
 
     def cur_evt_update(self, cur_evt_id):
-        if len(self.evt_seq) <= 1: assert False, 'length of evt_seq is smaller than 2' 
+        if len(self.evt_seq) <= 1: assert False, 'length of evt_seq is smaller than 2'
+#        if len(self.evt_seq) != cur_evt_id + 1: 
         self.cur_evt = self.evt_seq[cur_evt_id]
         self.next_evt = self.evt_seq[cur_evt_id + 1]
         
@@ -105,7 +120,15 @@ class SC(Vehicles):
             self.ce_px, self.ce_py = TPs[int(ce_pos[2:])].px, TPs[int(ce_pos[2:])].py
         else:
             assert False
-#        self.ce_c = containers[int(ce_container[1:])]
+            
+        if self.ce_state == 'TL':
+            self.isHoldingContainer = True
+        elif self.ce_state == 'TU':
+            self.isHoldingContainer = False
+        else:
+            assert False
+        
+        if cur_evt_id == 0 : self.px, self.py = self.ce_px, self.ce_py
         
         ne_time, ne_pos, ne_container, self.ne_state = self.next_evt
         year, month, day, hour, minute, second = tuple(ne_time.split('-'))
@@ -116,18 +139,107 @@ class SC(Vehicles):
             self.ne_px, self.ne_py = TPs[int(ne_pos[2:])].px, TPs[int(ne_pos[2:])].py
         else:
             assert False
-    def OnTimer(self, evt, simul_time):
-        if self.ce_time < simul_time < self.ne_time:
-            self.px = self.ce_px + (self.ne_px - self.ce_px) * (simul_time - self.ce_time).seconds / (self.ne_time - self.ce_time).seconds
-            self.py = self.ce_py
+        if ce_pos[:2] == 'QB' and ne_pos[:2] == 'TP':
+            self.isClockWise = True
+        elif ce_pos[:2] == 'TP' and ne_pos[:2] == 'QB':
+            self.isClockWise = False
+        else:
+            assert False
+
+        if self.isClockWise:
+            self.waypoint1_time = self.ce_time + timedelta(0, (self.ne_time - self.ce_time).seconds * (2 / 10))
+            self.waypoint2_time = self.ce_time + timedelta(0, (self.ne_time - self.ce_time).seconds * (5 / 10))
+            self.waypoint3_time = self.ce_time + timedelta(0, (self.ne_time - self.ce_time).seconds * (9 / 10))
+            self.wp1_px, self.wp1_py = (self.ce_px + container_hs * 10, self.ce_py)
+            self.wp2_px, self.wp2_py = (self.ce_px + container_hs * 10, self.ne_py - container_hs)
+            self.wp3_px, self.wp3_py = (self.ne_px, self.ne_py - container_hs)
+        else:
+            self.waypoint1_time = self.ce_time + timedelta(0, (self.ne_time - self.ce_time).seconds * (1 / 10))
+            self.waypoint2_time = self.ce_time + timedelta(0, (self.ne_time - self.ce_time).seconds * (4 / 10))
+            self.waypoint3_time = self.ce_time + timedelta(0, (self.ne_time - self.ce_time).seconds * (8 / 10))
+            self.wp1_px, self.wp1_py = (self.ce_px, self.ce_py - container_hs)
+            self.wp2_px, self.wp2_py = (self.ce_px - container_hs * 4, self.ce_py - container_hs)
+            self.wp3_px, self.wp3_py = (self.ce_px - container_hs * 4, self.ne_py)
         
+        self.thr_wp1 = False
+        self.thr_wp2 = False
+        self.thr_wp3 = False
+            
+    def OnTimer(self, evt, simul_time):
+        if self.isClockWise:
+            if self.ce_time <= simul_time < self.waypoint1_time:
+                self.px = self.ce_px + (self.wp1_px - self.ce_px) * (simul_time - self.ce_time).seconds / (self.waypoint1_time - self.ce_time).seconds
+                self.py = self.ce_py
+            elif self.waypoint1_time <= simul_time < self.waypoint2_time:
+                self.thr_wp1 = True
+                self.rotate_angle += math.pi / 2
+                self.px = self.wp1_px  
+                self.py = self.wp1_py + (self.wp2_py - self.wp1_py) * (simul_time - self.waypoint1_time).seconds / (self.waypoint2_time - self.waypoint1_time).seconds
+            elif self.waypoint2_time <= simul_time < self.waypoint3_time:
+                self.thr_wp2 = True
+                self.px = self.wp2_px + (self.wp3_px - self.wp2_px) * (simul_time - self.waypoint2_time).seconds / (self.waypoint3_time - self.waypoint2_time).seconds
+                self.py = self.wp2_py
+            elif self.waypoint3_time <= simul_time < self.ne_time:
+                self.thr_wp3 = True
+                self.px = self.wp3_px
+                self.py = self.wp2_py + (self.ne_py - self.wp3_py) * (simul_time - self.waypoint3_time).seconds / (self.ne_time - self.waypoint3_time).seconds
+        else:
+            if self.ce_time <= simul_time < self.waypoint1_time:
+                self.rotate_angle = 0
+                self.px = self.ce_px
+                self.py = self.ce_py + (self.wp1_py - self.ce_py) * (simul_time - self.ce_time).seconds / (self.waypoint1_time - self.ce_time).seconds
+            elif self.waypoint1_time <= simul_time < self.waypoint2_time:
+                self.thr_wp1 = True
+                self.px = self.wp1_px + (self.wp2_px - self.wp1_px) * (simul_time - self.waypoint1_time).seconds / (self.waypoint2_time - self.waypoint1_time).seconds
+                self.py = self.wp1_py
+            elif self.waypoint2_time <= simul_time < self.waypoint3_time:
+                self.thr_wp2 = True
+                self.px = self.wp2_px
+                self.py = self.wp2_py + (self.wp3_py - self.wp2_py) * (simul_time - self.waypoint2_time).seconds / (self.waypoint3_time - self.waypoint2_time).seconds
+            elif self.waypoint3_time <= simul_time < self.ne_time:
+                self.thr_wp3 = True
+                self.px = self.wp2_px + (self.ne_px - self.wp3_px) * (simul_time - self.waypoint3_time).seconds / (self.ne_time - self.waypoint3_time).seconds
+                self.py = self.wp3_py
+            
         if self.ne_time <= simul_time:
+            self.py, self.py = self.ne_px, self.ne_py
             self.cur_evt_id += 1
             self.cur_evt_update(self.cur_evt_id)
-        
+                        
     def draw(self, gc):
-        gc.Rotate(math.pi)
-        gc.DrawRectangle(0, 0, container_hs, container_vs)
+        r, g, b = 255, 255, 255
+        bruclr = wx.Colour(r, g, b, 0)
+        gc.SetBrush(wx.Brush(bruclr))
+        old_tr = gc.GetTransform()
+        if self.isClockWise:
+            if self.thr_wp1:
+                gc.Rotate(math.pi / 2)
+                if self.thr_wp2:
+                    gc.Rotate(math.pi / 2)
+                    if self.thr_wp3:
+                        gc.Rotate(-math.pi / 2)
+                        gc.Translate(0, -container_vs * 1.2)
+            else:
+                gc.Rotate(0)
+        else:
+            if self.thr_wp1:
+                gc.Rotate(0)
+                if self.thr_wp2:
+                    gc.Rotate(math.pi / 2)
+                    if self.thr_wp3:
+                        gc.Rotate(math.pi / 2)
+                        gc.Translate(0, -container_vs * 1.2)
+            else:
+                gc.Rotate(math.pi / 2)
+                gc.Translate(0, -container_vs * 1.2)
+            
+        gc.DrawRectangle(-container_hs * 0.1, -container_vs * 0.1, container_hs * 1.2, container_vs * 1.2)
+        if self.isHoldingContainer:
+            r, g, b = 228, 108, 10
+            brushclr = wx.Colour(r, g, b)
+            gc.SetBrush(wx.Brush(brushclr))
+            gc.DrawRectangle(0, 0, container_hs, container_vs)
+        gc.SetTransform(old_tr)
     
 class MainFrame(wx.Frame):
     def __init__(self):
@@ -154,8 +266,7 @@ class MyPanel(wx.Panel):
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
         self.timer.Start(1000 / frame)
-        
-        self.simul_clock = datetime(2011, 8, 23, 10, 9, 50)
+        self.simul_clock = datetime(2011, 8, 23, 10, 9, 30)
         self.saved_time = time.time()
         
         self.containers = self.make_container()
@@ -197,11 +308,16 @@ class MyPanel(wx.Panel):
         scs = []
         #SC
         sc1 = SC(2)
-        sc1.evt_seq = [('2011-08-23-10-09-50', 'QB01', 'C02', 'TL'),
-                       ('2011-08-23-10-10-30', 'TP01', 'C02', 'TU'),
-                       ('2011-08-23-10-37-00', 'QB02', 'C07', 'TL'),
-                       ('2011-08-23-10-38-40', 'TP01', 'C07', 'TU')
+        sc1.evt_seq = [('2011-08-23-10-09-30', 'QB01', 'C02', 'TL'),
+                       ('2011-08-23-10-09-45', 'TP01', 'C02', 'TU'),
+                       ('2011-08-23-10-10-00', 'QB02', 'C07', 'TL'),
+                       ('2011-08-23-10-10-15', 'TP01', 'C07', 'TU')
                        ]
+#        sc1.evt_seq = [('2011-08-23-10-09-30', 'QB01', 'C02', 'TL'),
+#                       ('2011-08-23-10-10-00', 'TP01', 'C02', 'TU'),
+#                       ('2011-08-23-10-10-30', 'QB02', 'C07', 'TL'),
+#                       ('2011-08-23-10-11-00', 'TP01', 'C07', 'TU')
+#                       ]
         sc1.cur_evt_update(sc1.cur_evt_id)
         scs.append(sc1)
         
