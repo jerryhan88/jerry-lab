@@ -34,7 +34,7 @@ class TP(Storage):
 #
         gc.SetPen(wx.Pen(penclr, 1))
         gc.SetBrush(wx.Brush(bruclr))
-        gc.DrawRectangle(0, 0, container_vs*4, container_hs)
+        gc.DrawRectangle(0, 0, container_vs * 4, container_hs)
         
 class QC_buffer(Storage):
     def __init__(self, id):
@@ -76,7 +76,7 @@ class QC(Vehicles):
         self.evt_seq = []
         self.cur_evt_id = 0
         self.trolly = self.Trolly(1)
-        self.trolly.px, self.trolly.py = 200, 30
+        self.trolly.px, self.trolly.py = 0, 0
         self.isSpreaderMoving = False
         self.isTrollyMoving = False
 
@@ -84,6 +84,9 @@ class QC(Vehicles):
         return self.id
     
     def cur_evt_update(self, cur_evt_id):
+#        qc1.evt_seq = [(1.0, (200.0, 30.0), 'S_go',), (5.0, (220.0, 30.0), 'S_stop'),
+#                       (6.0, (0.0, 0.0), 'T_go',), (10.0, (0.0, 15.0), 'T_stop'),
+#                       (14.0, (220.0, 30.0), 'S_go',), (17.0, (200.0, 30.0), 'S_stop')]
         if len(self.evt_seq) <= 1: assert False, 'length of evt_seq is smaller than 2' 
         self.cur_evt = self.evt_seq[cur_evt_id]
         self.next_evt = self.evt_seq[cur_evt_id + 1]
@@ -105,10 +108,13 @@ class QC(Vehicles):
             self.isTrollyMoving = False
         else:
             assert False
+            
+        if cur_evt_id == 0 : self.px, self.py = self.ce_px, self.ce_py
+        
         if self.isSpreaderMoving:
             self.px, self.py = self.ce_px, self.ce_py
         elif self.isTrollyMoving:
-            self.trolly.px, self.trolly.py = self.ce_px + 200, self.ce_py + 30
+            self.trolly.px, self.trolly.py = self.ce_px, self.ce_py
         
     def OnTimer(self, evt, simul_time):
         if self.isSpreaderMoving:
@@ -128,16 +134,20 @@ class QC(Vehicles):
         gc.SetPen(wx.Pen(brushclr, 1))
         gc.SetBrush(wx.Brush(paint))
         
-        gc.DrawRectangle(200, 30, container_hs * 0.5, container_hs * 9)
-        gc.DrawLines([(200 + (container_hs * 0.5 * 0.25), 30), (200 + (container_hs * 0.5 * 0.25) , 30 + container_hs * 9)])
-        gc.DrawLines([(200 + (container_hs * 0.5) , 30 + container_hs * 9), (200 + (container_hs * 0.5) - (container_hs * 0.5 * 0.75) , 30 + container_hs * 9 - (container_hs * 0.5 * 1.41))])
+#        gc.DrawRectangle(0,0, container_hs, container_hs)
         
-        gc.DrawLines([(200 + (container_hs * 0.5 * 0.25) , 30 + container_hs * 9 - (container_hs * 0.5 * 1.41)), (200 + (container_hs * 0.5) , 30 + container_hs * 9 - (container_hs * 0.5 * 1.41))])
-        gc.DrawLines([(200 + (container_hs * 0.5) , 30 + container_hs * 9 - (container_hs * 0.5 * 1.41)), (200 + (container_hs * 0.5) - (container_hs * 0.5 * 0.75) , 30 + container_hs * 9)])
+        gc.DrawRectangle(0, 0, container_hs * 0.5, container_hs * 9)
+        gc.DrawLines([((container_hs * 0.5 * 0.25), 0), ((container_hs * 0.5 * 0.25) , container_hs * 9)])
+        gc.DrawLines([((container_hs * 0.5) , container_hs * 9), ((container_hs * 0.5) - (container_hs * 0.5 * 0.75) , container_hs * 9 - (container_hs * 0.5 * 1.41))])
+        gc.DrawRectangle(0, 0, container_hs * 0.5, container_hs * 9)
+        gc.DrawLines([((container_hs * 0.5 * 0.25), 0), ((container_hs * 0.5 * 0.25) , container_hs * 9)])
+        gc.DrawLines([((container_hs * 0.5) , container_hs * 9), ((container_hs * 0.5) - (container_hs * 0.5 * 0.75) , container_hs * 9 - (container_hs * 0.5 * 1.41))])
+        
+        gc.DrawLines([((container_hs * 0.5 * 0.25) , container_hs * 9 - (container_hs * 0.5 * 1.41)), (container_hs * 0.5 , container_hs * 9 - (container_hs * 0.5 * 1.41))])
+        gc.DrawLines([((container_hs * 0.5) , container_hs * 9 - (container_hs * 0.5 * 1.41)), (container_hs * 0.5 - (container_hs * 0.5 * 0.75) , container_hs * 9)])
         for i in range(9):
-            gc.DrawLines([(200 + container_hs * 0.5 * 0.25, 30 + container_hs * 0.5 * i), (200 + container_hs * 0.5, 30 + container_hs * 0.5 * i)])
+            gc.DrawLines([(container_hs * 0.5 * 0.25, container_hs * 0.5 * i), (container_hs * 0.5, container_hs * 0.5 * i)])
             pass
-        
         
         old_tr = gc.GetTransform()
         gc.Translate(self.trolly.px, self.trolly.py)
@@ -364,7 +374,6 @@ class MyPanel(wx.Panel):
         gc.DrawLines([(200.0, 220.0), (400.0, 220.0)])
 #        gc.DrawLines([(200, -30), (0, 30)])
 #        gc.DrawLines([(15, -30), (15, 30)])
-
         old_tr = gc.GetTransform()
         for v in self.tps, self.qbs, self.vessels, self.qcs, self.ycs, self.scs:
             for x in v:
@@ -381,12 +390,11 @@ class MyPanel(wx.Panel):
         #spreader moving
         #trolly moving
         qc1 = QC(1)
-        qc1.evt_seq = [(1.0, (200.0, 30.0), 'S_go',), (5.0, (220.0, 30.0), 'S_stop'),
+        qc1.evt_seq = [(1.0, (400.0, 60.0), 'S_go',), (5.0, (420.0, 60.0), 'S_stop'),
                        (6.0, (0.0, 0.0), 'T_go',), (10.0, (0.0, 15.0), 'T_stop'),
-                       (14.0, (220.0, 30.0), 'S_go',), (17.0, (200.0, 30.0), 'S_stop')]
+                       (14.0, (420.0, 60.0), 'S_go',), (17.0, (400.0, 60.0), 'S_stop')]
         qc1.cur_evt_update(qc1.cur_evt_id)
         qcs.append(qc1)
-        
         ##YC
         #spreader moving
         #trolly moving
@@ -397,7 +405,6 @@ class MyPanel(wx.Panel):
                        ]
         yc1.cur_evt_update(yc1.cur_evt_id)
         ycs.append(yc1)
-        
         #SC
 #        sc1 = SC(2)
 #        sc1.evt_seq = [('2011-08-23-10-09-50', 'STS01-Lane03', 'C02', 'TL'), 
@@ -407,8 +414,6 @@ class MyPanel(wx.Panel):
 #                       ]
 #        sc1.cur_evt_update(sc1.cur_evt_id)
 #        scs.append(sc1)
-        
-        
         return (vessels, qcs, ycs, scs)
     
 if __name__ == '__main__':
