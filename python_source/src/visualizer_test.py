@@ -45,6 +45,7 @@ class TP(Storage):
         gc.DrawRectangle(0, 0, container_vs * 4, container_hs)
         
 class QC_buffer(Storage):
+
     def __init__(self, id):
         Storage.__init__(self, id)
         self.name = 'QC Buffer'
@@ -56,13 +57,13 @@ class QC_buffer(Storage):
         bruclr = wx.Colour(r, g, b, 200)
         gc.SetPen(wx.Pen(penclr, 1))
         gc.SetBrush(wx.Brush(bruclr))
-        gc.DrawRectangle(0, 0, container_vs * 10, container_hs)
+        gc.DrawRectangle(-container_hs / 2, -container_vs / 2, container_vs * 10, container_hs)
         
         if self.holding_containers:
             r, g, b = 228, 108, 10
             bruclr = wx.Colour(r, g, b, 200)
             gc.SetBrush(wx.Brush(bruclr))
-            gc.DrawRectangle(0, 0, container_hs, container_vs)
+            gc.DrawRectangle(-container_hs / 2, -container_vs / 2, container_hs, container_vs)
 
 class Vehicles(object):
     def __init__(self, id):
@@ -100,7 +101,6 @@ class SC(Vehicles):
         self.thr_wp2 = None
         self.thr_wp3 = None
         
-        self.rotate_angle = 0
     def __repr__(self):
         return self.name + str(self.id)
 
@@ -172,7 +172,6 @@ class SC(Vehicles):
                 self.py = self.ce_py
             elif self.waypoint1_time <= simul_time < self.waypoint2_time:
                 self.thr_wp1 = True
-                self.rotate_angle += math.pi / 2
                 self.px = self.wp1_px  
                 self.py = self.wp1_py + (self.wp2_py - self.wp1_py) * (simul_time - self.waypoint1_time).seconds / (self.waypoint2_time - self.waypoint1_time).seconds
             elif self.waypoint2_time <= simul_time < self.waypoint3_time:
@@ -185,7 +184,6 @@ class SC(Vehicles):
                 self.py = self.wp2_py + (self.ne_py - self.wp3_py) * (simul_time - self.waypoint3_time).seconds / (self.ne_time - self.waypoint3_time).seconds
         else:
             if self.ce_time <= simul_time < self.waypoint1_time:
-                self.rotate_angle = 0
                 self.px = self.ce_px
                 self.py = self.ce_py + (self.wp1_py - self.ce_py) * (simul_time - self.ce_time).seconds / (self.waypoint1_time - self.ce_time).seconds
             elif self.waypoint1_time <= simul_time < self.waypoint2_time:
@@ -200,7 +198,6 @@ class SC(Vehicles):
                 self.thr_wp3 = True
                 self.px = self.wp2_px + (self.ne_px - self.wp3_px) * (simul_time - self.waypoint3_time).seconds / (self.ne_time - self.waypoint3_time).seconds
                 self.py = self.wp3_py
-            
         if self.ne_time <= simul_time:
             self.py, self.py = self.ne_px, self.ne_py
             self.cur_evt_id += 1
@@ -211,6 +208,7 @@ class SC(Vehicles):
         bruclr = wx.Colour(r, g, b, 0)
         gc.SetBrush(wx.Brush(bruclr))
         old_tr = gc.GetTransform()
+        
         if self.isClockWise:
             if self.thr_wp1:
                 gc.Rotate(math.pi / 2)
@@ -218,7 +216,6 @@ class SC(Vehicles):
                     gc.Rotate(math.pi / 2)
                     if self.thr_wp3:
                         gc.Rotate(-math.pi / 2)
-                        gc.Translate(0, -container_vs * 1.2)
             else:
                 gc.Rotate(0)
         else:
@@ -228,17 +225,16 @@ class SC(Vehicles):
                     gc.Rotate(math.pi / 2)
                     if self.thr_wp3:
                         gc.Rotate(math.pi / 2)
-                        gc.Translate(0, -container_vs * 1.2)
             else:
                 gc.Rotate(math.pi / 2)
-                gc.Translate(0, -container_vs * 1.2)
             
-        gc.DrawRectangle(-container_hs * 0.1, -container_vs * 0.1, container_hs * 1.2, container_vs * 1.2)
+        gc.DrawRectangle(-container_hs * (0.1 + 0.5), -container_vs * (0.1 + 0.5), container_hs * 1.2, container_vs * 1.2)
+
         if self.isHoldingContainer:
             r, g, b = 228, 108, 10
             brushclr = wx.Colour(r, g, b)
             gc.SetBrush(wx.Brush(brushclr))
-            gc.DrawRectangle(0, 0, container_hs, container_vs)
+            gc.DrawRectangle(-container_hs / 2, -container_vs / 2, container_hs, container_vs)
         gc.SetTransform(old_tr)
     
 class MainFrame(wx.Frame):
