@@ -2,6 +2,7 @@ from __future__ import division
 from parameter_function import container_hs, container_vs, l_sx
 from parameter_function import pyslot, pvslot
 from parameter_function import change_b_color
+from datetime import datetime
 import wx
 
 class Container(object):
@@ -14,6 +15,7 @@ class Container(object):
         self.size = '40ft'
     def __repr__(self):
         return str(self.id)
+    
     def draw(self, gc):
         gc.DrawRectangle(self.hs / 2, self.vs / 2, self.hs, self.vs)
     
@@ -41,7 +43,6 @@ class Storage(object):
         return self.name + str(self.id)
 
 class QC_buffer(Storage):
-
     def __init__(self, id, px, py):
         Storage.__init__(self)
         self.id = id
@@ -126,41 +127,70 @@ class Block(Storage):
             c.draw(gc)
             gc.SetTransform(old_tr)
 
-class Vessel(object):
-    def __init__(self, name, voyage, type=0): 
+class Vehicles(object):
+    def __init__(self):
+        self.id = None
+        self.name = None
+        self.evt_seq = []
+        self.cur_evt_id = 0
+        self.holding_containers = []
+        
+        self.ce_px, self.ce_py = None, None
+        self.px, self.py = None, None
+        self.ne_px, self.ne_py = None, None
+    def set_dest_position(self, px, py):
+        self.ne_px, self.ne_py = px, py
+        
+class Vessel(Vehicles):
+    def __init__(self, name, voyage):
+        Vehicles.__init__(self)
         self.name = name
         self.voyage = voyage
-        self.type = type
         self.LOA, self.B = container_hs * 14, container_vs * 10
-        self.num_of_bay_drawn = 9
+        self.num_of_bay = 35
         self.num_of_stack = 8
-        
-        self.evt_seq = []
-        self.px, self.py = None, None
-        self.holding_containers = []
         self.bay_pos_info = {}
         self.stack_pos_info = {}
+        self.sf_ori_px, self.sf_ori_py = None, None  
         
         self.v_d_p = [(0, container_vs * 2), (container_hs * 1.84 , 0), (container_hs * 11 , 0),
                       (container_hs * 13 , container_vs * 1.25), (self.LOA, self.B / 2) , (container_hs * 13 , self.B - container_vs * 1.25),
                       (container_hs * 11 , self.B), (container_hs * 1.84 , self.B), (0, self.B - container_vs * 2.5),
                        (0, container_vs * 2)]
         
-        margin_px = container_hs * 2
-        for x in xrange(self.num_of_bay_drawn):
-            self.bay_pos_info[(self.num_of_bay_drawn - (x + 1)) * 4 + 1] = margin_px + container_hs * 1.1 * x + container_hs / 2 + container_hs / 4 
-            self.bay_pos_info[(self.num_of_bay_drawn - (x + 1)) * 4 + 2] = margin_px + container_hs * 1.1 * x + container_hs / 2
-            self.bay_pos_info[(self.num_of_bay_drawn - (x + 1)) * 4 + 3] = margin_px + container_hs * 1.1 * x + container_hs / 4
-        
+        self.margin_px = container_hs * 2
+        for x in xrange(self.num_of_bay):
+            self.bay_pos_info[(self.num_of_bay_drawn - (x + 1)) * 4 + 1] = self.margin_px + container_hs / 4 + container_hs * 1.1 * x 
+            self.bay_pos_info[(self.num_of_bay_drawn - (x + 1)) * 4 + 2] = self.margin_px + container_hs * 1.1 * x + container_hs / 2
+            self.bay_pos_info[(self.num_of_bay_drawn - (x + 1)) * 4 + 3] = self.margin_px - container_hs / 4 + container_hs * 1.1 * x
+             
         self.margin_py = container_vs * 1.0
         for x in xrange(self.num_of_stack):
-            self.stack_pos_info[x + 1] = self.margin_py + x * container_vs + container_vs / 2 
+            self.stack_pos_info[x + 1] = x * container_vs + container_vs / 2
+#            self.stack_pos_info[x + 1] = self.margin_py + x * container_vs + container_vs / 2 
         
     def __repr__(self):
         return self.name + ' : ' + str(self.voyage)
     
-    def set_position(self, px, py):
-        self.px, self.py = px - self.LOA * 1 / 3 , py - self.B * 1.1
+    def cur_evt_update(self, cur_evt_id, Bitts):
+        if len(self.evt_seq) <= 1: assert False, 'length of evt_seq is smaller than 2'
+        self.cur_evt = self.evt_seq[cur_evt_id]
+        self.next_evt = self.evt_seq[cur_evt_id + 1]
+        ce_time, self.ce_state, ce_pos = self.cur_evt
+        year, month, day, hour, minute, second = tuple(ce_time.split('-'))
+        self.ce_time = datetime(int(year), int(month), int(day), int(hour), int(minute), int(second))
+        bitt_id = int(ce_pos[-2:])
+        self.ce_px, self.ce_py = Bitts[bitt_id].px - self.LOA * 1 / 3, Bitts[bitt_id].py - self.B * 1.1
+        
+        if cur_evt_id == 0 :
+            self.sf_ori_px, self.sf_ori_py = self.px, self.py = self.ce_px, self.ce_py# - container_hs * 2 
+        
+        ne_time, self.ne_state, ne_pos = self.next_evt
+        year, month, day, hour, minute, second = tuple(ne_time.split('-'))
+        self.ne_time = datetime(int(year), int(month), int(day), int(hour), int(minute), int(second))
+        
+        bitt_id = int(ne_pos[-2:])
+        self.ne_px, self.ne_py = Bitts[bitt_id].px - self.LOA * 1 / 3, Bitts[bitt_id].py - self.B * 1.1
     
     def draw(self, gc):
         gc.SetPen(wx.Pen("black", 1))
@@ -168,23 +198,31 @@ class Vessel(object):
         gc.SetBrush(wx.Brush(brushclr))
         #draw vessel surface        
         gc.DrawLines(self.v_d_p)
+#        gc.DrawRectangle(0,0, self.LOA, self.B)
         gc.SetPen(wx.Pen("black", 0.5))
         
-        for b in xrange(self.num_of_bay_drawn):
-            bay_id = b * 4 + 2 
-            px = self.bay_pos_info[bay_id] - container_hs / 2
-            py = self.margin_py
-            for s in xrange(self.num_of_stack + 1):
-                gc.DrawLines([(px, py + s * container_vs), (px + container_hs, py + s * container_vs)])
-            gc.DrawLines([(px, py), (px, py + self.num_of_stack * container_vs)])
-            gc.DrawLines([(px + container_hs, py), (px + container_hs, py + self.num_of_stack * container_vs)])
+#        for b in xrange((self.num_of_bay-1)//2):
+#            gc.DrawLines([(0, container_hs * x), (container_vs * self.num_of_stacks , container_hs * x)])
+
+
+
+
+#            px = self.bay_pos_info[bay_id] - container_hs / 2
+##            px = self.margin_px + container_hs * b
+#            py = self.margin_py
+#            for s in xrange(self.num_of_stack + 1):
+#                gc.DrawLines([(px, py + s * container_vs), (px + container_hs, py + s * container_vs)])
+#            gc.DrawLines([(px, py), (px, py + self.num_of_stack * container_vs)])
+#            gc.DrawLines([(px + container_hs, py), (px + container_hs, py + self.num_of_stack * container_vs)])
         
-        change_b_color(gc, 'orange')
-        for c in self.holding_containers:
-            bay_id, stack_id, _ = pvslot(c.cur_position)
-            bay_px, bay_py = self.bay_pos_info[bay_id]
-            px, py = bay_px, bay_py + (stack_id - 1) * container_vs
-            gc.DrawRectangle(px, py, c.hs, c.vs)
+#        change_b_color(gc, 'orange')
+#        for c in self.holding_containers:
+#            bay_id, stack_id, _ = pvslot(c.cur_position)
+#            px, py = self.bay_pos_info[bay_id] , self.stack_pos_info[stack_id]
+#            old_tr = gc.GetTransform()
+#            gc.Translate(px, py)
+#            c.draw(gc)
+#            gc.SetTransform(old_tr)
 
 class QC(object):
     def __init__(self, name):
