@@ -157,7 +157,6 @@ class MainFrame(wx.Frame):
         self.input_info.Destroy()
         self.Destroy()
         
-        
 class Input_View_Panel(wx.Panel):
     def __init__(self, parent, pos, size, v_name, v_voyage, start_time, end_time):
         wx.Panel.__init__(self, parent, -1, pos, size)
@@ -328,51 +327,37 @@ class Viewer_Panel(Drag_zoom_panel):
         for x in xrange(total_num_b):
             Blocks[x + 1] = Block(x + 1, block0_px + x * container_hs * 2.8, block0_py)
             TPs[x + 1] = TP(x + 1, block0_px + x * container_hs * 2.8 + container_vs * 2, block0_py - container_hs * 3 / 2)
-
-# #        for x in self.blocks:# + self.vessels:
-# #            self.TPs.append(TP(b.id, x.px, x.py - container_hs * 3 / 2))
         
-#===============================================================================
-#        ###
-#        ### set and make yard blocks position
-#        block0_px, block0_py = self.bitts_px[3], self.lines_py[-1] + container_vs * 29.75
-#        self.blocks = []
-#        for x in xrange(15):
-#            b = Block(x + 1)
-#            b.set_position(block0_px + x * container_hs * 2.8, block0_py)
-#            self.blocks.append(b)
-#        ###
-#        
-#        ### set container position
-#        for c in self.containers:
-#            c.cur_position = c.moving_seq[0][1]
-#            c.cur_index_in_ms = 0
-#            if c.cur_position[0] == 'B':
-#                _id = int(c.cur_position[1:3]) - 1 
-#                self.blocks[_id].holding_containers.append(c)
-#                bay_id, _, _ = pyslot(c.cur_position)
-#                c.hs = container_vs
-#                c.vs = container_hs
-#                if bay_id % 2 != 0:
-#                    c.size = '20ft'
-#                    c.vs /= 2
-#            elif c.cur_position[:2] == 'SB':
-#                # container in vessel
-#                # ex of c.moving_seq[0]: ('2011-08-23-10-00-00', 'SB05-05-12', 'STS01', 'ABCDEF', '02')
-#                target_v_name = c.moving_seq[0][3]
-#                target_v_voyage = c.moving_seq[0][4]
-#                target_v = None
-#                for v in self.vessels:
-#                    if v.name == target_v_name and v.voyage == target_v_voyage:
-#                        target_v = v
-#                        break
-#                else:
-#                    assert False , 'there is no target_v'
-#                target_v.holding_containers.append(c)
-#                bay_id, _, _ = pvslot(c.cur_position)
-#                if bay_id % 2 != 0:
-#                    c.size = '20ft'
-#                    c.hs /= 2
+        ### set container position
+        for c in self.containers:
+            c.cur_position = c.moving_seq[0][1]
+            c.cur_index_in_ms = 0
+            if c.cur_position[0] == 'B':
+                id = int(c.cur_position[1:3])
+                Blocks[id].holding_containers.append(c)
+                bay_id, _, _ = pyslot(c.cur_position)
+                c.hs = container_vs
+                c.vs = container_hs
+                if bay_id % 2 != 0:
+                    c.size = '20ft'
+                    c.vs /= 2
+            elif c.cur_position[:2] == 'SB':
+                # container in vessel
+                # ex of c.moving_seq[0]: ('2011-08-23-10-00-00', 'SB05-05-12', 'STS01', 'ABCDEF', '02')
+                target_v_name = c.moving_seq[0][3]
+                target_v_voyage = c.moving_seq[0][4]
+                target_v = None
+                for v in self.vessels:
+                    if v.name == target_v_name and v.voyage == target_v_voyage:
+                        target_v = v
+                        break
+                else:
+                    assert False , 'there is no target_v'
+                target_v.holding_containers.append(c)
+                bay_id, _, _ = pvslot(c.cur_position)
+                if bay_id % 2 != 0:
+                    c.size = '20ft'
+                    c.hs /= 2
 # 
 #        ### set yc position
 #        for yc in self.ycs:
@@ -380,18 +365,12 @@ class Viewer_Panel(Drag_zoom_panel):
 #            yc_px, yc_py = target_block.px, target_block.py + 50 
 #            yc.set_position(yc_px, yc_py)
 # 
-#        ### set vehicles position
-#        for v in self.vessels:
-#            bitt_p = v.evt_seq[0][2]
-#            bitt_id = int(bitt_p[-2:])
-#            v.set_position(self.bitts_px[bitt_id], l0_py)
-#        
-# #        self.TPs = []
-#        
-# #        for x in self.blocks:# + self.vessels:
-# #            self.TPs.append(TP(b.id, x.px, x.py - container_hs * 3 / 2))
-#===============================================================================
-#        
+        ### set vehicles position
+        for v in self.vessels:
+            bitt_p = v.evt_seq[0][2]
+            bitt_id = int(bitt_p[-2:])
+            v.set_position(self.bitts_px[bitt_id], l0_py)
+            
         self.InitBuffer()
         
     def Draw(self, gc):
@@ -406,7 +385,6 @@ class Viewer_Panel(Drag_zoom_panel):
             gc.Translate(x.px, x.py)
             x.draw(gc)
             gc.SetTransform(old_tr)
-        
         
         gc.SetPen(wx.Pen("black", 1))
         for i, py in enumerate(self.lines_py):
