@@ -41,9 +41,9 @@ class Input_dialog(wx.Dialog):
         
         self.t1 = wx.TextCtrl(self, -1, "09", (210, 50), size=(25, -1))
         wx.StaticText(self, -1, ':', (236, 50))
-        self.mi1 = wx.TextCtrl(self, -1, "35", (240, 50), size=(25, -1))
+        self.mi1 = wx.TextCtrl(self, -1, "34", (240, 50), size=(25, -1))
         wx.StaticText(self, -1, ':', (266, 50))
-        self.s1 = wx.TextCtrl(self, -1, "00", (270, 50), size=(25, -1))
+        self.s1 = wx.TextCtrl(self, -1, "40", (270, 50), size=(25, -1))
         
         wx.StaticText(self, -1, '-', (305, 50))
         
@@ -150,7 +150,7 @@ class MainFrame(wx.Frame):
             print self.simul_clock_saved
             self.simul_clock_saved = None
             self.saved_time = time.time()
-        self.vp.OnTimer(evt)
+        self.vp.OnTimer(evt, self.simul_clock)
         self.cp.OnTimer(evt, self.simul_clock)
         
     def OnClose(self, event):
@@ -223,11 +223,7 @@ class Drag_zoom_panel(wx.Panel):
         self.translate_mode = False
         self.translate_x, self.translate_y = 0, 0
         self.scale = 1.0
-        
 #        self.InitBuffer()
-        
-    def OnTimer(self, evt):
-        self.RefreshGC()
         
     def OnSize(self, evt):
         self.InitBuffer()
@@ -304,8 +300,8 @@ class Viewer_Panel(Drag_zoom_panel):
         l1_py = l0_py + container_vs
         l2_py = l1_py + container_vs * 0.5
         l3_py = l2_py + container_vs * 0.5
-        l4_py = l3_py + container_vs * 2.2
-        self.lines_py = [eval('l%d_py' % x) for x in xrange(5)]
+#        l4_py = l3_py + container_vs * 2.2
+        self.lines_py = [eval('l%d_py' % x) for x in xrange(4)]
         
         ### make bitts
         total_num_bitt = 19
@@ -317,9 +313,9 @@ class Viewer_Panel(Drag_zoom_panel):
         total_num_qb = 4
         for x in xrange(total_num_qb):
             if x == 0:
-                QBs[x + 1] = QC_buffer(x + 1, 0, l4_py + container_vs * 6)
+                QBs[x + 1] = QC_buffer(x + 1, 0, l3_py)
             else:
-                QBs[x + 1] = QC_buffer(x + 1, 0, l4_py + container_vs * (7 + x * 2.2))
+                QBs[x + 1] = QC_buffer(x + 1, 0, l3_py + container_vs * (8 + x * 2.2))
 
         ### make TP and Block
         total_num_b = 15
@@ -359,27 +355,26 @@ class Viewer_Panel(Drag_zoom_panel):
                     c.size = '20ft'
                     c.hs /= 2
 # 
-#        ### set yc position
-#        for yc in self.ycs:
-#            target_block = self.blocks[int(yc.id) // 2]
-#            yc_px, yc_py = target_block.px, target_block.py + 50 
-#            yc.set_position(yc_px, yc_py)
-# 
         ### set vehicles position
         for v in self.vessels:
             v.cur_evt_update(v.cur_evt_id, Bitts)
-#            v.set_position(Bitts[bitt_id].px, Bitts[bitt_id].py)
+            
+        for yc in self.ycs:
+            yc.cur_evt_update(yc.cur_evt_id, Block)
             
         self.InitBuffer()
-        
+    
+    def OnTimer(self, evt, simul_time):
+        for v in self.vessels:
+            v.OnTimer(evt, simul_time)
+             
+        self.RefreshGC()
+    
     def Draw(self, gc):
         gc.Translate(self.translate_x, self.translate_y)
         gc.Scale(self.scale, self.scale)
-        
-        #draw Background
-        # draw Shuttle Carrier Line
-        
         old_tr = gc.GetTransform()
+        
         for x in Bitts.values() + QBs.values() + TPs.values() + Blocks.values():
             gc.Translate(x.px, x.py)
             x.draw(gc)
@@ -387,12 +382,7 @@ class Viewer_Panel(Drag_zoom_panel):
         
         gc.SetPen(wx.Pen("black", 1))
         for i, py in enumerate(self.lines_py):
-            if i == 4:
-                gc.SetPen(wx.Pen("black", 2))
-                gc.DrawLines([(0, py), (l_sx, py)])
-                gc.SetPen(wx.Pen("black", 1))
-            else:
-                gc.DrawLines([(0, py), (l_sx, py)])
+            gc.DrawLines([(0, py), (l_sx, py)])
                 
         #draw vehicle
         old_tr = gc.GetTransform()
@@ -400,30 +390,6 @@ class Viewer_Panel(Drag_zoom_panel):
             gc.Translate(v.px, v.py)
             v.draw(gc)
             gc.SetTransform(old_tr)
-        
-#        old_tr = gc.GetTransform()
-#        
-#        #draw block
-#        for b in self.blocks:
-#            gc.Translate(b.px, b.py)
-#            b.draw(gc)
-#            gc.SetTransform(old_tr)
-#        
-#        r, g, b = (255, 255, 255)
-#        brushclr = wx.Colour(r, g, b, 100)
-#        gc.SetBrush(wx.Brush(brushclr))
-#        
-#        #draw yc
-#        for yc in self.ycs:
-#            gc.Translate(yc.px, yc.py)
-#            yc.draw(gc)
-#            gc.SetTransform(old_tr)
-        
-#        
-#        #draw sc
-#        gc.SetPen(wx.Pen("black", 0))    
-#        brushclr = wx.Colour(228, 108, 10)
-#        gc.SetBrush(wx.Brush(brushclr))
 
 class Control_Panel(wx.Panel):
     def __init__(self, parent, pos, size):
@@ -435,6 +401,7 @@ class Control_Panel(wx.Panel):
         self.saved_time = time.time()
         
         self.c_time = wx.StaticText(self, -1, self.simul_clock.ctime(), (100, 40))
+        self.paly_speed = wx.StaticText(self, -1, str(self.Parent.play_speed) + 'x', (500, 40))
 
         s_img, r_img, pa_img, pl_img = wx.Image('pic/stop.bmp', wx.BITMAP_TYPE_BMP), wx.Image("pic/reverse.bmp", wx.BITMAP_TYPE_BMP), wx.Image("pic/pause.bmp", wx.BITMAP_TYPE_BMP), wx.Image("pic/play.bmp", wx.BITMAP_TYPE_BMP) 
         s_bmp, r_bmp, pa_bmp, pl_bmp = s_img.Scale(30, 30), r_img.Scale(30, 30), pa_img.Scale(30, 30), pl_img.Scale(30, 30)
@@ -466,9 +433,14 @@ class Control_Panel(wx.Panel):
         self.timer.Stop() 
         
     def time_flow_reverse(self, evt):
-        self.Parent.isReverse_play = True
         if not self.timer.IsRunning():
             self.timer.Start(frame_milsec)
+        
+        if self.Parent.play_speed > 0:
+            self.Parent.play_speed -= 0.5
+            self.paly_speed.SetLabel(str(self.Parent.play_speed) + 'x')
+        else:
+            self.Parent.isReverse_play = True
         
     def time_flow_pause(self, evt):
         self.Parent.simul_clock_saved = self.Parent.simul_clock 
@@ -476,7 +448,11 @@ class Control_Panel(wx.Panel):
     
     def time_flow_play(self, evt):
         self.Parent.isReverse_play = False
-        self.timer.Start(frame_milsec)
+        if self.timer.IsRunning():
+            self.Parent.play_speed += 0.5
+            self.paly_speed.SetLabel(str(self.Parent.play_speed) + 'x')
+        else: 
+            self.timer.Start(frame_milsec)
 
     def OnTimer(self, evt, simul_clock):
         cur_sec = time.time()
