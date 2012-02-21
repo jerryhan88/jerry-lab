@@ -367,9 +367,8 @@ class Viewer_Panel(Drag_zoom_panel):
 # 
         ### set vehicles position
         for v in self.vessels:
-            bitt_p = v.evt_seq[0][2]
-            bitt_id = int(bitt_p[-2:])
-            v.set_position(self.bitts_px[bitt_id], l0_py)
+            v.cur_evt_update(v.cur_evt_id, Bitts)
+#            v.set_position(Bitts[bitt_id].px, Bitts[bitt_id].py)
             
         self.InitBuffer()
         
@@ -394,9 +393,13 @@ class Viewer_Panel(Drag_zoom_panel):
                 gc.SetPen(wx.Pen("black", 1))
             else:
                 gc.DrawLines([(0, py), (l_sx, py)])
-        
-        
-                        
+                
+        #draw vehicle
+        old_tr = gc.GetTransform()
+        for v in self.vessels:
+            gc.Translate(v.px, v.py)
+            v.draw(gc)
+            gc.SetTransform(old_tr)
         
 #        old_tr = gc.GetTransform()
 #        
@@ -415,11 +418,7 @@ class Viewer_Panel(Drag_zoom_panel):
 #            gc.Translate(yc.px, yc.py)
 #            yc.draw(gc)
 #            gc.SetTransform(old_tr)
-#        #draw vessel
-#        for v in self.vessels:
-#            gc.Translate(v.px, v.py)
-#            v.draw(gc)
-#            gc.SetTransform(old_tr)
+        
 #        
 #        #draw sc
 #        gc.SetPen(wx.Pen("black", 0))    
