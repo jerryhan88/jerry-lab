@@ -53,10 +53,10 @@ def run(start_time, end_time):
                 #  evt ex : '2011-08-23-10-05-20_AYC01_OD1235AYC01_2011-08-23-10-05-05_TL_C09_B01-TP02_ABCDEF_02_N'
                 # ?? are vessel and voyage needed?
                 _datetime, processing_v, _, _, operation, c_id, position, _, vessel_name, voyage, state = ec
-                yc_id = vehicle[-2:] 
+                yc_id = int(vehicle[-2:]) 
                 target_yc = None
                 for y in ycs:
-                    if y.name[-2:] == yc_id:
+                    if y.id == yc_id:
                         target_yc = y
                         target_yc.id = yc_id
                         break
@@ -101,7 +101,7 @@ if __name__ == '__main__':
     vs, cs = run(1, 2)
     for v in vs:
         for x in v:
-            print x.name, ':', x.evt_seq
+            print x, ':', x.evt_seq
     print ''
 
     for c in cs:
