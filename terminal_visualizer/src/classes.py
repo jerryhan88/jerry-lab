@@ -69,11 +69,10 @@ class TP(Storage):
         self.name = 'TP'
         self.px, self.py = px, py
         self.num_of_stacks = 4
-        
-#        self.stack_pos = {}
-#        for x in xrange(self.num_of_stacks):
-#            self.stack_pos[x+1] = {}
-             
+        self.bay_pos = container_hs / 2
+        self.stack_pos = {}
+        for x in xrange(self.num_of_stacks):
+            self.stack_pos[x + 1] = container_vs / 2 + container_vs * x 
 
     def draw(self, gc):
         gc.SetPen(wx.Pen('black', 1))
@@ -123,7 +122,6 @@ class Block(Storage):
             gc.SetTransform(old_tr)
 
 class Vehicles(object):
-
     def __init__(self):
         self.id = None
         self.name = None
@@ -138,6 +136,7 @@ class Vehicles(object):
         self.ne_px, self.ne_py = px, py
         
 class Vessel(Vehicles):
+
     def __init__(self, name, voyage):
         Vehicles.__init__(self)
         self.name = name
@@ -198,7 +197,7 @@ class Vessel(Vehicles):
     def OnTimer(self, evt, simul_time):
         if self.ar_s_time <= simul_time < self.ce_time:
             self.px = self.ar_s_px
-            self.py = self.ar_s_py + (self.ce_py - self.ar_s_py) * (simul_time - self.ar_s_time).seconds / (self.ce_time - self.ar_s_time).seconds
+            self.py = self.ar_s_py + (self.ce_py - self.ar_s_py) * (simul_time - self.ar_s_time).total_seconds() / (self.ce_time - self.ar_s_time).total_seconds()
         
         if self.ne_time <= simul_time < self.dp_e_time:
             self.px = self.ar_s_px
@@ -255,21 +254,34 @@ class YC(Vehicles):
     def __repr__(self):
         return str(self.name + str(self.id))
     
-    def cur_evt_update(self, cur_evt_id, Block):
+    def cur_evt_update(self, cur_evt_id, Blocks, TPs):
         if len(self.evt_seq) <= 1: assert False, 'length of evt_seq is smaller than 2'
         self.cur_evt = self.evt_seq[cur_evt_id]
         self.next_evt = self.evt_seq[cur_evt_id + 1]
         
         print self.cur_evt 
-        ce_time, ce_pos, ce_container, self.ce_state,  = self.cur_evt
+        ce_time, ce_pos, ce_container, self.ce_state, = self.cur_evt
         year, month, day, hour, minute, second = tuple(ce_time.split('-'))
         self.ce_time = datetime(int(year), int(month), int(day), int(hour), int(minute), int(second))
+        
+        #TODO TP or Block check
+        tp_id, tp_stack_id = int(ce_pos[1:3]), int(ce_pos[6:])
+        self.ce_px, self.ce_py = TPs[tp_id].px
+        
+        print tp_id, tp_stack_id 
+        
+        if cur_evt_id == 0:
+            pass
+            
+        
+#        print self.next_evt
+        
 #        bitt_id = int(ce_pos[-2:])
 #        self.ce_px, self.ce_py = Bitts[bitt_id].px - self.LOA * 1 / 3, Bitts[bitt_id].py - self.B * 1.1
         
-        ne_time, self.ne_state, ne_pos = self.next_evt
-        year, month, day, hour, minute, second = tuple(ne_time.split('-'))
-        self.ne_time = datetime(int(year), int(month), int(day), int(hour), int(minute), int(second))
+#        ne_time, self.ne_state, ne_pos = self.next_evt
+#        year, month, day, hour, minute, second = tuple(ne_time.split('-'))
+#        self.ne_time = datetime(int(year), int(month), int(day), int(hour), int(minute), int(second))
 #        bitt_id = int(ne_pos[-2:])
 #        self.ne_px, self.ne_py = Bitts[bitt_id].px - self.LOA * 1 / 3, Bitts[bitt_id].py - self.B * 1.1
         
