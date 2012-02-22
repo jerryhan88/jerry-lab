@@ -38,10 +38,10 @@ def run(start_time, end_time):
                     continue
                 # TODO
                 #  when state is not 'N', what should I do?
-                qc_id = vehicle[-2:] 
+                qc_id = int(vehicle[-2:]) 
                 target_qc = None
                 for q in qcs:
-                    if q.name[-2:] == qc_id:
+                    if q.id == qc_id:
                         target_qc = q
                         break
                 else:
