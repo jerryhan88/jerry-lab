@@ -359,8 +359,20 @@ class Viewer_Panel(Drag_zoom_panel):
         for v in self.vessels:
             v.cur_evt_update(v.cur_evt_id, Bitts)
             
-        for yc in self.ycs:
-            yc.cur_evt_update(yc.cur_evt_id, Block)
+#        for yc in self.ycs:
+#            yc.cur_evt_update(yc.cur_evt_id, Block)
+        
+        
+        for i, yc in enumerate(self.ycs):
+            yc.px, yc.py = Blocks[i + 1].px, Blocks[i + 1].py + (i + 2) * container_hs
+            
+        for i, qc in enumerate(self.qcs):
+            qc.px, qc.py = Bitts[i + 5].px + container_vs * (i + 3), Bitts[i + 5].py - container_hs * 4
+        
+        
+        from random import randrange
+        for i, sc in enumerate(self.scs):
+            sc.px, sc.py = Bitts[i + 5].px + container_vs * (i + randrange(20)), Bitts[i + 5].py + container_hs * 4 + container_vs * (i + randrange(20))
             
         self.InitBuffer()
     
@@ -386,9 +398,9 @@ class Viewer_Panel(Drag_zoom_panel):
                 
         #draw vehicle
         old_tr = gc.GetTransform()
-        for v in self.vessels:
-            gc.Translate(v.px, v.py)
-            v.draw(gc)
+        for x in self.vessels + self.ycs + self.qcs + self.scs:
+            gc.Translate(x.px, x.py)
+            x.draw(gc)
             gc.SetTransform(old_tr)
 
 class Control_Panel(wx.Panel):
