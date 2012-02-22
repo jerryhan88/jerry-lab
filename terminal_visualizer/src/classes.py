@@ -292,17 +292,100 @@ class YC(Vehicles):
         self.trolly.draw(gc)
         gc.SetTransform(old_tr)
 
-class QC(object):
+class QC(Vehicles):
+    class Trolly(Vehicles):
+        def __init__(self):
+            Vehicles.__init__(self)
+
+        def draw(self, gc):
+            tr, tg, tb = (4, 189, 252)
+            t_brushclr = wx.Colour(tr, tg, tb, 200)
+            ##draw trolly         
+            gc.SetPen(wx.Pen(t_brushclr, 0))
+            gc.SetBrush(wx.Brush(t_brushclr))
+            gc.DrawRectangle(0, 0, container_hs * 0.5, container_hs * 0.5)
+
     def __init__(self, name):
-        self.name = name
+        Vehicles.__init__(self)
+        self.id = int(name[-2:])
+        self.name = 'QC'
         self.evt_seq = []
-        self.px, self.py = None, None
+        self.cur_evt_id = 0
+        self.trolly = self.Trolly()
+        self.trolly.px, self.trolly.py = 0, 0
+        self.isSpreaderMoving = False
+        self.isTrollyMoving = False
 
     def __repr__(self):
-        return self.name
+        return str(self.name + str(self.id))
+    
+    def cur_evt_update(self, cur_evt_id):
+        if len(self.evt_seq) <= 1: assert False, 'length of evt_seq is smaller than 2' 
+        self.cur_evt = self.evt_seq[cur_evt_id]
+        self.next_evt = self.evt_seq[cur_evt_id + 1]
+        self.ce_time, ce_pos, self.ce_state = self.cur_evt
+        self.ce_px, self.ce_py = ce_pos
+        self.ne_time, ne_pos, self.ne_state = self.next_evt
+        self.ne_px, self.ne_py = ne_pos
+        if self.ce_state[0] == 'S' and self.ne_state[0] == 'S':
+            self.isSpreaderMoving = True
+            self.isTrollyMoving = False
+        elif self.ce_state[0] == 'S' and self.ne_state[0] == 'T':
+            self.isSpreaderMoving = False
+            self.isTrollyMoving = False    
+        elif self.ce_state[0] == 'T' and self.ne_state[0] == 'T':
+            self.isSpreaderMoving = False
+            self.isTrollyMoving = True
+        elif self.ce_state[0] == 'T' and self.ne_state[0] == 'S':
+            self.isSpreaderMoving = False
+            self.isTrollyMoving = False
+        else:
+            assert False
+            
+        if cur_evt_id == 0 : self.px, self.py = self.ce_px, self.ce_py
+        
+        if self.isSpreaderMoving:
+            self.px, self.py = self.ce_px, self.ce_py
+        elif self.isTrollyMoving:
+            self.trolly.px, self.trolly.py = self.ce_px, self.ce_py
+        
+    def OnTimer(self, evt, simul_time):
+        if self.isSpreaderMoving:
+            if self.ce_time < simul_time < self.ne_time: 
+                self.px = self.ce_px + (self.ne_px - self.ce_px) * (simul_time - self.ce_time) / (self.ne_time - self.ce_time)
+        elif self.isTrollyMoving:
+            if self.ce_time < simul_time < self.ne_time:
+                self.trolly.py = self.ce_py + (self.ne_py - self.ce_py) * (simul_time - self.ce_time) / (self.ne_time - self.ce_time)
+        if self.ne_time <= simul_time:
+            self.cur_evt_id += 1
+            self.cur_evt_update(self.cur_evt_id)
     
     def draw(self, gc):
-        pass
+        r, g, b = (0, 0, 0)
+        brushclr = wx.Colour(r, g, b, 200)
+        paint = wx.Colour(r, g, b, 0)
+        gc.SetPen(wx.Pen(brushclr, 1))
+        gc.SetBrush(wx.Brush(paint))
+        
+#        gc.DrawRectangle(0,0, container_hs, container_hs)
+        
+        gc.DrawRectangle(0, 0, container_hs * 0.5, container_hs * 9)
+        gc.DrawLines([((container_hs * 0.5 * 0.25), 0), ((container_hs * 0.5 * 0.25) , container_hs * 9)])
+        gc.DrawLines([((container_hs * 0.5) , container_hs * 9), ((container_hs * 0.5) - (container_hs * 0.5 * 0.75) , container_hs * 9 - (container_hs * 0.5 * 1.41))])
+        gc.DrawRectangle(0, 0, container_hs * 0.5, container_hs * 9)
+        gc.DrawLines([((container_hs * 0.5 * 0.25), 0), ((container_hs * 0.5 * 0.25) , container_hs * 9)])
+        gc.DrawLines([((container_hs * 0.5) , container_hs * 9), ((container_hs * 0.5) - (container_hs * 0.5 * 0.75) , container_hs * 9 - (container_hs * 0.5 * 1.41))])
+        
+        gc.DrawLines([((container_hs * 0.5 * 0.25) , container_hs * 9 - (container_hs * 0.5 * 1.41)), (container_hs * 0.5 , container_hs * 9 - (container_hs * 0.5 * 1.41))])
+        gc.DrawLines([((container_hs * 0.5) , container_hs * 9 - (container_hs * 0.5 * 1.41)), (container_hs * 0.5 - (container_hs * 0.5 * 0.75) , container_hs * 9)])
+        for i in range(9):
+            gc.DrawLines([(container_hs * 0.5 * 0.25, container_hs * 0.5 * i), (container_hs * 0.5, container_hs * 0.5 * i)])
+            pass
+        
+        old_tr = gc.GetTransform()
+        gc.Translate(self.trolly.px, self.trolly.py)
+        self.trolly.draw(gc)
+        gc.SetTransform(old_tr)
 
 class SC(object):
     def __init__(self, name):
@@ -347,7 +430,7 @@ class SC(object):
     
     def draw(self, gc):
         gc.SetPen(wx.Pen("black", 1))
-        r, g, b = (255, 0, 0)
+        r, g, b = (255, 255, 255)
         brushclr = wx.Colour(r, g, b, 100)
         gc.SetBrush(wx.Brush(brushclr))
         gc.DrawRectangle(0, 0, container_hs * 1.1, container_vs * 1.1)
