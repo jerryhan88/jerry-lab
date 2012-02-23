@@ -8,12 +8,16 @@ import initializer
 #TODO  make block and TP in initializer
 from classes import Bitt, QC_buffer, Block, TP
 
+Play_speed = 2.0
+
+
 Bitts = {}
 QBs = {}
 Blocks = {}
 TPs = {}
 
 class Input_dialog(wx.Dialog):
+
     def __init__(self, parent, name, size=(570, 180), pos=(400, 300)):
         wx.Dialog.__init__(self, None, -1, 'Monitoring Input', pos , size)
         wx.StaticText(self, -1, 'Vessel', (15, 10))
@@ -21,49 +25,24 @@ class Input_dialog(wx.Dialog):
         wx.StaticText(self, -1, 'Date', (15, 50))
         
         v_name = ['HANJIN', 'MAERSK']
-        self.v_name_ch = wx.Choice(self, -1, (60, 10), choices=v_name)
-        self.v_name_ch.SetSelection(0)
         vo_name = ['01', '02', '03', '04', '05', '06', '07']
-        self.vo_name_ch = wx.Choice(self, -1, (510, 10), choices=vo_name)
-        self.vo_name_ch.SetSelection(1)
+        year = [str(x) for x in xrange(2005, 2012)]
+        month = [str(x) for x in xrange(1, 13)]
+        day = [str(x) for x in xrange(1, 32)]
         
-        y_name1 = ['2005', '2006', '2007', '2008', '2009', '2010', '2011']
-        self.y_name1_ch = wx.Choice(self, -1, (60, 50), choices=y_name1)
-        self.y_name1_ch.SetSelection(6)
+        self.v_name_ch, self.vo_name_ch = wx.Choice(self, -1, (60, 10), choices=v_name), wx.Choice(self, -1, (510, 10), choices=vo_name)
+        self.v_name_ch.SetSelection(0), self.vo_name_ch.SetSelection(1)
         
-        m_name1 = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
-        self.m_name1_ch = wx.Choice(self, -1, (120, 50), choices=m_name1)
-        self.m_name1_ch.SetSelection(7)
+        self.sy_ch, self.sm_ch, self.sd_ch = wx.Choice(self, -1, (60, 50), choices=year), wx.Choice(self, -1, (120, 50), choices=month), wx.Choice(self, -1, (165, 50), choices=day)
+        self.ey_ch, self.em_ch, self.ed_ch = wx.Choice(self, -1, (320, 50), choices=year), wx.Choice(self, -1, (380, 50), choices=month), wx.Choice(self, -1, (425, 50), choices=day)
+        self.sy_ch.SetSelection(6), self.sm_ch.SetSelection(7), self.sd_ch.SetSelection(22)
+        self.ey_ch.SetSelection(6), self.em_ch.SetSelection(7), self.ed_ch.SetSelection(22) 
         
-        d_name1 = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31']
-        self.d_name1_ch = wx.Choice(self, -1, (165, 50), choices=d_name1)
-        self.d_name1_ch.SetSelection(22)
+        self.sh_txt, self.smi_txt, self.ss_txt = wx.TextCtrl(self, -1, "10", (210, 50), size=(25, -1)), wx.TextCtrl(self, -1, "05", (240, 50), size=(25, -1)), wx.TextCtrl(self, -1, "08", (270, 50), size=(25, -1))
+        self.eh_txt, self.emi_txt, self.es_txt = wx.TextCtrl(self, -1, "15", (470, 50), size=(25, -1)), wx.TextCtrl(self, -1, "10", (500, 50), size=(25, -1)), wx.TextCtrl(self, -1, "20", (530, 50), size=(25, -1))
         
-        self.t1 = wx.TextCtrl(self, -1, "09", (210, 50), size=(25, -1))
-        wx.StaticText(self, -1, ':', (236, 50))
-        self.mi1 = wx.TextCtrl(self, -1, "34", (240, 50), size=(25, -1))
-        wx.StaticText(self, -1, ':', (266, 50))
-        self.s1 = wx.TextCtrl(self, -1, "40", (270, 50), size=(25, -1))
+        wx.StaticText(self, -1, ':', (236, 50)), wx.StaticText(self, -1, ':', (266, 50)), wx.StaticText(self, -1, '-', (305, 50)), wx.StaticText(self, -1, ':', (496, 50)), wx.StaticText(self, -1, ':', (526, 50))
         
-        wx.StaticText(self, -1, '-', (305, 50))
-        
-        y_name2 = ['2005', '2006', '2007', '2008', '2009', '2010', '2011']
-        self.y_name2_ch = wx.Choice(self, -1, (320, 50), choices=y_name2)
-        self.y_name2_ch.SetSelection(6)
-        
-        m_name2 = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
-        self.m_name2_ch = wx.Choice(self, -1, (380, 50), choices=m_name2)
-        self.m_name2_ch.SetSelection(7)
-        
-        d_name2 = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31']
-        self.d_name2_ch = wx.Choice(self, -1, (425, 50), choices=d_name2)
-        self.d_name2_ch.SetSelection(22)
-        
-        self.t2 = wx.TextCtrl(self, -1, "15", (470, 50), size=(25, -1))
-        wx.StaticText(self, -1, ':', (496, 50))
-        self.mi2 = wx.TextCtrl(self, -1, "10", (500, 50), size=(25, -1))
-        wx.StaticText(self, -1, ':', (526, 50))
-        self.s2 = wx.TextCtrl(self, -1, "20", (530, 50), size=(25, -1))
         setting_btn = wx.Button(self, -1, "setting", (480, 90))
         setting_btn.SetConstraints(anchors.LayoutAnchors(setting_btn, False, True, False, False))
         
@@ -75,22 +54,13 @@ class Input_dialog(wx.Dialog):
         self.Destroy()
         
     def setting(self, event):
-        self.vn = self.v_name_ch.GetString(self.v_name_ch.GetSelection())
-        self.vo = self.vo_name_ch.GetString(self.vo_name_ch.GetSelection())
+        self.vn, self.vo = self.v_name_ch.GetString(self.v_name_ch.GetSelection()), self.vo_name_ch.GetString(self.vo_name_ch.GetSelection())
+
+        self.sy, self.sm, self.sd = self.sy_ch.GetString(self.sy_ch.GetSelection()), self.sm_ch.GetString(self.sm_ch.GetSelection()), self.sd_ch.GetString(self.sd_ch.GetSelection())
+        self.sh, self.smi, self.ss = self.sh_txt.GetValue(), self.smi_txt.GetValue(), self.ss_txt.GetValue()
         
-        self.sy = self.y_name1_ch.GetString(self.y_name1_ch.GetSelection())
-        self.sm = self.m_name1_ch.GetString(self.m_name1_ch.GetSelection())
-        self.sd = self.d_name1_ch.GetString(self.d_name1_ch.GetSelection())
-        self.sh = self.t1.GetValue()
-        self.smi = self.mi1.GetValue()
-        self.ss = self.s1.GetValue()
-        
-        self.ey = self.y_name2_ch.GetString(self.y_name2_ch.GetSelection())
-        self.em = self.m_name2_ch.GetString(self.m_name2_ch.GetSelection())
-        self.ed = self.d_name2_ch.GetString(self.d_name2_ch.GetSelection())
-        self.eh = self.t2.GetValue()
-        self.emi = self.mi2.GetValue()
-        self.es = self.s2.GetValue()
+        self.ey, self.em, self.ed = self.ey_ch.GetString(self.ey_ch.GetSelection()), self.em_ch.GetString(self.em_ch.GetSelection()), self.ed_ch.GetString(self.ed_ch.GetSelection())
+        self.eh, self.emi, self.es = self.eh_txt.GetValue(), self.emi_txt.GetValue(), self.es_txt.GetValue()
         
         win = MainFrame(self)
         win.Show(True)
@@ -110,8 +80,7 @@ class MainFrame(wx.Frame):
         ey, em, ed = int(input_info.ey), int(input_info.em), int(input_info.ed)
         eh, emi, es = int(input_info.eh), int(input_info.emi), int(input_info.es)
         
-        self.start_time = datetime(sy, sm, sd, sh, smi, ss)
-        self.end_time = datetime(ey, em, ed, eh, emi, es)
+        self.start_time, self.end_time = datetime(sy, sm, sd, sh, smi, ss), datetime(ey, em, ed, eh, emi, es)
         
         vechicles, containers = initializer.run(self.start_time, self.end_time)
 
@@ -120,7 +89,7 @@ class MainFrame(wx.Frame):
         self.simul_clock = datetime(sy, sm, sd, sh, smi, ss)
         self.saved_time = time.time()
         
-        self.play_speed = 1.0
+        self.play_speed = Play_speed
         self.isReverse_play = False
         self.simul_clock_saved = None
                 
@@ -183,7 +152,7 @@ class Input_View_Panel(wx.Panel):
 
         sh = wx.StaticText(self, -1, str(start_time.hour), (y_name1_px + 100, 10), size=(25, -1))
         c1 = wx.StaticText(self, -1, ':', (y_name1_px + 120, 10))
-        sm = wx.StaticText(self, -1, str(start_time.minute), (y_name1_px + 135, 10), size=(25, -1))
+        smi = wx.StaticText(self, -1, str(start_time.minute), (y_name1_px + 135, 10), size=(25, -1))
         c2 = wx.StaticText(self, -1, ':', (y_name1_px + 155, 10))
         ss = wx.StaticText(self, -1, str(start_time.second), (y_name1_px + 170, 10), size=(25, -1))
         
@@ -197,14 +166,14 @@ class Input_View_Panel(wx.Panel):
         
         eh = wx.StaticText(self, -1, str(end_time.hour), (y_name2_px + 100, 10), size=(25, -1))
         c3 = wx.StaticText(self, -1, ':', (y_name2_px + 120, 10))
-        em = wx.StaticText(self, -1, str(end_time.minute), (y_name2_px + 135, 10), size=(25, -1))
+        emi = wx.StaticText(self, -1, str(end_time.minute), (y_name2_px + 135, 10), size=(25, -1))
         c4 = wx.StaticText(self, -1, ':', (y_name2_px + 155, 10))
         es = wx.StaticText(self, -1, str(end_time.second), (y_name2_px + 170, 10), size=(25, -1))
 
-        for x in [sy, sm, sd, sh, c1, sm, c2, ss, l, ey, em, ed, eh, c3, em, c4, es]:
+        for x in [sy, sm, sd, sh, c1, smi, c2, ss, l, ey, em, ed, eh, c3, emi, c4, es]:
             x.SetFont(wx.Font(10, wx.SWISS, wx.ITALIC, wx.NORMAL))
         
-        for x in [v, vo, d, v_name, vo_name, sy, sm, sd, sh, c1, sm, c2, ss, l, ey, em, ed, eh, c3, em, c4, es]:
+        for x in [v, vo, d, v_name, vo_name, sy, sm, sd, sh, c1, smi, c2, ss, l, ey, em, ed, eh, c3, emi, c4, es]:
             x.SetConstraints(anchors.LayoutAnchors(x, False, True, False, False))
 
 class Drag_zoom_panel(wx.Panel):
@@ -354,32 +323,19 @@ class Viewer_Panel(Drag_zoom_panel):
                 if bay_id % 2 != 0:
                     c.size = '20ft'
                     c.hs /= 2
-# 
+                    
         ### set vehicles position
         for v in self.vessels:
             v.cur_evt_update(v.cur_evt_id, Bitts)
             
-#        for yc in self.ycs:
-#            yc.cur_evt_update(yc.cur_evt_id, Block)
-        
-        
-        for i, yc in enumerate(self.ycs):
-            yc.px, yc.py = Blocks[i + 1].px, Blocks[i + 1].py + (i + 2) * container_hs
-            
-        for i, qc in enumerate(self.qcs):
-            qc.px, qc.py = Bitts[i + 5].px + container_vs * (i + 3), Bitts[i + 5].py - container_hs * 4
-        
-        
-        from random import randrange
-        for i, sc in enumerate(self.scs):
-            sc.px, sc.py = Bitts[i + 5].px + container_vs * (i + randrange(20)), Bitts[i + 5].py + container_hs * 4 + container_vs * (i + randrange(20))
+        for yc in self.ycs:
+            yc.cur_evt_update(yc.cur_evt_id, TPs, Blocks)
             
         self.InitBuffer()
     
     def OnTimer(self, evt, simul_time):
-        for v in self.vessels:
+        for v in self.vessels + self.ycs:
             v.OnTimer(evt, simul_time)
-             
         self.RefreshGC()
     
     def Draw(self, gc):
@@ -393,12 +349,12 @@ class Viewer_Panel(Drag_zoom_panel):
             gc.SetTransform(old_tr)
         
         gc.SetPen(wx.Pen("black", 1))
-        for i, py in enumerate(self.lines_py):
+        for py in self.lines_py:
             gc.DrawLines([(0, py), (l_sx, py)])
                 
         #draw vehicle
         old_tr = gc.GetTransform()
-        for x in self.vessels + self.ycs + self.qcs + self.scs:
+        for x in self.vessels + self.ycs:# + self.qcs + self.scs:
             gc.Translate(x.px, x.py)
             x.draw(gc)
             gc.SetTransform(old_tr)
