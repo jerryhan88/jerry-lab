@@ -3,7 +3,10 @@ from parameter_function import container_hs, container_vs, l_sx
 from parameter_function import pyslot, pvslot
 from parameter_function import change_b_color
 from datetime import datetime, timedelta
+from random import random, seed
 import wx
+
+seed(10)
 
 class Container(object):
     def __init__(self, id):
@@ -63,25 +66,27 @@ class QC_buffer(Storage):
 #            gc.DrawRectangle(-container_hs / 2, -container_vs / 2, container_hs, container_vs)
 
 class TP(Storage):
+    num_of_stacks = 4
     def __init__(self, id, px, py):
         Storage.__init__(self)
         self.id = id
         self.name = 'TP'
         self.px, self.py = px, py
-        self.num_of_stacks = 4
-        self.bay_pos = container_hs / 2
+        TP.num_of_stacks = 4
+        self.bay_pos_info = container_hs / 2
         self.stack_pos = {}
-        for x in xrange(self.num_of_stacks):
+        for x in xrange(TP.num_of_stacks):
             self.stack_pos[x + 1] = container_vs / 2 + container_vs * x 
 
     def draw(self, gc):
-        gc.SetPen(wx.Pen('black', 1))
-        gc.DrawLines([(0, 0), (container_vs * self.num_of_stacks , 0)])
-        gc.DrawLines([(0, container_hs), (container_vs * self.num_of_stacks , container_hs)])
-        for x in xrange(self.num_of_stacks + 1) :
+        gc.SetPen(wx.Pen('black', 0.2))
+        gc.DrawLines([(0, 0), (container_vs * TP.num_of_stacks , 0)])
+        gc.DrawLines([(0, container_hs), (container_vs * TP.num_of_stacks , container_hs)])
+        for x in xrange(TP.num_of_stacks + 1) :
             gc.DrawLines([(container_vs * x, 0), (container_vs * x , container_hs)])
 
 class Block(Storage):
+    num_of_stacks = 8
     def __init__(self, id, px, py):
         Storage.__init__(self)
         self.id = id
@@ -89,7 +94,7 @@ class Block(Storage):
         self.px, self.py = px, py
         
         self.num_of_bays = 45
-        self.num_of_stacks = 8
+#        self.num_of_stacks = 8
         self.bay_pos_info = {}
         self.stack_pos_info = {}
         
@@ -102,7 +107,7 @@ class Block(Storage):
             else: assert False
             self.bay_pos_info[bay_id] = py
             
-        for x in xrange(self.num_of_stacks):
+        for x in xrange(Block.num_of_stacks):
             self.stack_pos_info[x + 1] = container_vs * x + container_vs / 2
         
     def draw(self, gc):
@@ -122,6 +127,7 @@ class Block(Storage):
             gc.SetTransform(old_tr)
 
 class Vehicles(object):
+
     def __init__(self):
         self.id = None
         self.name = None
@@ -129,23 +135,23 @@ class Vehicles(object):
         self.cur_evt_id = 0
         self.holding_containers = []
         
+        self.pe_time = None
+        self.pe_px, self.pe_py = None, None
+        
         self.ce_px, self.ce_py = None, None
         self.px, self.py = None, None
-        self.ne_px, self.ne_py = None, None
+        
     def set_dest_position(self, px, py):
         self.ne_px, self.ne_py = px, py
         
 class Vessel(Vehicles):
-
     def __init__(self, name, voyage):
         Vehicles.__init__(self)
         self.name = name
         self.voyage = voyage
         self.LOA, self.B = container_hs * 14, container_vs * 10
-        self.num_of_bay = 35
-        self.num_of_stack = 8
-        self.bay_pos_info = {}
-        self.stack_pos_info = {}
+        self.num_of_bay, self.num_of_stack = 35, 8
+        self.bay_pos_info, self.stack_pos_info = {}, {}
         self.ar_s_px, self.ar_s_py = None, None
         self.dp_e_px, self.dp_e_py = None, None
         self.ar_s_time = None
@@ -198,7 +204,9 @@ class Vessel(Vehicles):
         if self.ar_s_time <= simul_time < self.ce_time:
             self.px = self.ar_s_px
             self.py = self.ar_s_py + (self.ce_py - self.ar_s_py) * (simul_time - self.ar_s_time).total_seconds() / (self.ce_time - self.ar_s_time).total_seconds()
-        
+        elif self.ce_time <= simul_time < self.ne_time:
+            self.px = self.ne_px
+            self.py = self.ne_py
         if self.ne_time <= simul_time < self.dp_e_time:
             self.px = self.ar_s_px
             self.py = self.ne_py + (self.ne_py - self.dp_e_py) * (simul_time - self.ne_time).seconds / (self.dp_e_time - self.ne_time).seconds
@@ -209,7 +217,6 @@ class Vessel(Vehicles):
         gc.SetBrush(wx.Brush(brushclr))
         #draw vessel surface        
         gc.DrawLines(self.v_d_p)
-#        gc.DrawRectangle(0,0, self.LOA, self.B)
         gc.SetPen(wx.Pen("black", 0.5))
         
         for x in xrange((self.num_of_bay + 1) // 4):
@@ -229,75 +236,131 @@ class Vessel(Vehicles):
             gc.SetTransform(old_tr)
     
 class YC(Vehicles):
+    dif_btw_b_tp_stack = abs(Block.num_of_stacks - TP.num_of_stacks)
+    TPs, Blocks = None, None 
     class Trolly(Vehicles):
         def __init__(self):
             Vehicles.__init__(self)
+            self.L_btw_C = -container_vs * 4.0
+            self.start_px, self.start_py = None, None
         def draw(self, gc):
             tr, tg, tb = (4, 189, 252)
             t_brushclr = wx.Colour(tr, tg, tb, 200)
-            ##draw trolly         
+            ##draw trolly
             gc.SetPen(wx.Pen(t_brushclr, 0))
             gc.SetBrush(wx.Brush(t_brushclr))
-            gc.DrawRectangle(0, 0, container_vs * 1.1, 12)
+            gc.DrawRectangle(self.L_btw_C - container_vs * 0.4 , -container_hs * 0.4, container_vs * 0.8, container_hs * 0.8)
+
     def __init__(self, name):
         Vehicles.__init__(self)
         self.id = int(name[-2:])
         self.name = 'YC'
+        self.width = container_vs * Block.num_of_stacks 
         self.evt_seq = []
         self.cur_evt_id = 0
-        self.trolly = self.Trolly()
-        self.trolly.px, self.trolly.py = 0, (container_hs * 1.1 * 0.5) - 6
         
-        self.isSpreaderMoving = False
-        self.isTrollyMoving = False
+        self.trolly = self.Trolly()
+        
+        self.start_time = None
+        self.start_px, self.start_py = None, None
+        
+        self.tro_mp_time = None
+        self.tro_op_time = None
 
     def __repr__(self):
         return str(self.name + str(self.id))
     
-    def cur_evt_update(self, cur_evt_id, Blocks, TPs):
+    def cur_evt_update(self, cur_evt_id, TPs=None, Blocks=None):
         if len(self.evt_seq) <= 1: assert False, 'length of evt_seq is smaller than 2'
-        self.cur_evt = self.evt_seq[cur_evt_id]
-        self.next_evt = self.evt_seq[cur_evt_id + 1]
+        if cur_evt_id == 0:
+            YC.TPs, YC.Blocks = TPs, Blocks
+            self.px = YC.Blocks[(self.id + 1) // 2].px + +self.width / 2 
         
+        self.cur_evt = self.evt_seq[cur_evt_id]
         print self.cur_evt 
+        
         ce_time, ce_pos, ce_container, self.ce_state, = self.cur_evt
         year, month, day, hour, minute, second = tuple(ce_time.split('-'))
         self.ce_time = datetime(int(year), int(month), int(day), int(hour), int(minute), int(second))
-        
-        #TODO TP or Block check
-        tp_id, tp_stack_id = int(ce_pos[1:3]), int(ce_pos[6:])
-        self.ce_px, self.ce_py = TPs[tp_id].px
-        
-        print tp_id, tp_stack_id 
-        
-        if cur_evt_id == 0:
-            pass
             
+        #TODO TP or Block check
         
-#        print self.next_evt
+        if ce_pos[4:6] == 'TP':
+            block_id, tp_stack_id = int(ce_pos[1:3]), int(ce_pos[6:])
+            tp_id = block_id
+            tg_block = YC.Blocks[block_id]
+            tg_tp = YC.TPs[tp_id]
+            self.ce_py = tg_tp.py + tg_tp.bay_pos_info
+            print 'self.ce_py : ' , self.ce_py 
+        else:
+            #moving point is in block
+            block_id, bay_id, stack_id, _ = int(ce_pos[1:3]), int(ce_pos[4:6]), int(ce_pos[7:9]), int(ce_pos[10:])
+            tg_block = YC.Blocks[block_id]
+            self.ce_py = tg_block.py + tg_block.bay_pos_info[bay_id]
         
-#        bitt_id = int(ce_pos[-2:])
-#        self.ce_px, self.ce_py = Bitts[bitt_id].px - self.LOA * 1 / 3, Bitts[bitt_id].py - self.B * 1.1
-        
-#        ne_time, self.ne_state, ne_pos = self.next_evt
-#        year, month, day, hour, minute, second = tuple(ne_time.split('-'))
-#        self.ne_time = datetime(int(year), int(month), int(day), int(hour), int(minute), int(second))
-#        bitt_id = int(ne_pos[-2:])
-#        self.ne_px, self.ne_py = Bitts[bitt_id].px - self.LOA * 1 / 3, Bitts[bitt_id].py - self.B * 1.1
+        #for moving trolly
+        if cur_evt_id == 0:
+            self.start_time = self.ce_time - timedelta(0, 10)
+            self.start_py = self.py = self.ce_py + container_hs * 1.5
+            time_interval = self.ce_time - self.start_time
+            assert 0 <= time_interval.total_seconds() < 3600 * 24, False
+            self.tro_mp_time = self.start_time + timedelta(0, time_interval.total_seconds()*(2 / 5))
+            self.tro_op_time = self.start_time + timedelta(0, time_interval.total_seconds()*(3 / 5))
+            self.trolly.start_px, self.trolly.start_py = self.trolly.px, self.trolly.py = container_vs * 8 * random(), 0
+            if ce_pos[4:6] == 'TP': 
+                self.trolly.ce_px, self.trolly.ce_py = tg_tp.stack_pos[tp_stack_id] + container_vs * YC.dif_btw_b_tp_stack / 2, self.trolly.py
+            else:
+                self.trolly.ce_px, self.trolly.ce_py = tg_block.stack_pos[stack_id], self.trolly.py
+        else:
+            self.py = self.pe_py
+            time_interval = self.ce_time - self.pe_time
+            assert 0 <= time_interval.total_seconds() < 3600 * 24, False
+            self.tro_mp_time = self.pe_time + timedelta(0, time_interval.total_seconds()*(2 / 5))
+            self.tro_op_time = self.pe_time + timedelta(0, time_interval.total_seconds()*(4 / 5))
+            self.trolly.px, self.trolly.py = self.trolly.pe_px, self.trolly.pe_py
+            if ce_pos[4:6] == 'TP': 
+                self.trolly.ce_px, self.trolly.ce_py = tg_tp.stack_pos[tp_stack_id] + container_vs * YC.dif_btw_b_tp_stack / 2, self.trolly.py
+            else:
+                self.trolly.ce_px, self.trolly.ce_py = tg_block.stack_pos_info[stack_id], self.trolly.py
         
     def OnTimer(self, evt, simul_time):
-        pass
-    
+        if self.cur_evt_id == 0:
+            if self.start_time <= simul_time < self.tro_mp_time:
+                #straddler moving
+                self.py = self.start_py + (self.ce_py - self.start_py) * (simul_time - self.start_time).total_seconds() / (self.tro_mp_time - self.start_time).total_seconds()
+            elif self.tro_mp_time <= simul_time < self.tro_op_time:
+                self.py = self.ce_py
+                #trolly moving
+                self.trolly.px = self.trolly.start_px + (self.trolly.ce_px - self.trolly.start_px) * (simul_time - self.tro_mp_time).total_seconds() / (self.tro_op_time - self.tro_mp_time).total_seconds()
+                self.trolly.py = self.trolly.start_py
+            elif self.tro_op_time <= simul_time < self.ce_time:
+                self.trolly.px, self.trolly.py = self.trolly.ce_px, self.trolly.ce_py
+#            if self.id == 1: print self.trolly.px
+        else:
+            if self.pe_time <= simul_time < self.tro_mp_time:
+                #straddler moving
+                self.py = self.pe_py + (self.ce_py - self.pe_py) * (simul_time - self.pe_time).total_seconds() / (self.tro_mp_time - self.pe_time).total_seconds()
+            elif self.tro_mp_time <= simul_time < self.tro_op_time:
+                self.py = self.ce_py
+                #trolly moving
+                self.trolly.px = self.trolly.pe_px + (self.trolly.ce_px - self.trolly.pe_px) * (simul_time - self.tro_mp_time).total_seconds() / (self.tro_op_time - self.tro_mp_time).total_seconds()
+                self.trolly.py = self.trolly.pe_py
+            elif self.tro_op_time <= simul_time < self.ce_time:
+                self.trolly.px, self.trolly.py = self.trolly.ce_px, self.trolly.ce_py
+        if self.ce_time <= simul_time:
+            self.trolly.px, self.trolly.py = self.trolly.pe_px, self.trolly.pe_py = self.trolly.ce_px, self.trolly.ce_py
+            self.pe_time, self.pe_py = self.ce_time, self.ce_py
+            self.cur_evt_id += 1
+            self.cur_evt_update(self.cur_evt_id)
+#        if self.id == 1:
+#            print self.ce_py, self.py
     def draw(self, gc):
-        yr, yg, yb = (90, 14, 160)
-        y_brushclr = wx.Colour(yr, yg, yb, 200)
-        gc.SetPen(wx.Pen(y_brushclr, 0))
-        gc.SetBrush(wx.Brush(y_brushclr))
-        
-        gc.DrawRectangle(-container_vs, 0, container_vs * 1.1, container_hs * 1.1)
-        gc.DrawRectangle(container_vs * 9 - (container_vs * 1.1), 0, container_vs * 1.1, container_hs * 1.1)
-        gc.DrawRectangle(container_vs * 0.1, (container_hs * 1.1 * 0.5) - 6, container_vs * 7.8, 3)
-        gc.DrawRectangle(container_vs * 0.1, (container_hs * 1.1 * 0.5) + 3, container_vs * 7.8, 3)
+        gc.SetPen(wx.Pen('purple', 0))
+        change_b_color(gc, 'purple')
+        gc.DrawRectangle(-container_vs * 1.1 - container_vs * 7.8 / 2, -container_hs * 1.1 / 2, container_vs * 1.1, container_hs * 1.1)
+        gc.DrawRectangle(-container_vs * 1.1 - container_vs * 7.8 / 2 + container_vs * 7.8 + container_vs * 1.1, -container_hs * 1.1 / 2, container_vs * 1.1, container_hs * 1.1)
+        gc.DrawRectangle(-container_vs * 7.8 / 2, -6, container_vs * 7.8, 3)
+        gc.DrawRectangle(-container_vs * 7.8 / 2, 3, container_vs * 7.8, 3)
         
         old_tr = gc.GetTransform()
         gc.Translate(self.trolly.px, self.trolly.py)
