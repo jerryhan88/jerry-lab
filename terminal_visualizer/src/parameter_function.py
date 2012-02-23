@@ -21,5 +21,7 @@ def change_b_color(gc, color):
         r, g, b = 255, 255, 255
     elif color == 'black':
         r, g, b = 0, 0, 0
-    brushclr = wx.Colour(r, g, b)
+    elif color == 'purple':
+        r, g, b = 90, 14, 160
+    brushclr = wx.Colour(r, g, b, 200)
     gc.SetBrush(wx.Brush(brushclr))
