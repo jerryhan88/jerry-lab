@@ -38,7 +38,15 @@ class Input_dialog(wx.Dialog):
         self.sy_ch.SetSelection(6), self.sm_ch.SetSelection(7), self.sd_ch.SetSelection(22)
         self.ey_ch.SetSelection(6), self.em_ch.SetSelection(7), self.ed_ch.SetSelection(22) 
         
+        #test Vessel
+#        self.sh_txt, self.smi_txt, self.ss_txt = wx.TextCtrl(self, -1, "09", (210, 50), size=(25, -1)), wx.TextCtrl(self, -1, "34", (240, 50), size=(25, -1)), wx.TextCtrl(self, -1, "40", (270, 50), size=(25, -1))
+
+        #test QC
+#        self.sh_txt, self.smi_txt, self.ss_txt = wx.TextCtrl(self, -1, "09", (210, 50), size=(25, -1)), wx.TextCtrl(self, -1, "59", (240, 50), size=(25, -1)), wx.TextCtrl(self, -1, "30", (270, 50), size=(25, -1))
+        
+        #test YC
         self.sh_txt, self.smi_txt, self.ss_txt = wx.TextCtrl(self, -1, "10", (210, 50), size=(25, -1)), wx.TextCtrl(self, -1, "05", (240, 50), size=(25, -1)), wx.TextCtrl(self, -1, "08", (270, 50), size=(25, -1))
+        
         self.eh_txt, self.emi_txt, self.es_txt = wx.TextCtrl(self, -1, "15", (470, 50), size=(25, -1)), wx.TextCtrl(self, -1, "10", (500, 50), size=(25, -1)), wx.TextCtrl(self, -1, "20", (530, 50), size=(25, -1))
         
         wx.StaticText(self, -1, ':', (236, 50)), wx.StaticText(self, -1, ':', (266, 50)), wx.StaticText(self, -1, '-', (305, 50)), wx.StaticText(self, -1, ':', (496, 50)), wx.StaticText(self, -1, ':', (526, 50))
@@ -131,49 +139,40 @@ class Input_View_Panel(wx.Panel):
         wx.Panel.__init__(self, parent, -1, pos, size)
         self.SetConstraints(anchors.LayoutAnchors(self, True, True, True, False))
         
-        v = wx.StaticText(self, -1, 'Vessel', (15, 10))
-        v.SetFont(wx.Font(13, wx.SWISS, wx.NORMAL, wx.NORMAL))
-        
-        vo = wx.StaticText(self, -1, 'Voyage', (150, 10))
-        vo.SetFont(wx.Font(13, wx.SWISS, wx.NORMAL, wx.NORMAL))
-        d = wx.StaticText(self, -1, 'Date', (360, 10))
-        d.SetFont(wx.Font(13, wx.SWISS, wx.NORMAL, wx.NORMAL))
-        v_name = wx.StaticText(self, -1, v_name, (65, 10), size=(65, -1))
-        v_name.SetFont(wx.Font(13, wx.SWISS, wx.ITALIC, wx.NORMAL))
-        vo_name = wx.StaticText(self, -1, v_voyage, (215, 10), size=(25, -1))
-        vo_name.SetFont(wx.Font(13, wx.SWISS, wx.ITALIC, wx.NORMAL))
+        v_txt = []
+        v_txt.append(wx.StaticText(self, -1, 'Vessel', (15, 10)))
+        v_txt.append(wx.StaticText(self, -1, 'Voyage', (150, 10)))
+        v_txt.append(wx.StaticText(self, -1, 'Date', (360, 10)))
+        v_txt.append(wx.StaticText(self, -1, v_name, (65, 10), size=(65, -1)))
+        v_txt.append(wx.StaticText(self, -1, v_voyage, (215, 10), size=(25, -1)))             
+        for x in v_txt:
+            x.SetFont(wx.Font(13, wx.SWISS, wx.NORMAL, wx.NORMAL)) 
         
         #Date/Time
         y_name1_px = 410
-        
-        sy = wx.StaticText(self, -1, str(start_time.year), (y_name1_px, 10), size=(40, -1))
-        sm = wx.StaticText(self, -1, str(start_time.month), (y_name1_px + 40, 10), size=(25, -1))
-        sd = wx.StaticText(self, -1, str(start_time.day), (y_name1_px + 70, 10), size=(25, -1))
-
-        sh = wx.StaticText(self, -1, str(start_time.hour), (y_name1_px + 100, 10), size=(25, -1))
-        c1 = wx.StaticText(self, -1, ':', (y_name1_px + 120, 10))
-        smi = wx.StaticText(self, -1, str(start_time.minute), (y_name1_px + 135, 10), size=(25, -1))
-        c2 = wx.StaticText(self, -1, ':', (y_name1_px + 155, 10))
-        ss = wx.StaticText(self, -1, str(start_time.second), (y_name1_px + 170, 10), size=(25, -1))
-        
-        l = wx.StaticText(self, -1, '-', (620, 10))        
-        
+        sdt_edt_txt = []
+        sdt_edt_txt.append(wx.StaticText(self, -1, str(start_time.year), (y_name1_px, 10), size=(40, -1)))
+        sdt_edt_txt.append(wx.StaticText(self, -1, str(start_time.month), (y_name1_px + 40, 10), size=(25, -1)))
+        sdt_edt_txt.append(wx.StaticText(self, -1, str(start_time.day), (y_name1_px + 70, 10), size=(25, -1)))
+        sdt_edt_txt.append(wx.StaticText(self, -1, str(start_time.hour), (y_name1_px + 100, 10), size=(25, -1)))
+        sdt_edt_txt.append(wx.StaticText(self, -1, ':', (y_name1_px + 120, 10)))
+        sdt_edt_txt.append(wx.StaticText(self, -1, str(start_time.minute), (y_name1_px + 135, 10), size=(25, -1)))
+        sdt_edt_txt.append(wx.StaticText(self, -1, ':', (y_name1_px + 155, 10)))
+        sdt_edt_txt.append(wx.StaticText(self, -1, str(start_time.second), (y_name1_px + 170, 10), size=(25, -1)))
+        sdt_edt_txt.append(wx.StaticText(self, -1, '-', (620, 10)))
         y_name2_px = 640
-        
-        ey = wx.StaticText(self, -1, str(end_time.year), (y_name2_px, 10), size=(40, -1))
-        em = wx.StaticText(self, -1, str(end_time.month), (y_name2_px + 40, 10), size=(25, -1))
-        ed = wx.StaticText(self, -1, str(end_time.day), (y_name2_px + 60, 10), size=(25, -1))
-        
-        eh = wx.StaticText(self, -1, str(end_time.hour), (y_name2_px + 100, 10), size=(25, -1))
-        c3 = wx.StaticText(self, -1, ':', (y_name2_px + 120, 10))
-        emi = wx.StaticText(self, -1, str(end_time.minute), (y_name2_px + 135, 10), size=(25, -1))
-        c4 = wx.StaticText(self, -1, ':', (y_name2_px + 155, 10))
-        es = wx.StaticText(self, -1, str(end_time.second), (y_name2_px + 170, 10), size=(25, -1))
-
-        for x in [sy, sm, sd, sh, c1, smi, c2, ss, l, ey, em, ed, eh, c3, emi, c4, es]:
+        sdt_edt_txt.append(wx.StaticText(self, -1, str(end_time.year), (y_name2_px, 10), size=(40, -1)))
+        sdt_edt_txt.append(wx.StaticText(self, -1, str(end_time.month), (y_name2_px + 40, 10), size=(25, -1)))
+        sdt_edt_txt.append(wx.StaticText(self, -1, str(end_time.day), (y_name2_px + 60, 10), size=(25, -1)))
+        sdt_edt_txt.append(wx.StaticText(self, -1, str(end_time.hour), (y_name2_px + 100, 10), size=(25, -1)))
+        sdt_edt_txt.append(wx.StaticText(self, -1, ':', (y_name2_px + 120, 10)))
+        sdt_edt_txt.append(wx.StaticText(self, -1, str(end_time.minute), (y_name2_px + 135, 10), size=(25, -1)))
+        sdt_edt_txt.append(wx.StaticText(self, -1, ':', (y_name2_px + 155, 10)))
+        sdt_edt_txt.append(wx.StaticText(self, -1, str(end_time.second), (y_name2_px + 170, 10), size=(25, -1)))
+        for x in sdt_edt_txt:
             x.SetFont(wx.Font(10, wx.SWISS, wx.ITALIC, wx.NORMAL))
         
-        for x in [v, vo, d, v_name, vo_name, sy, sm, sd, sh, c1, smi, c2, ss, l, ey, em, ed, eh, c3, emi, c4, es]:
+        for x in v_txt + sdt_edt_txt:
             x.SetConstraints(anchors.LayoutAnchors(x, False, True, False, False))
 
 class Drag_zoom_panel(wx.Panel):
@@ -261,6 +260,8 @@ class Viewer_Panel(Drag_zoom_panel):
         
         self.containers = containers
         self.vessels, self.qcs, self.ycs, self.scs = vechicles
+        
+        self.simul_clock = parent.simul_clock
     
         # initialize
         ## set Background position
@@ -326,16 +327,19 @@ class Viewer_Panel(Drag_zoom_panel):
                     
         ### set vehicles position
         for v in self.vessels:
-            v.cur_evt_update(v.cur_evt_id, Bitts)
+            v.cur_evt_update(v.cur_evt_id, Bitts, self.simul_clock)
+            
+#        for qc in self.qcs:
+#            qc.cur_evt_update(qc.cur_evt_id, self.vessels, QBs)
             
         for yc in self.ycs:
             yc.cur_evt_update(yc.cur_evt_id, TPs, Blocks)
             
         self.InitBuffer()
     
-    def OnTimer(self, evt, simul_time):
+    def OnTimer(self, evt, simul_clock):
         for v in self.vessels + self.ycs:
-            v.OnTimer(evt, simul_time)
+            v.OnTimer(evt, simul_clock)
         self.RefreshGC()
     
     def Draw(self, gc):
