@@ -145,6 +145,7 @@ class Vehicles(object):
         self.ne_px, self.ne_py = px, py
         
 class Vessel(Vehicles):
+
     def __init__(self, name, voyage):
         Vehicles.__init__(self)
         self.name = name
@@ -178,7 +179,7 @@ class Vessel(Vehicles):
     def __repr__(self):
         return self.name + str(self.voyage)
     
-    def cur_evt_update(self, cur_evt_id, Bitts):
+    def cur_evt_update(self, cur_evt_id, Bitts, simul_clock):
         if len(self.evt_seq) <= 1: assert False, 'length of evt_seq is smaller than 2'
         self.cur_evt = self.evt_seq[cur_evt_id]
         self.next_evt = self.evt_seq[cur_evt_id + 1]
@@ -193,9 +194,10 @@ class Vessel(Vehicles):
         self.ne_time = datetime(int(year), int(month), int(day), int(hour), int(minute), int(second))
         bitt_id = int(ne_pos[-2:])
         self.ne_px, self.ne_py = Bitts[bitt_id].px - self.LOA * 1 / 3, Bitts[bitt_id].py - self.B * 1.1
-        
         self.ar_s_px, self.ar_s_py = self.dp_e_px, self.dp_e_py = self.px, self.py = self.ce_px, self.ce_py - container_hs * 2
         
+        if self.ce_time <= simul_clock<= self.ne_time:
+            self.px, self.py = self.ce_px, self.ce_py
         self.ar_s_time = self.ce_time - timedelta(0, 15)
         self.dp_e_time = self.ne_time + timedelta(0, 20)
         
@@ -277,7 +279,6 @@ class YC(Vehicles):
             self.px = YC.Blocks[(self.id + 1) // 2].px + +self.width / 2 
         
         self.cur_evt = self.evt_seq[cur_evt_id]
-        print self.cur_evt 
         
         ce_time, ce_pos, ce_container, self.ce_state, = self.cur_evt
         year, month, day, hour, minute, second = tuple(ce_time.split('-'))
@@ -291,7 +292,6 @@ class YC(Vehicles):
             tg_block = YC.Blocks[block_id]
             tg_tp = YC.TPs[tp_id]
             self.ce_py = tg_tp.py + tg_tp.bay_pos_info
-            print 'self.ce_py : ' , self.ce_py 
         else:
             #moving point is in block
             block_id, bay_id, stack_id, _ = int(ce_pos[1:3]), int(ce_pos[4:6]), int(ce_pos[7:9]), int(ce_pos[10:])
@@ -335,7 +335,6 @@ class YC(Vehicles):
                 self.trolly.py = self.trolly.start_py
             elif self.tro_op_time <= simul_time < self.ce_time:
                 self.trolly.px, self.trolly.py = self.trolly.ce_px, self.trolly.ce_py
-#            if self.id == 1: print self.trolly.px
         else:
             if self.pe_time <= simul_time < self.tro_mp_time:
                 #straddler moving
@@ -352,8 +351,7 @@ class YC(Vehicles):
             self.pe_time, self.pe_py = self.ce_time, self.ce_py
             self.cur_evt_id += 1
             self.cur_evt_update(self.cur_evt_id)
-#        if self.id == 1:
-#            print self.ce_py, self.py
+            
     def draw(self, gc):
         gc.SetPen(wx.Pen('purple', 0))
         change_b_color(gc, 'purple')
@@ -394,67 +392,27 @@ class QC(Vehicles):
     def __repr__(self):
         return str(self.name + str(self.id))
     
-    def cur_evt_update(self, cur_evt_id):
-        if len(self.evt_seq) <= 1: assert False, 'length of evt_seq is smaller than 2' 
-        self.cur_evt = self.evt_seq[cur_evt_id]
-        self.next_evt = self.evt_seq[cur_evt_id + 1]
-        self.ce_time, ce_pos, self.ce_state = self.cur_evt
-        self.ce_px, self.ce_py = ce_pos
-        self.ne_time, ne_pos, self.ne_state = self.next_evt
-        self.ne_px, self.ne_py = ne_pos
-        if self.ce_state[0] == 'S' and self.ne_state[0] == 'S':
-            self.isSpreaderMoving = True
-            self.isTrollyMoving = False
-        elif self.ce_state[0] == 'S' and self.ne_state[0] == 'T':
-            self.isSpreaderMoving = False
-            self.isTrollyMoving = False    
-        elif self.ce_state[0] == 'T' and self.ne_state[0] == 'T':
-            self.isSpreaderMoving = False
-            self.isTrollyMoving = True
-        elif self.ce_state[0] == 'T' and self.ne_state[0] == 'S':
-            self.isSpreaderMoving = False
-            self.isTrollyMoving = False
-        else:
-            assert False
-            
-        if cur_evt_id == 0 : self.px, self.py = self.ce_px, self.ce_py
+    def cur_evt_update(self, cur_evt_id, Vessels, QBs):
+        if len(self.evt_seq) <= 1: assert False, 'length of evt_seq is smaller than 2'
         
-        if self.isSpreaderMoving:
-            self.px, self.py = self.ce_px, self.ce_py
-        elif self.isTrollyMoving:
-            self.trolly.px, self.trolly.py = self.ce_px, self.ce_py
+        pass 
         
     def OnTimer(self, evt, simul_time):
-        if self.isSpreaderMoving:
-            if self.ce_time < simul_time < self.ne_time: 
-                self.px = self.ce_px + (self.ne_px - self.ce_px) * (simul_time - self.ce_time) / (self.ne_time - self.ce_time)
-        elif self.isTrollyMoving:
-            if self.ce_time < simul_time < self.ne_time:
-                self.trolly.py = self.ce_py + (self.ne_py - self.ce_py) * (simul_time - self.ce_time) / (self.ne_time - self.ce_time)
-        if self.ne_time <= simul_time:
-            self.cur_evt_id += 1
-            self.cur_evt_update(self.cur_evt_id)
-    
+        pass
     def draw(self, gc):
         r, g, b = (0, 0, 0)
         brushclr = wx.Colour(r, g, b, 200)
         paint = wx.Colour(r, g, b, 0)
         gc.SetPen(wx.Pen(brushclr, 1))
         gc.SetBrush(wx.Brush(paint))
+        gc.DrawRectangle(-container_hs * 0.5/2, -container_hs * 9/2, container_hs * 0.5, container_hs * 9)
+        gc.DrawLines([((container_hs * 0.5 * 0.25)-container_hs * 0.5/2, -container_hs * 9/2), ((container_hs * 0.5 * 0.25)-container_hs * 0.5/2 , container_hs * 9 -container_hs * 9/2)])
+        gc.DrawLines([((container_hs * 0.5) -container_hs * 0.5/2, container_hs * 9-(container_hs * 9/2)), ((container_hs * 0.5) - (container_hs * 0.5 * 0.75)-container_hs * 0.5/2 , container_hs * 9 - (container_hs * 0.5 * 1.41)-(container_hs * 9/2))])
         
-#        gc.DrawRectangle(0,0, container_hs, container_hs)
-        
-        gc.DrawRectangle(0, 0, container_hs * 0.5, container_hs * 9)
-        gc.DrawLines([((container_hs * 0.5 * 0.25), 0), ((container_hs * 0.5 * 0.25) , container_hs * 9)])
-        gc.DrawLines([((container_hs * 0.5) , container_hs * 9), ((container_hs * 0.5) - (container_hs * 0.5 * 0.75) , container_hs * 9 - (container_hs * 0.5 * 1.41))])
-        gc.DrawRectangle(0, 0, container_hs * 0.5, container_hs * 9)
-        gc.DrawLines([((container_hs * 0.5 * 0.25), 0), ((container_hs * 0.5 * 0.25) , container_hs * 9)])
-        gc.DrawLines([((container_hs * 0.5) , container_hs * 9), ((container_hs * 0.5) - (container_hs * 0.5 * 0.75) , container_hs * 9 - (container_hs * 0.5 * 1.41))])
-        
-        gc.DrawLines([((container_hs * 0.5 * 0.25) , container_hs * 9 - (container_hs * 0.5 * 1.41)), (container_hs * 0.5 , container_hs * 9 - (container_hs * 0.5 * 1.41))])
-        gc.DrawLines([((container_hs * 0.5) , container_hs * 9 - (container_hs * 0.5 * 1.41)), (container_hs * 0.5 - (container_hs * 0.5 * 0.75) , container_hs * 9)])
+        gc.DrawLines([((container_hs * 0.5 * 0.25)-(container_hs * 0.5/2) , container_hs * 9 - (container_hs * 0.5 * 1.41)-(container_hs * 9/2)), (container_hs * 0.5 -(container_hs * 0.5/2), container_hs * 9 - (container_hs * 0.5 * 1.41)-container_hs * 9/2)])
+        gc.DrawLines([((container_hs * 0.5) -(container_hs * 0.5/2), container_hs * 9 - (container_hs * 0.5 * 1.41)-(container_hs * 9/2)), (container_hs * 0.5 - (container_hs * 0.5 * 0.75)-(container_hs * 0.5/2) , container_hs * 9-container_hs * 9/2)])
         for i in range(9):
-            gc.DrawLines([(container_hs * 0.5 * 0.25, container_hs * 0.5 * i), (container_hs * 0.5, container_hs * 0.5 * i)])
+            gc.DrawLines([(container_hs * 0.5 * 0.25-container_hs * 0.5/2, container_hs * 0.5 * i-container_hs * 9/2), (container_hs * 0.5-container_hs * 0.5/2, container_hs * 0.5 * i-container_hs * 9/2)])
             pass
         
         old_tr = gc.GetTransform()
