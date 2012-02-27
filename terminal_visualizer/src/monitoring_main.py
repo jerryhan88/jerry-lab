@@ -5,11 +5,9 @@ from datetime import datetime, timedelta
 from parameter_function import pyslot, pvslot
 from parameter_function import container_hs, container_vs, l_sx, frame_milsec
 import initializer
-#TODO  make block and TP in initializer
 from classes import Bitt, QC_buffer, Block, TP
 
 Play_speed = 2.0
-
 
 Bitts = {}
 QBs = {}
@@ -17,6 +15,7 @@ Blocks = {}
 TPs = {}
 
 class Input_dialog(wx.Dialog):
+
 
     def __init__(self, parent, name, size=(570, 180), pos=(400, 300)):
         wx.Dialog.__init__(self, None, -1, 'Monitoring Input', pos , size)
@@ -42,10 +41,10 @@ class Input_dialog(wx.Dialog):
 #        self.sh_txt, self.smi_txt, self.ss_txt = wx.TextCtrl(self, -1, "09", (210, 50), size=(25, -1)), wx.TextCtrl(self, -1, "34", (240, 50), size=(25, -1)), wx.TextCtrl(self, -1, "40", (270, 50), size=(25, -1))
 
         #test QC
-#        self.sh_txt, self.smi_txt, self.ss_txt = wx.TextCtrl(self, -1, "09", (210, 50), size=(25, -1)), wx.TextCtrl(self, -1, "59", (240, 50), size=(25, -1)), wx.TextCtrl(self, -1, "30", (270, 50), size=(25, -1))
+        self.sh_txt, self.smi_txt, self.ss_txt = wx.TextCtrl(self, -1, "09", (210, 50), size=(25, -1)), wx.TextCtrl(self, -1, "59", (240, 50), size=(25, -1)), wx.TextCtrl(self, -1, "30", (270, 50), size=(25, -1))
         
         #test YC
-        self.sh_txt, self.smi_txt, self.ss_txt = wx.TextCtrl(self, -1, "10", (210, 50), size=(25, -1)), wx.TextCtrl(self, -1, "05", (240, 50), size=(25, -1)), wx.TextCtrl(self, -1, "08", (270, 50), size=(25, -1))
+#        self.sh_txt, self.smi_txt, self.ss_txt = wx.TextCtrl(self, -1, "10", (210, 50), size=(25, -1)), wx.TextCtrl(self, -1, "05", (240, 50), size=(25, -1)), wx.TextCtrl(self, -1, "08", (270, 50), size=(25, -1))
         
         self.eh_txt, self.emi_txt, self.es_txt = wx.TextCtrl(self, -1, "15", (470, 50), size=(25, -1)), wx.TextCtrl(self, -1, "10", (500, 50), size=(25, -1)), wx.TextCtrl(self, -1, "20", (530, 50), size=(25, -1))
         
@@ -329,8 +328,8 @@ class Viewer_Panel(Drag_zoom_panel):
         for v in self.vessels:
             v.cur_evt_update(v.cur_evt_id, Bitts, self.simul_clock)
             
-#        for qc in self.qcs:
-#            qc.cur_evt_update(qc.cur_evt_id, self.vessels, QBs)
+        for qc in self.qcs:
+            qc.cur_evt_update(qc.cur_evt_id, self.vessels, QBs)
             
         for yc in self.ycs:
             yc.cur_evt_update(yc.cur_evt_id, TPs, Blocks)
@@ -358,7 +357,7 @@ class Viewer_Panel(Drag_zoom_panel):
                 
         #draw vehicle
         old_tr = gc.GetTransform()
-        for x in self.vessels + self.ycs:# + self.qcs + self.scs:
+        for x in self.vessels + self.ycs + self.qcs:# + self.scs:
             gc.Translate(x.px, x.py)
             x.draw(gc)
             gc.SetTransform(old_tr)
