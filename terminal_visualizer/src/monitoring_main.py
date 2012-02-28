@@ -299,7 +299,7 @@ class Viewer_Panel(Drag_zoom_panel):
             c.cur_index_in_ms = 0
             if c.cur_position[0] == 'B':
                 id = int(c.cur_position[1:3])
-                Blocks[id].holding_containers.append(c)
+                Blocks[id].holding_containers[int(c.id[1:3])] = c
                 bay_id, _, _ = pyslot(c.cur_position)
                 c.hs = container_vs
                 c.vs = container_hs
@@ -318,7 +318,7 @@ class Viewer_Panel(Drag_zoom_panel):
                         break
                 else:
                     assert False , 'there is no target_v'
-                target_v.holding_containers.append(c)
+                target_v.holding_containers[int(c.id[1:3])] = c
                 bay_id, _, _ = pvslot(c.cur_position)
                 if bay_id % 2 != 0:
                     c.size = '20ft'
@@ -328,11 +328,12 @@ class Viewer_Panel(Drag_zoom_panel):
         for v in self.vessels: v.cur_evt_update(v.cur_evt_id, Bitts, self.simul_clock)
         for qc in self.qcs: qc.cur_evt_update(qc.cur_evt_id, self.vessels, QBs)
         for yc in self.ycs: yc.cur_evt_update(yc.cur_evt_id, TPs, Blocks)
+        for sc in self.scs: sc.cur_evt_update(sc.cur_evt_id, QBs, TPs)
             
         self.InitBuffer()
     
     def OnTimer(self, evt, simul_clock):
-        for v in self.vessels + self.ycs + self.qcs:
+        for v in self.vessels + self.ycs + self.qcs + self.scs:
             v.OnTimer(evt, simul_clock)
         self.RefreshGC()
     
@@ -352,7 +353,7 @@ class Viewer_Panel(Drag_zoom_panel):
                 
         #draw vehicle
         old_tr = gc.GetTransform()
-        for x in self.vessels + self.ycs + self.qcs:# + self.scs:
+        for x in self.vessels + self.ycs + self.qcs + self.scs:
             gc.Translate(x.px, x.py)
             x.draw(gc)
             gc.SetTransform(old_tr)
