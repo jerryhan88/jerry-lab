@@ -7,7 +7,7 @@ from parameter_function import container_hs, container_vs, l_sx, frame_milsec
 import initializer
 from classes import Bitt, QC_buffer, Block, TP
 
-Play_speed = 2.0
+Play_speed = 4.0
 
 Bitts = {}
 QBs = {}
@@ -41,7 +41,7 @@ class Input_dialog(wx.Dialog):
 #        self.sh_txt, self.smi_txt, self.ss_txt = wx.TextCtrl(self, -1, "09", (210, 50), size=(25, -1)), wx.TextCtrl(self, -1, "34", (240, 50), size=(25, -1)), wx.TextCtrl(self, -1, "40", (270, 50), size=(25, -1))
 
         #test QC
-        self.sh_txt, self.smi_txt, self.ss_txt = wx.TextCtrl(self, -1, "09", (210, 50), size=(25, -1)), wx.TextCtrl(self, -1, "59", (240, 50), size=(25, -1)), wx.TextCtrl(self, -1, "30", (270, 50), size=(25, -1))
+        self.sh_txt, self.smi_txt, self.ss_txt = wx.TextCtrl(self, -1, "09", (210, 50), size=(25, -1)), wx.TextCtrl(self, -1, "59", (240, 50), size=(25, -1)), wx.TextCtrl(self, -1, "40", (270, 50), size=(25, -1))
         
         #test YC
 #        self.sh_txt, self.smi_txt, self.ss_txt = wx.TextCtrl(self, -1, "10", (210, 50), size=(25, -1)), wx.TextCtrl(self, -1, "05", (240, 50), size=(25, -1)), wx.TextCtrl(self, -1, "08", (270, 50), size=(25, -1))
@@ -325,19 +325,14 @@ class Viewer_Panel(Drag_zoom_panel):
                     c.hs /= 2
                     
         ### set vehicles position
-        for v in self.vessels:
-            v.cur_evt_update(v.cur_evt_id, Bitts, self.simul_clock)
-            
-        for qc in self.qcs:
-            qc.cur_evt_update(qc.cur_evt_id, self.vessels, QBs)
-            
-        for yc in self.ycs:
-            yc.cur_evt_update(yc.cur_evt_id, TPs, Blocks)
+        for v in self.vessels: v.cur_evt_update(v.cur_evt_id, Bitts, self.simul_clock)
+        for qc in self.qcs: qc.cur_evt_update(qc.cur_evt_id, self.vessels, QBs)
+        for yc in self.ycs: yc.cur_evt_update(yc.cur_evt_id, TPs, Blocks)
             
         self.InitBuffer()
     
     def OnTimer(self, evt, simul_clock):
-        for v in self.vessels + self.ycs:
+        for v in self.vessels + self.ycs + self.qcs:
             v.OnTimer(evt, simul_clock)
         self.RefreshGC()
     
