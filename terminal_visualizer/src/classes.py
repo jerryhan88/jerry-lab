@@ -16,11 +16,14 @@ class Container(object):
         self.cur_index_in_ms = None
         self.hs, self.vs = container_hs , container_vs
         self.size = '40ft'
+        self.px, self.py = None, None
         
     def __repr__(self):
         return str(self.id)
     
     def draw(self, gc):
+        gc.SetPen(wx.Pen('black', 0))
+        change_b_color(gc, 'orange')
         gc.DrawRectangle(-self.hs / 2, -self.vs / 2, self.hs, self.vs)
     
 class Bitt(object):
@@ -42,7 +45,7 @@ class Storage(object):
         self.id = None
         self.name = None
         self.px, self.py = None, None
-        self.holding_containers = []
+        self.holding_containers = {}
     def __repr__(self):
         return self.name + str(self.id)
 
@@ -60,12 +63,11 @@ class QC_buffer(Storage):
         gc.DrawLines([(0, 0), (l_sx, 0)])
         gc.DrawLines([(0, self.sy), (l_sx, self.sy)])
         
-#        gc.DrawRectangle(-container_hs / 2, -container_vs / 2, container_vs * 10, container_hs)
-#        if self.holding_containers:
-#            r, g, b = 228, 108, 10
-#            bruclr = wx.Colour(r, g, b, 200)
-#            gc.SetBrush(wx.Brush(bruclr))
-#            gc.DrawRectangle(-container_hs / 2, -container_vs / 2, container_hs, container_vs)
+        for c in self.holding_containers.values():
+            old_tr = gc.GetTransform()
+            gc.Translate(c.px, c.py)
+            c.draw(gc)
+            gc.SetTransform(old_tr)
 
 class TP(Storage):
     num_of_stacks = 4
@@ -88,6 +90,7 @@ class TP(Storage):
             gc.DrawLines([(container_vs * x, 0), (container_vs * x , container_hs)])
 
 class Block(Storage):
+
     num_of_stacks = 8
     def __init__(self, id, px, py):
         Storage.__init__(self)
@@ -118,7 +121,8 @@ class Block(Storage):
         for x in xrange(self.num_of_stacks + 1):
             gc.DrawLines([(container_vs * x, 0), (container_vs * x , container_hs * (self.num_of_bays - 1) // 2)])
         change_b_color(gc, 'orange')
-        for c in self.holding_containers:
+        
+        for c in self.holding_containers.values():
             bay_id, stack_id, _ = pyslot(c.cur_position)
             py = self.bay_pos_info[bay_id]
             px = self.stack_pos_info[stack_id]
@@ -128,13 +132,12 @@ class Block(Storage):
             gc.SetTransform(old_tr)
 
 class Vehicles(object):
-
     def __init__(self):
         self.id = None
         self.name = None
         self.evt_seq = []
         self.cur_evt_id = 0
-        self.holding_containers = []
+        self.holding_containers = {}
         
         self.pe_time = None
         self.pe_px, self.pe_py = None, None
@@ -146,7 +149,6 @@ class Vehicles(object):
         self.ne_px, self.ne_py = px, py
         
 class Vessel(Vehicles):
-
     def __init__(self, name, voyage):
         Vehicles.__init__(self)
         self.name = name
@@ -201,7 +203,6 @@ class Vessel(Vehicles):
             self.px, self.py = self.ce_px, self.ce_py
         self.ar_s_time = self.ce_time - timedelta(0, 15)
         self.dp_e_time = self.ne_time + timedelta(0, 20)
-        
 
     def OnTimer(self, evt, simul_time):
         if self.ar_s_time <= simul_time < self.ce_time:
@@ -228,9 +229,8 @@ class Vessel(Vehicles):
             gc.DrawLines([(bay_ori_px + container_hs, self.margin_py), (bay_ori_px + container_hs, self.margin_py + container_vs * self.num_of_stack)])
             for s in xrange(self.num_of_stack + 1):
                 gc.DrawLines([(bay_ori_px, self.margin_py + s * container_vs), (bay_ori_px + container_hs, self.margin_py + s * container_vs)])
-        
-        change_b_color(gc, 'orange')
-        for c in self.holding_containers:
+                
+        for c in self.holding_containers.values():
             bay_id, stack_id, _ = pvslot(c.cur_position)
             px, py = self.bay_pos_info[bay_id] , self.stack_pos_info[stack_id]
             old_tr = gc.GetTransform()
@@ -370,14 +370,21 @@ class QC(Vehicles):
         def __init__(self):
             Vehicles.__init__(self)
             self.start_px, self.start_py = None, None
-        def draw(self, gc):
+        def draw(self, gc, holding_containers):
             tr, tg, tb = (4, 189, 252)
             t_brushclr = wx.Colour(tr, tg, tb, 200)
+            
+            for c in holding_containers.values():
+                old_tr = gc.GetTransform()
+                gc.Translate(0, -QC.sy)
+                c.draw(gc)
+                gc.SetTransform(old_tr)
+                
             ##draw trolly         
             gc.SetPen(wx.Pen(t_brushclr, 0))
             gc.SetBrush(wx.Brush(t_brushclr))
             gc.DrawRectangle(-QC.tro_sx / 2, -QC.sy - QC.tro_sy / 2, QC.tro_sx, QC.tro_sy)
-
+                
     def __init__(self, name):
         Vehicles.__init__(self)
         self.id = int(name[-2:])
@@ -386,7 +393,7 @@ class QC(Vehicles):
         self.cur_evt_id = 0
         self.trolly = self.Trolly()
         
-        self.target_v = None
+        self.target_v, self.target_qb = None, None
         self.start_time = None
         self.start_px, self.start_py = None, None
         #trolly moving start time
@@ -399,9 +406,8 @@ class QC(Vehicles):
     
     def cur_evt_update(self, cur_evt_id, Vessels=None, QBs=None):
         if len(self.evt_seq) <= 1: assert False, 'length of evt_seq is smaller than 2'
-        
         self.cur_evt = self.evt_seq[cur_evt_id]
-        ce_time, v_name, v_voyage, ce_pos, ce_container, self.ce_state, = self.cur_evt
+        ce_time, v_name, v_voyage, ce_pos, self.ce_container, self.ce_state, = self.cur_evt
         year, month, day, hour, minute, second = tuple(ce_time.split('-'))
         self.ce_time = datetime(int(year), int(month), int(day), int(hour), int(minute), int(second))
         
@@ -419,7 +425,7 @@ class QC(Vehicles):
                     break
             else:
                 assert False, 'There is not target Vessel'
-                
+             
         if ce_pos[:2] == 'SB':
             bay_id = int(ce_pos[2:4])    
             self.ce_px = self.target_v.px + self.target_v.bay_pos_info[bay_id]        
@@ -447,12 +453,13 @@ class QC(Vehicles):
             self.trolly.ce_py = self.calc_tro_ori_py(self.target_v) + self.target_v.stack_pos_info[stack_id]
         else:
             qb_id = int(ce_pos[10:])
-            target_qb = QC.QBs[qb_id]
-            self.trolly.ce_py = self.calc_tro_ori_py(target_qb) + target_qb.c_pos
+            self.target_qb = QC.QBs[qb_id]
+            self.trolly.ce_py = self.calc_tro_ori_py(self.target_qb) + self.target_qb.c_pos
         
     def calc_tro_ori_py(self, res):
         py = res.py - (self.py - QC.sy)
         return py
+    
     def OnTimer(self, evt, simul_time):
         if self.cur_evt_id == 0:
             if self.start_time <= simul_time < self.tro_ms_time:
@@ -478,6 +485,17 @@ class QC(Vehicles):
         if self.ce_time <= simul_time:
             self.trolly.py = self.trolly.pe_py = self.trolly.ce_py
             self.pe_time, self.pe_px = self.ce_time, self.ce_px
+            if self.ce_state == 'TL':
+                ce_c_id = int(self.ce_container[1:3])
+                ce_container = self.target_v.holding_containers.pop(ce_c_id)
+                ce_container.px, ce_container.py = 0, 0
+                self.holding_containers[int(ce_container.id[1:3])] = ce_container
+            else: #self.ce_state == 'TU':
+                ce_c_id = int(self.ce_container[1:3])
+                ce_container = self.holding_containers.pop(ce_c_id)
+                ce_container.px, ce_container.py = self.px, self.target_qb.c_pos
+                self.target_qb.holding_containers[int(ce_container.id[1:3])] = ce_container
+                
             self.cur_evt_id += 1
             self.cur_evt_update(self.cur_evt_id)
     
@@ -501,53 +519,85 @@ class QC(Vehicles):
         
         old_tr = gc.GetTransform()
         gc.Translate(self.trolly.px, self.trolly.py)
-        self.trolly.draw(gc)
+        self.trolly.draw(gc, self.holding_containers)
         gc.SetTransform(old_tr)
 
-class SC(object):
+
+class SC(Vehicles):
+    QBs, TPs = None, None
+    sx, sy = container_hs * 1.2, container_vs * 1.2
     def __init__(self, name):
-        self.name = name
+        Vehicles.__init__(self)
+        self.id = int(name[-2:])
+        self.name = 'SC'
         self.evt_seq = []
-        self.px, self.py = None, None
-        self.start_px, self.start_py = None, None
-        self.dest_px, self.dest_py = None, None
+        self.cur_evt_id = 0
         
-        self.turn1 = False
-        self.turn2 = False 
+        self.target_qb, self.target_tp = None, None
+        self.start_time = None
+        self.start_px, self.start_py = None, None
+        
+        ## ss: sea side, ls: land side 
+        self.is_ss_to_ls = True
+        self.waypoint1_time = None
+        self.waypoint2_time = None
+        self.waypoint3_time = None
+        
+        self.waypoint1_pos = (None, None)
+        self.waypoint2_pos = (None, None)
+        self.waypoint3_pos = (None, None)
+        
+        self.thr_wp1 = None
+        self.thr_wp2 = None
+        self.thr_wp3 = None
+        
+        self.px, self.py = 0, 0
     
     def __repr__(self):
-        return self.name
-
-    def set_position(self, px, py):
-        self.px, self.py = px, py
-
-    def set_start_pos(self, px, py):
-        self.start_px, self.start_py = int(px), int(py)
-        self.set_position(int(px), int(py))
-
-    def set_destination_pos(self, px, py):
-        self.dest_px, self.dest_py = int(px), int(py)
-
-    def update(self, evt):
-        print 'cur : ' , self.px, self.py
-        print 'dest : ', self.dest_px, self.dest_py
-        
-        if self.px == self.start_px - 50:
-            self.turn1 = True
-        if self.py == self.dest_py:
-            self.turn2 = True
-            
-        if self.turn1:
-            if self.turn2:
-                self.set_position(self.px + 1, self.py)
-            else :
-                self.set_position(self.px, self.py - 1)
-        else:
-            self.set_position(self.px - 1, self.py)
+        return str(self.name + str(self.id))
     
+    def cur_evt_update(self, cur_evt_id, QBs=None, TPs=None):
+        if len(self.evt_seq) <= 1: assert False, 'length of evt_seq is smaller than 2'
+        
+        if cur_evt_id == 0: SC.QBs, SC.TPs = QBs, TPs
+        
+        self.cur_evt = self.evt_seq[cur_evt_id]
+        print self.cur_evt
+        print self.evt_seq
+        
+        ce_time, ce_pos, self.ce_container, self.ce_state, = self.cur_evt
+        year, month, day, hour, minute, second = tuple(ce_time.split('-'))
+        self.ce_time = datetime(int(year), int(month), int(day), int(hour), int(minute), int(second))
+        
+        if ce_pos[:1] == 'S':
+            qb_id = int(ce_pos[10:])
+            ce_c_id = int(self.ce_container[1:3])
+            self.ce_px, self.ce_py = SC.QBs[qb_id].holding_containers[ce_c_id].px, SC.QBs[qb_id].py + SC.QBs[qb_id].c_pos 
+        else: #ce_pos[:1] == 'B':
+            tp_id, stack_id = int(ce_pos[1:3]), int(ce_pos[6:])
+            self.ce_px, self.ce_py = SC.TPs[tp_id].px + SC.TPs[tp_id].stack_pos[stack_id], SC.TPs[tp_id].py + SC.TPs[tp_id].bay_pos_info
+            
+        if cur_evt_id == 0:
+            self.start_time = self.ce_time - timedelta(0, 5)
+            self.start_px, self.start_py = self.px, self.py = self.ce_px - container_hs * 2, self.ce_py
+        else:
+            self.px = self.pe_px
+            self.trolly.py = self.trolly.pe_py
+            time_interval = self.ce_time - self.pe_time
+            assert 0 <= time_interval.total_seconds() < 3600 * 24, False
+        
+        
+    def OnTimer(self, evt, simul_time):
+        print 1
+#        if self.cur_evt_id == 0:
+#            if self.start_time <= simul_time < self.tro_ms_time:
+#                #straddler moving
+#                self.px = self.start_px + (self.ce_px - self.start_px) * (simul_time - self.start_time).total_seconds() / (self.tro_ms_time - self.start_time).total_seconds()
+        
+        pass
     def draw(self, gc):
         gc.SetPen(wx.Pen("black", 1))
         r, g, b = (255, 255, 255)
         brushclr = wx.Colour(r, g, b, 100)
         gc.SetBrush(wx.Brush(brushclr))
-        gc.DrawRectangle(0, 0, container_hs * 1.1, container_vs * 1.1)
+        gc.DrawRectangle(-SC.sx / 2, -SC.sy / 2, SC.sx, SC.sy)
