@@ -67,10 +67,10 @@ def run(start_time, end_time):
             elif vehicle[:2] == 'SC':
                 # SC evt
                 _datetime, processing_v, _, _, operation, c_id, position, _, vessel_name, voyage, state = ec
-                sc_id = vehicle[-2:] 
+                sc_id = int(vehicle[-2:]) 
                 target_sc = None
                 for s in scs:
-                    if s.name[-2:] == sc_id:
+                    if s.id == sc_id:
                         target_sc = s
                         break
                 else:
