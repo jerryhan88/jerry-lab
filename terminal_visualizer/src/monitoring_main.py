@@ -7,16 +7,14 @@ from parameter_function import container_hs, container_vs, l_sx, frame_milsec
 import initializer
 from classes import Bitt, QC_buffer, Block, TP
 
-Play_speed = 4.0
-
+Play_speed = 30.0
+Play_step = 3.0
 Bitts = {}
 QBs = {}
 Blocks = {}
 TPs = {}
 
 class Input_dialog(wx.Dialog):
-
-
     def __init__(self, parent, name, size=(570, 180), pos=(400, 300)):
         wx.Dialog.__init__(self, None, -1, 'Monitoring Input', pos , size)
         wx.StaticText(self, -1, 'Vessel', (15, 10))
@@ -123,7 +121,6 @@ class MainFrame(wx.Frame):
             self.saved_time = cur_time
         else:
             self.simul_clock = self.simul_clock_saved
-            print self.simul_clock_saved
             self.simul_clock_saved = None
             self.saved_time = time.time()
         self.vp.OnTimer(evt, self.simul_clock)
@@ -328,7 +325,7 @@ class Viewer_Panel(Drag_zoom_panel):
         for v in self.vessels: v.cur_evt_update(v.cur_evt_id, Bitts, self.simul_clock)
         for qc in self.qcs: qc.cur_evt_update(qc.cur_evt_id, self.vessels, QBs)
         for yc in self.ycs: yc.cur_evt_update(yc.cur_evt_id, TPs, Blocks)
-        for sc in self.scs: sc.cur_evt_update(sc.cur_evt_id, QBs, TPs)
+        for sc in self.scs: sc.cur_evt_update(sc.cur_evt_id, QBs, TPs, self.qcs)
             
         self.InitBuffer()
     
@@ -404,19 +401,23 @@ class Control_Panel(wx.Panel):
             self.timer.Start(frame_milsec)
         
         if self.Parent.play_speed > 0:
-            self.Parent.play_speed -= 0.5
+            self.Parent.play_speed -= Play_step
             self.paly_speed.SetLabel(str(self.Parent.play_speed) + 'x')
         else:
             self.Parent.isReverse_play = True
         
     def time_flow_pause(self, evt):
-        self.Parent.simul_clock_saved = self.Parent.simul_clock 
+        self.Parent.simul_clock_saved = self.Parent.simul_clock
+        #################
+        self.Parent.play_speed = 0.5
+        self.paly_speed.SetLabel(str(self.Parent.play_speed) + 'x')
+        #################
         self.timer.Stop()
     
     def time_flow_play(self, evt):
         self.Parent.isReverse_play = False
         if self.timer.IsRunning():
-            self.Parent.play_speed += 0.5
+            self.Parent.play_speed += Play_step
             self.paly_speed.SetLabel(str(self.Parent.play_speed) + 'x')
         else: 
             self.timer.Start(frame_milsec)
