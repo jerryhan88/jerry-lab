@@ -8,7 +8,6 @@ import math
 import wx
 
 seed(10)
-
 class Container(object):
     def __init__(self, id):
         self.id = id
