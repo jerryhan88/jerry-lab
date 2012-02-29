@@ -7,7 +7,7 @@ from parameter_function import container_hs, container_vs, l_sx, frame_milsec
 import initializer
 from classes import Bitt, QC_buffer, Block, TP
 
-Play_speed = 30.0
+Play_speed = 1.0
 Play_step = 3.0
 Bitts = {}
 QBs = {}
@@ -73,7 +73,7 @@ class Input_dialog(wx.Dialog):
 
 class MainFrame(wx.Frame):
     def __init__(self, input_info):
-        wx.Frame.__init__(self, None, -1, 'Monitoring', size=(1024, 768))
+        wx.Frame.__init__(self, None, -1, 'Monitoring', size=(1024, 768), pos = (150,120))
         self.input_info = input_info
         f_sx, f_sy = self.GetSize()
         self.SetBackgroundColour(wx.Colour(236, 233, 216))
@@ -295,11 +295,14 @@ class Viewer_Panel(Drag_zoom_panel):
             c.cur_position = c.moving_seq[0][1]
             c.cur_index_in_ms = 0
             if c.cur_position[0] == 'B':
-                id = int(c.cur_position[1:3])
-                Blocks[id].holding_containers[int(c.id[1:3])] = c
-                bay_id, _, _ = pyslot(c.cur_position)
+                _id = int(c.cur_position[1:3])
+                target_block =Blocks[_id] 
+                target_block.holding_containers[int(c.id[1:3])] = c
+                bay_id, stack_id, _ = pyslot(c.cur_position)
                 c.hs = container_vs
                 c.vs = container_hs
+                print target_block, bay_id, stack_id,  
+#                c.px, c.py = target_block.bay_pos_info[bay_id], target_block.stack_pos_info[stack_id]
                 if bay_id % 2 != 0:
                     c.size = '20ft'
                     c.vs /= 2
