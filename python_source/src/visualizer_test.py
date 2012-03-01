@@ -2,6 +2,7 @@ from __future__ import division
 import wx, time
 from datetime import datetime, timedelta
 import math
+
 container_hs = 20
 container_vs = 5
 frame = 15.0
@@ -108,8 +109,7 @@ class SC(Vehicles):
 #        if len(self.evt_seq) != cur_evt_id + 1: 
         self.cur_evt = self.evt_seq[cur_evt_id]
         self.next_evt = self.evt_seq[cur_evt_id + 1]
-        
-        global containers
+        ('2011-08-23-10-09-30', 'QB01', 'C02', 'TL'),        
         ce_time, ce_pos, ce_container, self.ce_state = self.cur_evt
         year, month, day, hour, minute, second = tuple(ce_time.split('-'))
         self.ce_time = datetime(int(year), int(month), int(day), int(hour), int(minute), int(second))
@@ -138,6 +138,7 @@ class SC(Vehicles):
             self.ne_px, self.ne_py = TPs[int(ne_pos[2:])].px, TPs[int(ne_pos[2:])].py
         else:
             assert False
+            
         if ce_pos[:2] == 'QB' and ne_pos[:2] == 'TP':
             self.isClockWise = True
         elif ce_pos[:2] == 'TP' and ne_pos[:2] == 'QB':
@@ -198,7 +199,7 @@ class SC(Vehicles):
                 self.px = self.wp2_px + (self.ne_px - self.wp3_px) * (simul_time - self.waypoint3_time).seconds / (self.ne_time - self.waypoint3_time).seconds
                 self.py = self.wp3_py
         if self.ne_time <= simul_time:
-            self.py, self.py = self.ne_px, self.ne_py
+            self.px, self.py = self.ne_px, self.ne_py
             self.cur_evt_id += 1
             self.cur_evt_update(self.cur_evt_id)
                         
@@ -303,16 +304,16 @@ class MyPanel(wx.Panel):
         scs = []
         #SC
         sc1 = SC(2)
-        sc1.evt_seq = [('2011-08-23-10-09-30', 'QB01', 'C02', 'TL'),
-                       ('2011-08-23-10-09-45', 'TP01', 'C02', 'TU'),
-                       ('2011-08-23-10-10-00', 'QB02', 'C07', 'TL'),
-                       ('2011-08-23-10-10-15', 'TP01', 'C07', 'TU')
-                       ]
 #        sc1.evt_seq = [('2011-08-23-10-09-30', 'QB01', 'C02', 'TL'),
-#                       ('2011-08-23-10-10-00', 'TP01', 'C02', 'TU'),
-#                       ('2011-08-23-10-10-30', 'QB02', 'C07', 'TL'),
-#                       ('2011-08-23-10-11-00', 'TP01', 'C07', 'TU')
+#                       ('2011-08-23-10-09-45', 'TP01', 'C02', 'TU'),
+#                       ('2011-08-23-10-10-00', 'QB02', 'C07', 'TL'),
+#                       ('2011-08-23-10-10-15', 'TP01', 'C07', 'TU')
 #                       ]
+        sc1.evt_seq = [('2011-08-23-10-09-30', 'QB01', 'C02', 'TL'),
+                       ('2011-08-23-10-10-00', 'TP01', 'C02', 'TU'),
+                       ('2011-08-23-10-10-30', 'QB02', 'C07', 'TL'),
+                       ('2011-08-23-10-11-00', 'TP01', 'C07', 'TU')
+                       ]
         sc1.cur_evt_update(sc1.cur_evt_id)
         scs.append(sc1)
         
