@@ -1,5 +1,6 @@
 from __future__ import division
 from datetime import datetime
+from parameter_function import container_hs, container_vs, change_b_color
 import wx
 
 class Container(object):
@@ -9,17 +10,32 @@ class Container(object):
         self.size = None
         self.hs, self.vs = None, None
         self.px, self.py = None, None
+        self.evt_end = False
     def __repr__(self):
         return 'Container ' + str(self.c_id)
-    
+    def find_cur_evt_id(self, cur_evt_id, simul_clock):
+        evt = self.evt_seq[cur_evt_id]
+        while evt.dt < simul_clock:
+            cur_evt_id += 1
+            if cur_evt_id == len(self.evt_seq)-1: 
+                self.evt_end = True
+                break
+            evt = self.evt_seq[cur_evt_id]
+        self.cur_evt_id = cur_evt_id
 
 class Bitt(object):
+    sx, sy = container_hs * 0.26, container_vs * 0.8
     def __init__(self, id, px, py):
         self.id = id
         self.name = 'Bitt'
         self.px, self.py = px, py
     def __repr__(self):
         return self.name + str(self.id)
+    def draw(self, gc):
+        ## draw Bit
+        change_b_color(gc, 'black')
+        gc.SetPen(wx.Pen('black', 0))
+        gc.DrawRectangle(0, 0, Bitt.sx, Bitt.sy)
     
 class Evt(object):
     def __init__(self, dt_txt, vehicle, work_type, c_id, operation, v_info, state, pos=None):

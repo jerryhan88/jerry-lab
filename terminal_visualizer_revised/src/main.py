@@ -3,7 +3,7 @@ import wx, initializer
 import  wx.lib.anchors as anchors
 from datetime import datetime, timedelta
 from time import time
-from parameter_function import frame_milsec, play_speed, play_x , container_hs, container_vs, total_num_bitt, total_num_qb, total_num_b
+from parameter_function import frame_milsec, play_speed, play_x , container_hs, container_vs, total_num_bitt, total_num_qb, total_num_b, l_sx
 from others_classes import Drag_zoom_panel, Bitt
 from storage_classes import QB, TP, Block
 
@@ -18,25 +18,17 @@ class Input_dialog(wx.Dialog):
         wx.StaticText(self, -1, 'Vessel', (15, 10)), wx.StaticText(self, -1, 'Voyage', (450, 10)), wx.StaticText(self, -1, 'Date', (15, 50))
         
         v_name, vo_name = ['HANJIN', 'MAERSK'], ['01', '02', '03', '04', '05', '06', '07']
-        year, month  , day = [str(x) for x in xrange(2005, 2012)], [str(x) for x in xrange(1, 13)], [str(x) for x in xrange(1, 32)]
+        year, month, day = [str(x) for x in xrange(2005, 2013)], [str(x) for x in xrange(1, 13)], [str(x) for x in xrange(1, 32)]
         
         self.v_name_ch, self.vo_name_ch = wx.Choice(self, -1, (60, 10), choices=v_name), wx.Choice(self, -1, (510, 10), choices=vo_name)
         self.v_name_ch.SetSelection(0), self.vo_name_ch.SetSelection(1)
         
         self.sy_ch, self.sm_ch, self.sd_ch = wx.Choice(self, -1, (60, 50), choices=year), wx.Choice(self, -1, (120, 50), choices=month), wx.Choice(self, -1, (165, 50), choices=day)
         self.ey_ch, self.em_ch, self.ed_ch = wx.Choice(self, -1, (320, 50), choices=year), wx.Choice(self, -1, (380, 50), choices=month), wx.Choice(self, -1, (425, 50), choices=day)
-        self.sy_ch.SetSelection(6), self.sm_ch.SetSelection(7), self.sd_ch.SetSelection(22)
-        self.ey_ch.SetSelection(6), self.em_ch.SetSelection(7), self.ed_ch.SetSelection(22) 
-        
-        #test Vessel
-#        self.sh_txt, self.smi_txt, self.ss_txt = wx.TextCtrl(self, -1, "09", (210, 50), size=(25, -1)), wx.TextCtrl(self, -1, "34", (240, 50), size=(25, -1)), wx.TextCtrl(self, -1, "40", (270, 50), size=(25, -1))
-        #test QC
-        self.sh_txt, self.smi_txt, self.ss_txt = wx.TextCtrl(self, -1, "09", (210, 50), size=(25, -1)), wx.TextCtrl(self, -1, "59", (240, 50), size=(25, -1)), wx.TextCtrl(self, -1, "40", (270, 50), size=(25, -1))
-        #test YC
-#        self.sh_txt, self.smi_txt, self.ss_txt = wx.TextCtrl(self, -1, "10", (210, 50), size=(25, -1)), wx.TextCtrl(self, -1, "05", (240, 50), size=(25, -1)), wx.TextCtrl(self, -1, "08", (270, 50), size=(25, -1))
-        
-        self.eh_txt, self.emi_txt, self.es_txt = wx.TextCtrl(self, -1, "15", (470, 50), size=(25, -1)), wx.TextCtrl(self, -1, "10", (500, 50), size=(25, -1)), wx.TextCtrl(self, -1, "20", (530, 50), size=(25, -1))
-        
+        self.sy_ch.SetSelection(7), self.sm_ch.SetSelection(1), self.sd_ch.SetSelection(13)
+        self.ey_ch.SetSelection(7), self.em_ch.SetSelection(1), self.ed_ch.SetSelection(13) 
+        self.sh_txt, self.smi_txt, self.ss_txt = wx.TextCtrl(self, -1, "08", (210, 50), size=(25, -1)), wx.TextCtrl(self, -1, "17", (240, 50), size=(25, -1)), wx.TextCtrl(self, -1, "21", (270, 50), size=(25, -1))
+        self.eh_txt, self.emi_txt, self.es_txt = wx.TextCtrl(self, -1, "13", (470, 50), size=(25, -1)), wx.TextCtrl(self, -1, "23", (500, 50), size=(25, -1)), wx.TextCtrl(self, -1, "06", (530, 50), size=(25, -1))
         wx.StaticText(self, -1, ':', (236, 50)), wx.StaticText(self, -1, ':', (266, 50)), wx.StaticText(self, -1, '-', (305, 50)), wx.StaticText(self, -1, ':', (496, 50)), wx.StaticText(self, -1, ':', (526, 50))
         
         setting_btn = wx.Button(self, -1, "setting", (480, 90))
@@ -85,7 +77,7 @@ class MainFrame(wx.Frame):
         
         self.play_speed, self.isReverse_play = play_speed, False
         
-        vessels, qcs, ycs, scs, containers = initializer.run(self.start_time, self.end_time)
+        vessels, qcs, ycs, scs, containers = initializer.run()
         
         ip_py, ip_sy = 0 , 50
         vp_py, vp_sy = ip_py + ip_sy , 600
@@ -229,8 +221,47 @@ class Viewer_Panel(Drag_zoom_panel):
         Drag_zoom_panel.__init__(self, parent, pos, size)
         self.SetConstraints(anchors.LayoutAnchors(self, True, True, True, True))
         self.vessels, self.qcs, self.ycs, self.scs, self.containers = vessels, qcs, ycs, scs, containers
+        simul_clock = parent.simul_clock
+        
         l3_py = self.set_deco_pos()
         self.make_storage(l3_py)
+        ### set container position
+        for c in self.containers:
+            c.find_cur_evt_id(c.cur_evt_id, simul_clock)
+            cur_evt = c.evt_seq[c.cur_evt_id]
+            vehicle = cur_evt.vehicle
+            work_type = cur_evt.work_type
+            if vehicle[:3] == 'STS' and work_type == 'TwistLock':
+                vessel_info = cur_evt.v_info
+                target_v_name, target_v_voyage, _ = vessel_info.split('/')
+                print   target_v_name, target_v_voyage
+                target_v = None
+                for v in self.vessels:
+                    if v.name == target_v_name and v.voyage == target_v_voyage:
+                        pass
+#                        target_v = v
+#                        break
+#                else:
+#                    assert False , 'there is no target_v'
+#                target_v.holding_containers[int(c.id[1:3])] = c
+#                bay_id, _, _ = pvslot(c.cur_position)
+#                if bay_id % 2 != 0:
+#                    c.size = '20ft'
+#                    c.hs /= 2
+            elif vehicle[:3] == 'STS' and work_type == 'TwistUnlock':
+                pass
+            elif vehicle[:3] == 'ASC' and work_type == 'TwistLock':
+                pass
+            elif vehicle[:3] == 'ASC' and work_type == 'TwistUnlock':
+                pass
+            elif vehicle[:2] == 'SH' and work_type == 'TwistLock':
+                pass
+            elif vehicle[:2] == 'SH' and work_type == 'TwistUnlock':
+                pass
+            else:
+                assert False, vehicle
+        
+        self.InitBuffer()
         
     def make_storage(self, l3_py):
         ### make QC Buffer
@@ -246,7 +277,7 @@ class Viewer_Panel(Drag_zoom_panel):
             else:
                 block_id = tp_id = 'B' + str(x - 7)
             Blocks[block_id] = Block(block_id, block0_px + x * container_hs * 2.8, block0_py)
-            TPs[tp_id] = TP(tp_id, block0_px + x * container_hs * 2.8 + container_vs * 2, block0_py - container_hs * 3 / 2)
+            TPs[tp_id] = TP(tp_id, block0_px + x * container_hs * 2.8 + container_vs * 0.5, block0_py - container_hs * 3 / 2)
             
     def set_deco_pos(self):
         ### set Lines deco position
@@ -260,7 +291,24 @@ class Viewer_Panel(Drag_zoom_panel):
         for x in xrange(total_num_bitt):
             Bitts[x + 1] = Bitt(x + 1, bit0_px + container_hs * 2.95 * x, l0_py)
         return l3_py
-     
+    
+    def OnTimer(self, evt, simul_clock):
+        pass
+    
+    def Draw(self, gc):
+        gc.Translate(self.translate_x, self.translate_y)
+        gc.Scale(self.scale, self.scale)
+        old_tr = gc.GetTransform()
+        
+        gc.SetPen(wx.Pen("black", 1))
+        for py in self.lines_py:
+            gc.DrawLines([(0, py), (l_sx, py)])
+            
+        for x in Bitts.values() + QBs.values() + TPs.values() + Blocks.values():
+            gc.Translate(x.px, x.py)
+            x.draw(gc)
+            gc.SetTransform(old_tr)
+        
 if __name__ == '__main__':
     app = wx.PySimpleApp()
     id = Input_dialog(None, 'dialog test')

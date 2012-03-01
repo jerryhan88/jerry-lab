@@ -2,7 +2,7 @@ from __future__ import division
 from vehicle_classes import Vessel, QC, YC, SC
 from others_classes import Container, Evt
     
-def run(real_log=False, checking_log=False):
+def run(real_log=True, checking_log=False):
     EVT = []
     if real_log:
         log_text = open('real_log_sorted_by_dt')
@@ -15,7 +15,7 @@ def run(real_log=False, checking_log=False):
     vessels, qcs , ycs, scs , containers = [], [], [], [], []
     
     if real_log:
-        init_real_log(qcs, ycs, scs, containers, EVT)
+        init_real_log(vessels, qcs, ycs, scs, containers, EVT)
     else:
         init_maked_log(vessels, qcs , ycs, scs , containers, EVT)
         
@@ -100,7 +100,29 @@ def init_maked_log(vessels, qcs , ycs, scs , containers, EVT):
                 containers.append(target_c)
             target_c.evt_seq.append(Evt(dt, vehicle, work_type, c_id, operation, v_info, state, pos))
             
-def init_real_log(qcs, ycs, scs, containers, EVT):
+def init_real_log(vessels, qcs, ycs, scs, containers, EVT):
+    #TODO
+    # after receive vessel arrival and departure time
+    # pleas revise this part
+    start_evt = EVT[0]
+    end_evt = EVT[-1] 
+    if len(start_evt) == 7: 
+        dt, vehicle, work_type, c_id, operation, v_info, state = start_evt
+        pos = None
+    else: 
+        dt, vehicle, _, _, work_type, c_id, pos, operation, v_info, state = start_evt
+        
+    v_name, v_voyage_txt, _ = v_info.split('/')
+    vessel = Vessel(v_name, int(v_voyage_txt))
+    vessel.evt_seq.append(Evt(dt, vehicle, work_type, c_id, operation, v_info, state, pos))
+    
+    if len(end_evt) == 7: 
+        dt, vehicle, work_type, c_id, operation, v_info, state = start_evt
+        pos = None
+    else: 
+        dt, vehicle, _, _, work_type, c_id, pos, operation, v_info, state = start_evt
+    vessel.evt_seq.append(Evt(dt, vehicle, work_type, c_id, operation, v_info, state, pos))
+    vessels.append(vessel)
     for e in EVT:
         vehicle = e[1]
         if vehicle[:3] == 'STS':
