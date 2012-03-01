@@ -31,7 +31,6 @@ class TP(Storage):
         penclr = wx.Colour(r, g, b)
         r, g, b = (255, 255, 255)
         bruclr = wx.Colour(r, g, b, 200)
-#
         gc.SetPen(wx.Pen(penclr, 1))
         gc.SetBrush(wx.Brush(bruclr))
         gc.DrawRectangle(0, 0, container_vs * 4, container_hs)
@@ -47,6 +46,7 @@ class Vehicles(object):
     def __init__(self, id):
         self.id = id
         self.evt_seq = []
+        self.cur_evt_id = 0
         self.ce_px, self.ce_py = None, None
         self.px, self.py = None, None
         self.ne_px, self.ne_py = None, None
@@ -72,9 +72,6 @@ class QC(Vehicles):
 
     def __init__(self, id):
         Vehicles.__init__(self, id)
-        self.id = id
-        self.evt_seq = []
-        self.cur_evt_id = 0
         self.trolly = self.Trolly(1)
         self.trolly.px, self.trolly.py = 0, 0
         self.isSpreaderMoving = False
@@ -94,6 +91,7 @@ class QC(Vehicles):
         self.ce_px, self.ce_py = ce_pos
         self.ne_time, ne_pos, self.ne_state = self.next_evt
         self.ne_px, self.ne_py = ne_pos
+
         if self.ce_state[0] == 'S' and self.ne_state[0] == 'S':
             self.isSpreaderMoving = True
             self.isTrollyMoving = False
@@ -145,10 +143,9 @@ class QC(Vehicles):
         
         gc.DrawLines([((container_hs * 0.5 * 0.25) , container_hs * 9 - (container_hs * 0.5 * 1.41)), (container_hs * 0.5 , container_hs * 9 - (container_hs * 0.5 * 1.41))])
         gc.DrawLines([((container_hs * 0.5) , container_hs * 9 - (container_hs * 0.5 * 1.41)), (container_hs * 0.5 - (container_hs * 0.5 * 0.75) , container_hs * 9)])
+        
         for i in range(9):
             gc.DrawLines([(container_hs * 0.5 * 0.25, container_hs * 0.5 * i), (container_hs * 0.5, container_hs * 0.5 * i)])
-            pass
-        
         old_tr = gc.GetTransform()
         gc.Translate(self.trolly.px, self.trolly.py)
         self.trolly.draw(gc)
@@ -398,6 +395,7 @@ class MyPanel(wx.Panel):
         ##YC
         #spreader moving
         #trolly moving
+        
         yc1 = YC(1)
         yc1.evt_seq = [(1.0, (300.0, 200.0), 'S_go',), (5.0, (300.0, 220.0), 'S_stop'),
                        (6.0, (0.0, 0.0), 'T_go',), (10.0, (15.0, 0.0), 'T_stop'),

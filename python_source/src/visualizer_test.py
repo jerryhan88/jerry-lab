@@ -45,7 +45,6 @@ class TP(Storage):
         gc.DrawRectangle(0, 0, container_vs * 4, container_hs)
         
 class QC_buffer(Storage):
-
     def __init__(self, id):
         Storage.__init__(self, id)
         self.name = 'QC Buffer'
@@ -77,11 +76,11 @@ class Vehicles(object):
         self.px, self.py = None, None
         self.ne_px, self.ne_py = None, None
 
-    def set_position(self, px, py):
-        self.px, self.py = px, py
-        
     def set_dest_position(self, px, py):
         self.ne_px, self.ne_py = px, py
+    
+    def cur_evt_update(self, cur_evt_id):
+        pass
 
 class SC(Vehicles):
     def __init__(self, id):
