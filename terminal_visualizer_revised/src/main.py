@@ -224,9 +224,10 @@ class Viewer_Panel(Drag_zoom_panel):
         
         l3_py = self.set_deco_pos()
         self.make_storage(l3_py)
+
         self.set_container_pos(self.vessels, containers, simul_clock)
-        self.set_vehicle_pos(self.vessels, self.qcs, self.ycs, self.scs)
-        
+#        self.set_vehicle_pos(self.vessels, self.qcs, self.ycs, self.scs)
+
     def set_vehicle_pos(self, vessels, qcs, ycs, scs, simul_clock):
         for v in vessels + qcs + ycs + scs:
             v.cur_evt_id, v.evt_end = find_cur_evt(v.cur_evt_id, v.evt_seq, simul_clock)
@@ -250,6 +251,7 @@ class Viewer_Panel(Drag_zoom_panel):
         ### set container position
         for c in containers:
             c.cur_evt_id, c.evt_end = find_cur_evt(c.cur_evt_id, c.evt_seq, simul_clock)
+            if c.cur_evt_id == -1: c.cur_evt_id = 0
             cur_evt = c.evt_seq[c.cur_evt_id]
             vehicle = cur_evt.vehicle
             work_type = cur_evt.work_type
@@ -352,5 +354,5 @@ class Viewer_Panel(Drag_zoom_panel):
         
 if __name__ == '__main__':
     app = wx.PySimpleApp()
-    id = Input_dialog(None, 'dialog test')
+    Input_dialog(None, 'dialog test')
     app.MainLoop()

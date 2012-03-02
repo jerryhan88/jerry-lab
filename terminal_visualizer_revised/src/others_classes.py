@@ -7,7 +7,7 @@ seed(10)
 class Container(object):
     def __init__(self, c_id):
         self.c_id = c_id
-        self.evt_seq, self.cur_evt_id = [], 0
+        self.evt_seq, self.cur_evt_id = [], -1
         self.size = None
         self.hs, self.vs = None, None
         self.px, self.py = None, None
