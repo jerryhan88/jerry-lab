@@ -1,8 +1,9 @@
 from __future__ import division
 from datetime import datetime
 from parameter_function import container_hs, container_vs, change_b_color
+from random import seed, randrange
 import wx
-
+seed(10)
 class Container(object):
     def __init__(self, c_id):
         self.c_id = c_id
@@ -11,17 +12,32 @@ class Container(object):
         self.hs, self.vs = None, None
         self.px, self.py = None, None
         self.evt_end = False
+        self.color = randrange(4)
     def __repr__(self):
         return 'Container ' + str(self.c_id)
     def find_cur_evt_id(self, cur_evt_id, simul_clock):
         evt = self.evt_seq[cur_evt_id]
         while evt.dt < simul_clock:
             cur_evt_id += 1
-            if cur_evt_id == len(self.evt_seq)-1: 
+            if cur_evt_id == len(self.evt_seq) - 1: 
                 self.evt_end = True
                 break
             evt = self.evt_seq[cur_evt_id]
         self.cur_evt_id = cur_evt_id
+        
+    def draw(self, gc):
+        gc.SetPen(wx.Pen('black', 0))
+        if self.color == 0:
+            change_b_color(gc, 'orange')
+        elif self.color == 1:
+            change_b_color(gc, 'red')
+        elif self.color == 2:
+            change_b_color(gc, 'green')
+        elif self.color == 3:
+            change_b_color(gc, 'blue')
+        else:
+            assert False, ''
+        gc.DrawRectangle(-self.hs / 2, -self.vs / 2, self.hs, self.vs)
 
 class Bitt(object):
     sx, sy = container_hs * 0.26, container_vs * 0.8

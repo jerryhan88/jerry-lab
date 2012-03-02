@@ -63,7 +63,6 @@ class MainFrame(wx.Frame):
         self.SetAutoLayout(True)
         
         sy, sm, sd, sh, smi, ss = int(input_info.sy), int(input_info.sm), int(input_info.sd), int(input_info.sh), int(input_info.smi), int(input_info.ss) 
-        
         ey, em, ed, eh, emi, es = int(input_info.ey), int(input_info.em), int(input_info.ed), int(input_info.eh), int(input_info.emi), int(input_info.es)
         
         self.start_time, self.end_time = datetime(sy, sm, sd, sh, smi, ss), datetime(ey, em, ed, eh, emi, es)
@@ -225,42 +224,64 @@ class Viewer_Panel(Drag_zoom_panel):
         
         l3_py = self.set_deco_pos()
         self.make_storage(l3_py)
+        self.set_container_pos(vessels, containers, simul_clock)
+        
+    def set_container_pos(self, vessels, containers, simul_clock):
         ### set container position
-        for c in self.containers:
+        for c in containers:
             c.find_cur_evt_id(c.cur_evt_id, simul_clock)
             cur_evt = c.evt_seq[c.cur_evt_id]
             vehicle = cur_evt.vehicle
             work_type = cur_evt.work_type
             if vehicle[:3] == 'STS' and work_type == 'TwistLock':
+                # container from Vessel
                 vessel_info = cur_evt.v_info
-                target_v_name, target_v_voyage, _ = vessel_info.split('/')
-                print   target_v_name, target_v_voyage
+                target_v_name, target_v_voyage_txt, _ = vessel_info.split('/')
                 target_v = None
-                for v in self.vessels:
-                    if v.name == target_v_name and v.voyage == target_v_voyage:
-                        pass
-#                        target_v = v
-#                        break
-#                else:
-#                    assert False , 'there is no target_v'
-#                target_v.holding_containers[int(c.id[1:3])] = c
-#                bay_id, _, _ = pvslot(c.cur_position)
-#                if bay_id % 2 != 0:
-#                    c.size = '20ft'
-#                    c.hs /= 2
+                for v in vessels:
+                    if v.name == target_v_name and v.voyage == int(target_v_voyage_txt):
+                        target_v = v
+                        break
+                else:
+                    assert False , 'there is no target_v'
+                target_v.holding_containers[cur_evt.c_id] = c
+                #TODO scatter container in ship bay
             elif vehicle[:3] == 'STS' and work_type == 'TwistUnlock':
+                #TODO scatter container in QC Buffer
                 pass
             elif vehicle[:3] == 'ASC' and work_type == 'TwistLock':
-                pass
+                # container from Block or TP
+                pos = cur_evt.pos
+                if pos[:1] == 'A' or pos[:1] == 'B':
+                    block_id, bay_id_txt, stack_id_txt = pos[:2], pos[3:5], pos[6:7]
+                    bay_id, stack_id = int(bay_id_txt), int(stack_id_txt)
+                    assert bay_id <= Block.num_of_bays, 'exceed num of bay'
+                    assert stack_id <= Block.num_of_stacks, 'exceed num of stack'
+                    target_block = Blocks[block_id]
+                    c.px, c.py = target_block.stack_pos_info[stack_id], target_block.bay_pos_info[bay_id]
+                    if bay_id % 2 == 0:
+                        c.hs, c.vs = container_vs, container_hs
+                else:
+                        c.hs, c.vs = container_vs, container_hs / 2
+                    target_block.holding_containers[cur_evt.c_id] = c
+#                    print block_id, bay_id, stack_id
+#                    print c.px, c.py
+                elif pos[:2] == 'LM':
+                    #TODO
+                    target_tp = None
+                else:
+                    assert False, 'container has not suitable pos'
             elif vehicle[:3] == 'ASC' and work_type == 'TwistUnlock':
+                #TODO
                 pass
             elif vehicle[:2] == 'SH' and work_type == 'TwistLock':
+                #TODO
                 pass
             elif vehicle[:2] == 'SH' and work_type == 'TwistUnlock':
+                #TODO
                 pass
             else:
                 assert False, vehicle
-        
         self.InitBuffer()
         
     def make_storage(self, l3_py):

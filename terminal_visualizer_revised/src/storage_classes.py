@@ -48,7 +48,7 @@ class TP(Storage):
 #            c.draw(gc)
 #            gc.SetTransform(old_tr)
 class Block(Storage):
-    num_of_bays = 45
+    num_of_bays = 97
     num_of_stacks = 8
     bay_pos_info = {}
     stack_pos_info = {}
@@ -73,14 +73,8 @@ class Block(Storage):
             gc.DrawLines([(0, container_hs * x), (container_vs * Block.num_of_stacks , container_hs * x)])
         for x in xrange(Block.num_of_stacks + 1):
             gc.DrawLines([(container_vs * x, 0), (container_vs * x , container_hs * (Block.num_of_bays - 1) // 2)])
-#        change_b_color(gc, 'orange')
-#        
-#        for c in self.holding_containers.values():
-#            bay_id, stack_id, _ = pyslot(c.moving_seq[c.cur_ms_id][1])
-#            py = self.bay_pos_info[bay_id]
-#            px = self.stack_pos_info[stack_id]
-#            c.px, c.py = px, py
-#            old_tr = gc.GetTransform()
-#            gc.Translate(c.px, c.py)
-#            c.draw(gc)
-#            gc.SetTransform(old_tr)
+        for c in self.holding_containers.values():
+            old_tr = gc.GetTransform()
+            gc.Translate(c.px, c.py)
+            c.draw(gc)
+            gc.SetTransform(old_tr)

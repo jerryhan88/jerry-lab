@@ -26,6 +26,8 @@ class Vessel(Vehicles):
         Vehicles.__init__(self)
         self.name = name
         self.voyage = voyage
+    def __repr__(self):
+        return str(self.name + str(self.voyage))
 
 class QC(Vehicles):
     def __init__(self, veh_id):
