@@ -29,7 +29,7 @@ def change_b_color(gc, color):
     brushclr = wx.Colour(r, g, b)
     gc.SetBrush(wx.Brush(brushclr))
     
-def find_cur_evt(cur_evt_id, evt_seq,simul_clock):
+def find_cur_evt(cur_evt_id, evt_seq, simul_clock):
     evt_end = False
     evt = evt_seq[cur_evt_id]
     while evt.dt < simul_clock:

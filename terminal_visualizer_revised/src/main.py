@@ -6,7 +6,7 @@ from time import time
 from parameter_function import frame_milsec, play_speed, play_x , container_hs, container_vs, total_num_bitt, total_num_qb, total_num_b, l_sx, find_cur_evt
 from others_classes import Drag_zoom_panel, Bitt
 from storage_classes import QB, TP, Block
-
+from vehicle_classes import Vessel, QC, YC, SC
 Bitts = {}
 QBs = {}
 Blocks = {}
@@ -224,11 +224,23 @@ class Viewer_Panel(Drag_zoom_panel):
         
         l3_py = self.set_deco_pos()
         self.make_storage(l3_py)
-        self.set_container_pos(vessels, containers, simul_clock)
-#        self.set_vehi
+        self.set_container_pos(self.vessels, containers, simul_clock)
+        self.set_vehicle_pos(self.vessels, self.qcs, self.ycs, self.scs)
         
-        
-        
+    def set_vehicle_pos(self, vessels, qcs, ycs, scs, simul_clock):
+        for v in vessels + qcs + ycs + scs:
+            v.cur_evt_id, v.evt_end = find_cur_evt(v.cur_evt_id, v.evt_seq, simul_clock)
+            if isinstance(v, Vessel):
+                v.set_evt_data(v.cur_evt_id, Bitts, simul_clock)
+            elif isinstance(v, QC):
+                pass
+#                qc.cur_evt_update(qc.cur_evt_id, self.vessels, QBs)
+            elif isinstance(v, YC):
+                pass
+            elif isinstance(v, SC):
+                pass
+            else:
+                assert False, 'not suitable vehicle'
 #        for v in self.vessels: v.cur_evt_update(v.cur_evt_id, Bitts, self.simul_clock)
 #        for qc in self.qcs: qc.cur_evt_update(qc.cur_evt_id, self.vessels, QBs)
 #        for yc in self.ycs: yc.cur_evt_update(yc.cur_evt_id, TPs, Blocks)

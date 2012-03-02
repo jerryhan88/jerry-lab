@@ -12,10 +12,30 @@ class Vehicles(object):
         self.holding_containers = {}
     def __repr__(self):
         return str(self.name + str(self.veh_id))
-    def cur_evt_update(self, cur_evt_id):
-        if len(self.moving_seq) <= 1: assert False, 'length of evt_seq is smaller than 2'
-    def find_cur_evt(self, cur_evt_id, simul_clock):
+    def cur_evt_update(self):
         pass
+
+    def set_evt_data(self, cur_evt_id, Bitts, simul_clock):
+        if len(self.evt_seq) <= 1: assert False, 'length of evt_seq is smaller than 2'
+        self.cur_evt = self.evt_seq[cur_evt_id]
+#        self.next_evt = self.evt_seq[cur_evt_id + 1]
+#        ce_time, self.ce_state, ce_pos = self.cur_evt
+#        year, month, day, hour, minute, second = tuple(ce_time.split('-'))
+#        self.ce_time = datetime(int(year), int(month), int(day), int(hour), int(minute), int(second))
+#        bitt_id = int(ce_pos[-2:])
+#        self.ce_px, self.ce_py = Bitts[bitt_id].px - self.LOA * 1 / 3, Bitts[bitt_id].py - self.B * 1.1
+#        
+#        ne_time, self.ne_state, ne_pos = self.next_evt
+#        year, month, day, hour, minute, second = tuple(ne_time.split('-'))
+#        self.ne_time = datetime(int(year), int(month), int(day), int(hour), int(minute), int(second))
+#        bitt_id = int(ne_pos[-2:])
+#        self.ne_px, self.ne_py = Bitts[bitt_id].px - self.LOA * 1 / 3, Bitts[bitt_id].py - self.B * 1.1
+#        self.ar_s_px, self.ar_s_py = self.dp_e_px, self.dp_e_py = self.px, self.py = self.ce_px, self.ce_py - container_hs * 2
+#        
+#        if self.ce_time <= simul_clock<= self.ne_time:
+#            self.px, self.py = self.ce_px, self.ce_py
+#        self.ar_s_time = self.ce_time - timedelta(0, 15)
+#        self.dp_e_time = self.ne_time + timedelta(0, 20)
     def OnTimer(self, evt, simul_time):
         pass
     def draw(self, gc):
