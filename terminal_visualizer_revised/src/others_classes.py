@@ -15,16 +15,7 @@ class Container(object):
         self.color = randrange(4)
     def __repr__(self):
         return 'Container ' + str(self.c_id)
-    def find_cur_evt_id(self, cur_evt_id, simul_clock):
-        evt = self.evt_seq[cur_evt_id]
-        while evt.dt < simul_clock:
-            cur_evt_id += 1
-            if cur_evt_id == len(self.evt_seq) - 1: 
-                self.evt_end = True
-                break
-            evt = self.evt_seq[cur_evt_id]
-        self.cur_evt_id = cur_evt_id
-        
+    
     def draw(self, gc):
         gc.SetPen(wx.Pen('black', 0))
         if self.color == 0:

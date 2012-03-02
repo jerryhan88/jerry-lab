@@ -3,7 +3,7 @@ import wx, initializer
 import  wx.lib.anchors as anchors
 from datetime import datetime, timedelta
 from time import time
-from parameter_function import frame_milsec, play_speed, play_x , container_hs, container_vs, total_num_bitt, total_num_qb, total_num_b, l_sx
+from parameter_function import frame_milsec, play_speed, play_x , container_hs, container_vs, total_num_bitt, total_num_qb, total_num_b, l_sx, find_cur_evt
 from others_classes import Drag_zoom_panel, Bitt
 from storage_classes import QB, TP, Block
 
@@ -225,11 +225,19 @@ class Viewer_Panel(Drag_zoom_panel):
         l3_py = self.set_deco_pos()
         self.make_storage(l3_py)
         self.set_container_pos(vessels, containers, simul_clock)
+        self.set_vehi
         
+        
+        
+#        for v in self.vessels: v.cur_evt_update(v.cur_evt_id, Bitts, self.simul_clock)
+#        for qc in self.qcs: qc.cur_evt_update(qc.cur_evt_id, self.vessels, QBs)
+#        for yc in self.ycs: yc.cur_evt_update(yc.cur_evt_id, TPs, Blocks)
+#        for sc in self.scs: sc.cur_evt_update(sc.cur_evt_id, QBs, TPs, self.qcs)
+#    def         
     def set_container_pos(self, vessels, containers, simul_clock):
         ### set container position
         for c in containers:
-            c.find_cur_evt_id(c.cur_evt_id, simul_clock)
+            c.cur_evt_id, c.evt_end = find_cur_evt(c.cur_evt_id, c.evt_seq, simul_clock)
             cur_evt = c.evt_seq[c.cur_evt_id]
             vehicle = cur_evt.vehicle
             work_type = cur_evt.work_type
@@ -261,7 +269,7 @@ class Viewer_Panel(Drag_zoom_panel):
                     c.px, c.py = target_block.stack_pos_info[stack_id], target_block.bay_pos_info[bay_id]
                     if bay_id % 2 == 0:
                         c.hs, c.vs = container_vs, container_hs
-                else:
+                    else:
                         c.hs, c.vs = container_vs, container_hs / 2
                     target_block.holding_containers[cur_evt.c_id] = c
 #                    print block_id, bay_id, stack_id

@@ -28,3 +28,15 @@ def change_b_color(gc, color):
     elif color == 'blue': r, g, b = 0, 0, 255
     brushclr = wx.Colour(r, g, b)
     gc.SetBrush(wx.Brush(brushclr))
+    
+def find_cur_evt(cur_evt_id, evt_seq,simul_clock):
+    evt_end = False
+    evt = evt_seq[cur_evt_id]
+    while evt.dt < simul_clock:
+        cur_evt_id += 1
+        if cur_evt_id == len(evt_seq) - 1: 
+            evt_end = True
+            break
+        evt = evt_seq[cur_evt_id]
+    return cur_evt_id, evt_end
+    
