@@ -225,7 +225,7 @@ class Viewer_Panel(Drag_zoom_panel):
         l3_py = self.set_deco_pos()
         self.make_storage(l3_py)
         self.set_container_pos(vessels, containers, simul_clock)
-        self.set_vehi
+#        self.set_vehi
         
         
         
