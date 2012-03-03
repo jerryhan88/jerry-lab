@@ -1,6 +1,6 @@
 from __future__ import division
-from vehicle_classes import Vessel, QC, YC, SC
-from others_classes import Container, Evt
+from vehicle_classes import QC, YC, SC
+from others_classes import Vessel, Container, Evt
     
 def run(real_log=True, checking_log=False):
     EVT = []
@@ -105,22 +105,21 @@ def init_real_log(vessels, qcs, ycs, scs, containers, EVT):
     # after receive vessel arrival and departure time
     # pleas revise this part
     start_evt = EVT[0]
-    end_evt = EVT[-1] 
+    end_evt = EVT[-1]
+    vehicle, pos, c_id, operation = 'Vessel', 'Bitt06', None, None 
     if len(start_evt) == 7: 
-        dt, vehicle, work_type, c_id, operation, v_info, state = start_evt
-        pos = None
+        dt, _, _, _, _, v_info, state = start_evt
     else: 
-        dt, vehicle, _, _, work_type, c_id, pos, operation, v_info, state = start_evt
-        
+        dt, _, _, _, _, _, _, _, v_info, state = start_evt
     v_name, v_voyage_txt, _ = v_info.split('/')
     vessel = Vessel(v_name, int(v_voyage_txt))
+    work_type = 'Arrival'
     vessel.evt_seq.append(Evt(dt, vehicle, work_type, c_id, operation, v_info, state, pos))
-    
     if len(end_evt) == 7: 
-        dt, vehicle, work_type, c_id, operation, v_info, state = start_evt
-        pos = None
+        dt, _, _, _, _, v_info, state = end_evt
     else: 
-        dt, vehicle, _, _, work_type, c_id, pos, operation, v_info, state = start_evt
+        dt, _, _, _, _, _, _, _, v_info, state = end_evt
+    work_type = 'Departure'
     vessel.evt_seq.append(Evt(dt, vehicle, work_type, c_id, operation, v_info, state, pos))
     vessels.append(vessel)
     for e in EVT:

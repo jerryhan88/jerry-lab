@@ -3,10 +3,10 @@ import wx, initializer
 import  wx.lib.anchors as anchors
 from datetime import datetime, timedelta
 from time import time
-from parameter_function import frame_milsec, play_speed, play_x , container_hs, container_vs, total_num_bitt, total_num_qb, total_num_b, l_sx, find_cur_evt
-from others_classes import Drag_zoom_panel, Bitt
+from parameter_function import frame_milsec, play_speed, play_x , container_hs, container_vs, total_num_bitt, total_num_qb, total_num_b, l_sx, find_target_evt
+from others_classes import Vessel, Drag_zoom_panel, Bitt
 from storage_classes import QB, TP, Block
-from vehicle_classes import Vessel, QC, YC, SC
+from vehicle_classes import  QC, YC, SC
 Bitts = {}
 QBs = {}
 Blocks = {}
@@ -103,8 +103,8 @@ class MainFrame(wx.Frame):
             self.simul_clock = self.simul_clock_saved
             self.simul_clock_saved = None
             self.saved_time = time()
-        self.vp.OnTimer(evt, self.simul_clock)
-        self.cp.OnTimer(evt, self.simul_clock)
+        self.vp.Update_picture(self.simul_clock)
+        self.cp.Update_control_time(self.simul_clock)
         
     def OnClose(self, event):
         self.input_info.Destroy()
@@ -207,7 +207,7 @@ class Control_Panel(wx.Panel):
         else: 
             self.timer.Start(frame_milsec)
 
-    def OnTimer(self, evt, simul_clock):
+    def Update_control_time(self, simul_clock):
         cur_sec = time()
         if abs(self.saved_time - cur_sec) >= 1 :
             self.simul_st.SetLabel(simul_clock.ctime())
@@ -226,38 +226,55 @@ class Viewer_Panel(Drag_zoom_panel):
         self.make_storage(l3_py)
 
         self.set_container_pos(self.vessels, containers, simul_clock)
-#        self.set_vehicle_pos(self.vessels, self.qcs, self.ycs, self.scs)
+        self.set_vehicle_pos(self.vessels, self.qcs, self.ycs, self.scs, simul_clock)
+        
+        self.InitBuffer()
 
     def set_vehicle_pos(self, vessels, qcs, ycs, scs, simul_clock):
         for v in vessels + qcs + ycs + scs:
-            v.cur_evt_id, v.evt_end = find_cur_evt(v.cur_evt_id, v.evt_seq, simul_clock)
+            v.target_evt_id, v.evt_end = find_target_evt(v.target_evt_id, v.evt_seq, simul_clock)
             if isinstance(v, Vessel):
-                v.set_evt_data(v.cur_evt_id, Bitts, simul_clock)
+                Vessel.Bitts = Bitts
+                v.set_evt_data(v.target_evt_id, simul_clock)
             elif isinstance(v, QC):
-                pass
-#                qc.cur_evt_update(qc.cur_evt_id, self.vessels, QBs)
+                QC.Vessels, QC.QBs = vessels, QBs
+                last_QB_id = 0
+                for qb_id in QBs.keys():
+                    if qb_id > last_QB_id : last_QB_id = qb_id
+                v.py = QBs[last_QB_id].py + QBs[last_QB_id].sy
+                v.set_evt_data(v.target_evt_id, simul_clock)
             elif isinstance(v, YC):
-                pass
+                YC.TPs, YC.Blocks = TPs, Blocks
+                start_evt = v.evt_seq[v.target_evt_id] 
+                b_or_tp_id = None 
+                if start_evt.pos[:2] == 'LM':
+                    b_or_tp_id = start_evt.pos[3:5]
+                else:
+                    b_or_tp_id = start_evt.pos[:2]
+                v.px = YC.Blocks[b_or_tp_id].px + YC.sy / 2
+                v.py = 300.0
             elif isinstance(v, SC):
-                pass
+                SC.QBs, SC.TPs, SC.QCs = QBs, TPs, qcs
+                start_evt = v.evt_seq[v.target_evt_id]
+                print v, start_evt
+                v.px = 300
+                v.py = 150.0
             else:
                 assert False, 'not suitable vehicle'
 #        for v in self.vessels: v.cur_evt_update(v.cur_evt_id, Bitts, self.simul_clock)
 #        for qc in self.qcs: qc.cur_evt_update(qc.cur_evt_id, self.vessels, QBs)
 #        for yc in self.ycs: yc.cur_evt_update(yc.cur_evt_id, TPs, Blocks)
 #        for sc in self.scs: sc.cur_evt_update(sc.cur_evt_id, QBs, TPs, self.qcs)
-#    def         
     def set_container_pos(self, vessels, containers, simul_clock):
         ### set container position
         for c in containers:
-            c.cur_evt_id, c.evt_end = find_cur_evt(c.cur_evt_id, c.evt_seq, simul_clock)
-            if c.cur_evt_id == -1: c.cur_evt_id = 0
-            cur_evt = c.evt_seq[c.cur_evt_id]
-            vehicle = cur_evt.vehicle
-            work_type = cur_evt.work_type
+            c.target_evt_id, c.evt_end = find_target_evt(c.target_evt_id, c.evt_seq, simul_clock)
+            tg_evt = c.evt_seq[c.target_evt_id]
+            vehicle = tg_evt.vehicle
+            work_type = tg_evt.work_type
             if vehicle[:3] == 'STS' and work_type == 'TwistLock':
                 # container from Vessel
-                vessel_info = cur_evt.v_info
+                vessel_info = tg_evt.v_info
                 target_v_name, target_v_voyage_txt, _ = vessel_info.split('/')
                 target_v = None
                 for v in vessels:
@@ -266,14 +283,14 @@ class Viewer_Panel(Drag_zoom_panel):
                         break
                 else:
                     assert False , 'there is no target_v'
-                target_v.holding_containers[cur_evt.c_id] = c
+                target_v.holding_containers[tg_evt.c_id] = c
                 #TODO scatter container in ship bay
             elif vehicle[:3] == 'STS' and work_type == 'TwistUnlock':
                 #TODO scatter container in QC Buffer
                 pass
             elif vehicle[:3] == 'ASC' and work_type == 'TwistLock':
                 # container from Block or TP
-                pos = cur_evt.pos
+                pos = tg_evt.pos
                 if pos[:1] == 'A' or pos[:1] == 'B':
                     block_id, bay_id_txt, stack_id_txt = pos[:2], pos[3:5], pos[6:7]
                     bay_id, stack_id = int(bay_id_txt), int(stack_id_txt)
@@ -285,9 +302,7 @@ class Viewer_Panel(Drag_zoom_panel):
                         c.hs, c.vs = container_vs, container_hs
                     else:
                         c.hs, c.vs = container_vs, container_hs / 2
-                    target_block.holding_containers[cur_evt.c_id] = c
-#                    print block_id, bay_id, stack_id
-#                    print c.px, c.py
+                    target_block.holding_containers[tg_evt.c_id] = c
                 elif pos[:2] == 'LM':
                     #TODO
                     target_tp = None
@@ -304,7 +319,6 @@ class Viewer_Panel(Drag_zoom_panel):
                 pass
             else:
                 assert False, vehicle
-        self.InitBuffer()
         
     def make_storage(self, l3_py):
         ### make QC Buffer
@@ -335,8 +349,11 @@ class Viewer_Panel(Drag_zoom_panel):
             Bitts[x + 1] = Bitt(x + 1, bit0_px + container_hs * 2.95 * x, l0_py)
         return l3_py
     
-    def OnTimer(self, evt, simul_clock):
-        pass
+    def Update_picture(self, simul_clock):
+        for v in self.vessels + self.ycs + self.qcs + self.scs:
+            v.Update_pos(simul_clock)
+            v.Update_container_ownership(simul_clock)
+        self.RefreshGC()
     
     def Draw(self, gc):
         gc.Translate(self.translate_x, self.translate_y)
@@ -348,6 +365,14 @@ class Viewer_Panel(Drag_zoom_panel):
             gc.DrawLines([(0, py), (l_sx, py)])
             
         for x in Bitts.values() + QBs.values() + TPs.values() + Blocks.values():
+            gc.Translate(x.px, x.py)
+            x.draw(gc)
+            gc.SetTransform(old_tr)
+        
+        #draw vehicle
+        old_tr = gc.GetTransform()
+        for x in self.vessels + self.qcs + self.ycs + self.scs:
+#            print x, x.px, x.py
             gc.Translate(x.px, x.py)
             x.draw(gc)
             gc.SetTransform(old_tr)
