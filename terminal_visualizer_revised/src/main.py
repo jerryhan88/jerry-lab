@@ -287,9 +287,21 @@ class Viewer_Panel(Drag_zoom_panel):
         self.sx, self.sy = self.GetSize()
         l3_py = self.set_deco_pos()
         self.make_storage(l3_py)
-
         self.set_container_pos(self.vessels, containers, simul_clock)
         self.set_vehicle_pos(self.vessels, self.qcs, self.ycs, self.scs, simul_clock)
+        mg = 20
+        l_mg = 2
+        
+        p0, p1, p2 = (l_sx + mg * 2, 1400), (l_sx + mg * 2, self.lines_py[0] - l_mg + mg), (l_sx + mg, self.lines_py[0] - l_mg)
+        p3, p4, p5 = (0, self.lines_py[0] - l_mg), (-mg, self.lines_py[0] + mg - l_mg), (-mg, 1400) 
+        self.l_bg_ps = [p0, p1, p2, p3, p4, p5]
+        
+        dp0, dp1, dp2 = (-mg + l_mg, 1400), (-mg + l_mg, self.lines_py[0] + mg - l_mg), (0, self.lines_py[0]) 
+        self.deco_l1 = [dp0, dp1, dp2]
+        
+        dp0, dp1 = (l_sx, self.lines_py[0]), (l_sx + mg - l_mg, self.lines_py[0])
+        dp2, dp3 = (l_sx + mg * 2 - l_mg, self.lines_py[0] - l_mg + mg), (l_sx + mg * 2, 1400)
+        self.deco_l2 = [dp0, dp1, dp2, dp3]
         
         self.InitBuffer()
 
@@ -389,7 +401,7 @@ class Viewer_Panel(Drag_zoom_panel):
             if x == 0: QBs[x + 1] = QB(x + 1, 0, l3_py)
             else: QBs[x + 1] = QB(x + 1, 0, l3_py + container_vs * (8 + x * 2.2))
         ### make TP and Block
-        block0_px, block0_py = Bitts[1].px, QBs[4].py + container_vs * 31
+        block0_px, block0_py = Bitts[3].px, QBs[4].py + container_vs * 31
         for x in xrange(total_num_b):
             block_id = tp_id = None
             if x < 8:
@@ -403,14 +415,13 @@ class Viewer_Panel(Drag_zoom_panel):
         ### set Lines deco position
         l0_py = container_vs * 31.2
         l1_py = l0_py + container_vs
-        l2_py = l1_py + container_vs * 0.5
-        l3_py = l2_py + container_vs * 0.5
-        self.lines_py = [eval('l%d_py' % x) for x in xrange(4)]
+        l2_py = l1_py + container_vs * 1
+        self.lines_py = [eval('l%d_py' % x) for x in xrange(3)]
         ### set  bitts position
         bit0_px = container_hs * 0.7
         for x in xrange(total_num_bitt):
             Bitts[x + 1] = Bitt(x + 1, bit0_px + container_hs * 2.95 * x, l0_py)
-        return l3_py
+        return l2_py
     
     def update_picture(self, simul_clock):
         for v in self.vessels + self.qcs + self.scs + self.ycs:
@@ -421,15 +432,22 @@ class Viewer_Panel(Drag_zoom_panel):
         gc.Translate(self.translate_x, self.translate_y)
         gc.Scale(self.scale, self.scale)
         old_tr = gc.GetTransform()
+        #brush sea
         bg_clr = wx.Colour(47, 203, 250)
         gc.SetBrush(wx.Brush(bg_clr))
         gc.SetPen(wx.Pen(bg_clr, 0))
         mg = 400 
-        gc.DrawLines([(-mg, -mg), (self.sx + mg, -mg), (self.sx + mg, self.sy + mg), (-mg, self.sy + mg)])
-        
-        gc.SetPen(wx.Pen("black", 1))
+        gc.DrawLines([(-mg, -mg), (self.sx + mg, -mg), (self.sx + mg, 1400), (-mg, 1400)])
+        #brush land
+        bg_clr = wx.Colour(168, 165, 164)
+        gc.SetBrush(wx.Brush(bg_clr))
+        gc.SetPen(wx.Pen(bg_clr, 0))
+        gc.DrawLines(self.l_bg_ps)
+        gc.SetPen(wx.Pen(wx.Colour(100, 100, 100), 0.5))
         for py in self.lines_py:
             gc.DrawLines([(0, py), (l_sx, py)])
+        gc.DrawLines(self.deco_l1)
+        gc.DrawLines(self.deco_l2)
             
         for x in Bitts.values() + QBs.values() + TPs.values() + Blocks.values():
             gc.Translate(x.px, x.py)
