@@ -1,7 +1,8 @@
 from __future__ import division
 from datetime import timedelta
 from parameter_function import container_hs, container_vs, calc_proportional_pos, change_b_color
-from storage_classes import Block
+from storage_classes import Block, QB
+from others_classes import Vessel
 import wx, math
 
 class Vehicles(object):
@@ -62,7 +63,11 @@ class QC(Vehicles):
             self.update_container_ownership(simul_clock)
             self.target_evt_id += 1
             self.set_evt_data(self.target_evt_id, simul_clock)
-        
+    def calc_tro_ori_py(self, res):
+        if isinstance(res, Vessel): py = res.anchored_py
+        elif isinstance(res, QB): py = res.py
+        else: assert False
+        return py - (self.py - QC.sy) 
     def set_evt_data(self, target_evt_id, simul_clock):
 #        if target_evt_id == len(self.evt_seq) - 1:
 #            self.evt_end = True
@@ -78,10 +83,13 @@ class QC(Vehicles):
                     break
             else:
                 assert False, 'There is not target Vessel'
-        self.px = self.target_v.px + container_hs * 8
+        if tg_pos[:2] == 'SB':
+            bay_id = int(tg_pos[2:4]) 
+            self.tg_px = self.target_v.px + self.target_v.bay_pos_info[bay_id]
         
         if target_evt_id == 0:
             self.start_time = self.tg_time - timedelta(seconds=5)
+            self.start_px = self.px = self.tg_px + container_hs * 2
             self.trolly.start_px, self.trolly.start_py = self.trolly.px, self.trolly.py = 0 , 0
             time_interval = self.tg_time - self.start_time
             assert 0 <= time_interval.total_seconds() < 3600 * 24, False
@@ -89,13 +97,15 @@ class QC(Vehicles):
             self.tro_mf_time = self.start_time + timedelta(seconds=time_interval.total_seconds() * (4 / 5))
         else:
             self.trolly.py = self.trolly.pe_py
+            self.px = self.pe_px
             time_interval = self.tg_time - self.pe_time
             assert 0 <= time_interval.total_seconds() < 3600 * 24, False
             self.tro_ms_time = self.pe_time + timedelta(seconds=time_interval.total_seconds() * (1 / 5))
             self.tro_mf_time = self.pe_time + timedelta(seconds=time_interval.total_seconds() * (4 / 5))
         
         if self.tg_work_type == 'TwistLock' and self.tg_operation == 'DISCHARGING' or self.tg_work_type == 'TwistUnlock' and self.tg_operation == 'LOADING':
-            self.trolly.tg_py = container_hs * 6 
+            stack_id = int(tg_pos[5:7])
+            self.trolly.tg_py = self.calc_tro_ori_py(self.target_v) + self.target_v.stack_pos_info[stack_id]
         elif  self.tg_work_type == 'TwistUnlock' and self.tg_operation == 'DISCHARGING' or self.tg_work_type == 'TwistLock' and self.tg_operation == 'LOADING':
             qb_id = int(tg_pos[-2:])
             self.target_qb = QC.QBs[qb_id]
@@ -104,28 +114,26 @@ class QC(Vehicles):
     def update_pos(self, simul_clock):
         if self.target_evt_id == 0:
             if self.start_time <= simul_clock < self.tro_ms_time:
-                pass
                 #straddler moving
-##                self.px = self.start_px + (self.ce_px - self.start_px) * (simul_time - self.start_time).total_seconds() / (self.tro_ms_time - self.start_time).total_seconds()
+                self.px = self.start_px + calc_proportional_pos(self.start_px, self.tg_px, self.start_time, self.tro_ms_time, simul_clock)
             elif self.tro_ms_time <= simul_clock < self.tro_mf_time:
-#                self.px = self.ce_px
+                self.px = self.tg_px
                 #trolly moving
                 self.trolly.py = self.trolly.start_py + calc_proportional_pos(self.trolly.start_py, self.trolly.tg_py, self.tro_ms_time, self.tro_mf_time, simul_clock)
             elif self.tro_mf_time <= simul_clock < self.tg_time:
                 self.trolly.py = self.trolly.tg_py
         else:
             if self.pe_time <= simul_clock < self.tro_ms_time:
-                pass
                 #straddler moving
-#                self.px = self.pe_px + (self.ce_px - self.pe_px) * (simul_time - self.pe_time).total_seconds() / (self.tro_ms_time - self.pe_time).total_seconds()
+                self.px = self.pe_px + calc_proportional_pos(self.pe_px, self.tg_px, self.pe_time, self.tro_ms_time, simul_clock)
             elif self.tro_ms_time <= simul_clock < self.tro_mf_time:
-#                self.px = self.ce_px
+                self.px = self.tg_px
                 #trolly moving
                 self.trolly.py = self.trolly.pe_py + calc_proportional_pos(self.trolly.pe_py, self.trolly.tg_py, self.tro_ms_time, self.tro_mf_time, simul_clock)
             elif self.tro_mf_time <= simul_clock < self.tg_time:
                 self.trolly.py = self.trolly.tg_py
         if self.tg_time <= simul_clock:
-            self.pe_time, self.trolly.pe_py = self.tg_time, self.trolly.tg_py
+            self.pe_time, self.trolly.pe_py, self.pe_px = self.tg_time, self.trolly.tg_py, self.tg_px
     def update_container_ownership(self, simul_time):
         if self.tg_work_type == 'TwistLock' and self.tg_operation == 'DISCHARGING':
             tg_container = self.target_v.holding_containers.pop(self.tg_container)
@@ -519,7 +527,7 @@ class SC(Vehicles):
         
         gc.SetBrush(wx.Brush(wx.Colour(226, 56, 20)))
         
-        gc.DrawLines([(self.lu_px + SC.sx, self.lu_py+1), (self.lu_px + SC.sx - container_vs*0.7, self.lu_py+1), (self.lu_px + SC.sx - container_vs*0.7, self.lu_py + SC.sy / 2), (self.lu_px + SC.sx, self.lu_py + SC.sy / 2)])
+        gc.DrawLines([(self.lu_px + SC.sx, self.lu_py + 1), (self.lu_px + SC.sx - container_vs * 0.7, self.lu_py + 1), (self.lu_px + SC.sx - container_vs * 0.7, self.lu_py + SC.sy / 2), (self.lu_px + SC.sx, self.lu_py + SC.sy / 2)])
 #        gc.DrawLines([(self.lu_px + SC.sx + container_vs, self.lu_py + SC.sy / 2), (self.lu_px + SC.sx + container_vs, self.lu_py + SC.sy / 2)])
         
 #        gc.DrawRectangle(-SC.sx / 2, -SC.sy / 2, SC.sx, SC.sy)
