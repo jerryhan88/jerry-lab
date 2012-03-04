@@ -13,7 +13,7 @@ class Container(object):
         self.hs, self.vs = None, None
         self.px, self.py = None, None
         self.evt_end = False
-        self.color = randrange(4)
+        self.color = randrange(5)
     def __repr__(self):
         return 'Container ' + str(self.c_id)
     
@@ -27,6 +27,8 @@ class Container(object):
             change_b_color(gc, 'green')
         elif self.color == 3:
             change_b_color(gc, 'blue')
+        elif self.color == 4:
+            change_b_color(gc, 'd_orange')
         else:
             assert False, ''
         gc.DrawRectangle(-self.hs / 2, -self.vs / 2, self.hs, self.vs)
@@ -41,9 +43,10 @@ class Bitt(object):
         return self.name + str(self.id)
     def draw(self, gc):
         ## draw Bit
-        change_b_color(gc, 'black')
-        gc.SetPen(wx.Pen('black', 0))
-        gc.DrawRectangle(0, 0, Bitt.sx, Bitt.sy)
+        bitt_clr = wx.Colour(251, 194, 0)
+        gc.SetBrush(wx.Brush(bitt_clr))
+        gc.SetPen(wx.Pen(bitt_clr, 0))
+        gc.DrawRectangle(0, 0.5, Bitt.sx, Bitt.sy)
     
 class Evt(object):
     def __init__(self, dt_txt, vehicle, work_type, c_id, operation, v_info, state, pos=None):
@@ -55,8 +58,8 @@ class Evt(object):
 
 class Vessel(object):
     Bitts = None
-    LOA = 222
-    Beam = container_vs * (13 + 2)
+    LOA = container_hs * 18
+    Beam = container_vs * (13 + 4)
     num_of_bay, num_of_stack = 51, 13
     btn_bay = 1.2
     def __init__(self, name, voyage):
@@ -70,7 +73,7 @@ class Vessel(object):
         self.holding_containers = {}
         self.isVisible = False
         self.bay_pos_info, self.stack_pos_info = {}, {} 
-        self.margin_px, self.margin_py = container_hs * 2, container_vs * 1.0
+        self.margin_px, self.margin_py = container_hs * 1.2, container_vs * 2
         self.drawing_bays_px = []
         for bay_id in range(Vessel.num_of_bay, 0, -1):
             if bay_id % 4 == 0: px = False
@@ -85,6 +88,27 @@ class Vessel(object):
         for x in xrange(self.num_of_stack):
             self.stack_pos_info[x + 1] = x * container_vs + container_vs / 2 + self.margin_py
         
+        self.v_d_p = [(0, Vessel.Beam * 0.15),
+                      (Vessel.LOA * 0.05, Vessel.Beam * 0.05),
+                      (Vessel.LOA * 0.1, 0),
+                      (Vessel.LOA * 0.75, 0),
+                      (Vessel.LOA * 0.90, Vessel.Beam * 0.02),
+                      (Vessel.LOA * 0.95, Vessel.Beam * 0.1),
+                      (Vessel.LOA * 0.97, Vessel.Beam * 0.2),
+                      (Vessel.LOA, Vessel.Beam * 0.5),
+                      (Vessel.LOA * 0.97, Vessel.Beam * 0.8),
+                      (Vessel.LOA * 0.95, Vessel.Beam * 0.9),
+                      (Vessel.LOA * 0.90, Vessel.Beam * 0.98),
+                      (Vessel.LOA * 0.75, Vessel.Beam),
+                      (Vessel.LOA * 0.1, Vessel.Beam),
+                      (Vessel.LOA * 0.05, Vessel.Beam * 0.95),
+                      (0, Vessel.Beam * 0.85),
+                      (0, Vessel.Beam * 0.15)]
+        mg = 2
+        self.hatch = [(self.margin_px - mg, self.margin_py - mg),
+                      (self.drawing_bays_px[-1] + container_hs / 2 + mg, self.margin_py - mg),
+                      (self.drawing_bays_px[-1] + container_hs / 2 + mg, Vessel.Beam - self.margin_py + mg),
+                      (self.margin_px - mg, Vessel.Beam - self.margin_py + mg)]
     def __repr__(self):
         return str(self.name + str(self.voyage))
     
@@ -133,33 +157,34 @@ class Vessel(object):
         self.update_pos(simul_clock)
         
     def draw(self, gc):
-        gc.SetPen(wx.Pen("black", 0.5))
-        change_b_color(gc, 'white')
+        gc.SetPen(wx.Pen(wx.Colour(65, 51, 128), 2))
+        gc.SetBrush(wx.Brush(wx.Colour(45, 189, 45)))
         #draw vessel surface
         if self.isVisible:
-            gc.DrawRectangle(0, 0, Vessel.LOA, Vessel.Beam)
+#            gc.DrawRectangle(0, 0, Vessel.LOA, Vessel.Beam)
+            gc.DrawLines(self.v_d_p)
+            gc.SetPen(wx.Pen(wx.Colour(150, 150, 150), 0))
+            gc.SetBrush(wx.Brush(wx.Colour(150, 150, 150)))
+            gc.DrawLines(self.hatch)
             for x, px in enumerate(self.drawing_bays_px):
+                gc.SetPen(wx.Pen(wx.Colour(100, 100, 100), 0.5))
                 if x != 4:
                     gc.DrawLines([(px - container_hs / 2, self.margin_py), (px - container_hs / 2, self.margin_py + container_vs * Vessel.num_of_stack)])
                     gc.DrawLines([(px + container_hs / 2, self.margin_py), (px + container_hs / 2, self.margin_py + container_vs * Vessel.num_of_stack)])
                     for s in xrange(Vessel.num_of_stack + 1):
                         gc.DrawLines([(px - container_hs / 2, self.margin_py + s * container_vs), (px + container_hs / 2, self.margin_py + s * container_vs)])
                 else:
-                    gc.DrawRectangle(px - container_hs / 2, self.margin_py, container_hs, container_vs * Vessel.num_of_stack)
+                    change_b_color(gc, 'white')
+                    gc.SetPen(wx.Pen(wx.Colour(200, 200, 200), 1))
+                    gc.DrawRectangle(px - container_hs / 2, self.margin_py - container_vs * 1, container_hs, container_vs * Vessel.num_of_stack + container_vs * 2)
                     gc.DrawRectangle(px - container_hs / 2 + container_vs / 2, self.margin_py + container_vs * Vessel.num_of_stack / 4, container_hs / 2, container_vs * Vessel.num_of_stack / 2)
-#            for x in xrange((Vessel.num_of_bay + 1) // 4):
-#                if x != 4:
-##                    if x > 4: x += 1
-#                    bay_ori_px = self.margin_px + container_hs * Vessel.btn_bay * x
-#                    gc.DrawLines([(bay_ori_px, self.margin_py), (bay_ori_px, self.margin_py + container_vs * Vessel.num_of_stack)])
-#                    gc.DrawLines([(bay_ori_px + container_hs, self.margin_py), (bay_ori_px + container_hs, self.margin_py + container_vs * Vessel.num_of_stack)])
-#                    for s in xrange(Vessel.num_of_stack + 1):
-#                        gc.DrawLines([(bay_ori_px, self.margin_py + s * container_vs), (bay_ori_px + container_hs, self.margin_py + s * container_vs)])
-#                else:
-#                    bay_ori_px = self.margin_px + container_hs * Vessel.btn_bay * x
-#                    gc.DrawRectangle(bay_ori_px, self.margin_py, container_hs, container_vs * Vessel.num_of_stack)
-#                    gc.DrawRectangle(bay_ori_px + container_vs / 2, self.margin_py + container_vs * Vessel.num_of_stack / 4, container_hs / 2, container_vs * Vessel.num_of_stack / 2)
-                    
+#            p1, p2, p3, p4, p5, p6 = (0, Vessel.Beam * 0.25), (20, 0), (Vessel.LOA - 20, 0), (Vessel.LOA - 10, Vessel.Beam * 0.125), (Vessel.LOA - 5, Vessel.Beam * 0.2), (Vessel.LOA, Vessel.Beam * 0.35)
+#            p7, p8, p9 = (Vessel.LOA, Vessel.Beam * 0.65), (Vessel.LOA - 5, Vessel.Beam * 0.8), (Vessel.LOA - 10, Vessel.Beam * 0.875)
+#            p10 = (Vessel.LOA - 20, Vessel.Beam-10)
+#            gc.DrawLines([p1, p2, p3, p4, p5 , p6
+#                          , p7, p8, p9, p10])
+##                          , , (20, Vessel.Beam), (0, Vessel.Beam * 0.75), (0, Vessel.Beam * 0.25)])
+#            gc.DrawLines([(10, Vessel.Beam * 0.125), (10, Vessel.Beam * 0.875)]) 
             for c in self.holding_containers.values():
                 old_tr = gc.GetTransform()
                 gc.Translate(c.px, c.py)
