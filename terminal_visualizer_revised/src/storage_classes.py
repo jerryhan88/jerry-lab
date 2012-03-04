@@ -19,7 +19,8 @@ class QB(Storage):
         self.name, self.id = 'QC Buffer', id
         self.px, self.py = px, py
     def draw(self, gc):
-        gc.SetPen(wx.Pen('black', 0.5))
+        gc.SetPen(wx.Pen(wx.Colour(251, 194, 0), 0.5))
+        
         gc.DrawLines([(0, 0), (l_sx, 0)])
         gc.DrawLines([(0, QB.sy), (l_sx, QB.sy)])
         for c in self.holding_containers.values():
@@ -38,10 +39,13 @@ class TP(Storage):
         self.name, self.id = 'TP', id
         self.px, self.py = px, py
     def draw(self, gc):
-        gc.SetPen(wx.Pen('black', 0.2))
-        change_b_color(gc, 'white')
+        gc.SetPen(wx.Pen(wx.Colour(100, 100, 100), 0.5))
         for s_px in TP.stack_pos_info.values() :
-            gc.DrawRectangle(s_px - TP.sx / 2, 0, TP.sx, TP.sy)
+            gc.DrawLines([(s_px - TP.sx / 2, 0), (s_px + TP.sx / 2, 0)])
+            gc.DrawLines([(s_px - TP.sx / 2, TP.sy), (s_px + TP.sx / 2, TP.sy)])
+            gc.DrawLines([(s_px - TP.sx / 2, 0), (s_px - TP.sx / 2, TP.sy)])
+            gc.DrawLines([(s_px + TP.sx / 2, 0), (s_px + TP.sx / 2, TP.sy)])
+#            gc.DrawRectangle(s_px - TP.sx / 2, 0, TP.sx, TP.sy)
         for c in self.holding_containers.values():
             old_tr = gc.GetTransform()
             gc.Translate(c.px, c.py)
@@ -68,7 +72,7 @@ class Block(Storage):
         self.name, self.id = 'Block', id
         self.px, self.py = px, py
     def draw(self, gc):
-        gc.SetPen(wx.Pen("black", 0.5))
+        gc.SetPen(wx.Pen(wx.Colour(100, 100, 100), 0.5))
         for x in xrange((Block.num_of_bays - 1) // 2 + 1):
             gc.DrawLines([(0, container_hs * x), (container_vs * Block.num_of_stacks , container_hs * x)])
         for x in xrange(Block.num_of_stacks + 1):
