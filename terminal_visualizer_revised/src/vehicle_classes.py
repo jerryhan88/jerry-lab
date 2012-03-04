@@ -369,6 +369,8 @@ class SC(Vehicles):
         self.waypoint1_time, self.waypoint2_time, self.waypoint3_time = None, None, None
         self.waypoint1_pos , self.waypoint2_pos, self.waypoint3_pos = (None, None), (None, None), (None, None)
         self.thr_wp1, self.thr_wp2, self.thr_wp3 = None, None, None
+        
+        self.lu_px, self.lu_py = -SC.sx / 2, -SC.sy / 2
     
     def update(self, simul_clock):
         self.update_pos(simul_clock)
@@ -500,15 +502,25 @@ class SC(Vehicles):
                 gc.Rotate(0)
         else:
             if self.thr_wp1:
-                gc.Rotate(0)
+                gc.Rotate(-math.pi)
                 if self.thr_wp2:
                     gc.Rotate(math.pi / 2)
                     if self.thr_wp3:
                         gc.Rotate(math.pi / 2)
             else:
-                gc.Rotate(math.pi / 2)
-        gc.SetPen(wx.Pen('black', 0.1))
-        change_b_color(gc, 'white')
-        gc.DrawRectangle(-SC.sx / 2, -SC.sy / 2, SC.sx, SC.sy)
+                gc.Rotate(-math.pi / 2)
         for c in self.holding_containers.values():
             c.draw(gc)
+        gc.SetPen(wx.Pen(wx.Colour(226, 56, 20), 1))
+        gc.DrawLines([(self.lu_px, self.lu_py), (self.lu_px + SC.sx, self.lu_py)])
+        gc.DrawLines([(self.lu_px, self.lu_py + SC.sy), (self.lu_px + SC.sx, self.lu_py + SC.sy)])
+        gc.DrawLines([(self.lu_px, self.lu_py), (self.lu_px, self.lu_py + SC.sy)])
+        gc.DrawLines([(self.lu_px + SC.sx, self.lu_py), (self.lu_px + SC.sx, self.lu_py + SC.sy)])
+        
+        gc.SetBrush(wx.Brush(wx.Colour(226, 56, 20)))
+        
+        gc.DrawLines([(self.lu_px + SC.sx, self.lu_py+1), (self.lu_px + SC.sx - container_vs*0.7, self.lu_py+1), (self.lu_px + SC.sx - container_vs*0.7, self.lu_py + SC.sy / 2), (self.lu_px + SC.sx, self.lu_py + SC.sy / 2)])
+#        gc.DrawLines([(self.lu_px + SC.sx + container_vs, self.lu_py + SC.sy / 2), (self.lu_px + SC.sx + container_vs, self.lu_py + SC.sy / 2)])
+        
+#        gc.DrawRectangle(-SC.sx / 2, -SC.sy / 2, SC.sx, SC.sy)
+        
