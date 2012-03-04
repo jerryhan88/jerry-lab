@@ -13,7 +13,7 @@ class Storage(object):
     
 class QB(Storage):
     sy = container_vs * 2.2
-    h_c_pos_info = sy / 2
+    v_c_pos_info = sy / 2
     def __init__(self, id, px, py):
         Storage.__init__(self)
         self.name, self.id = 'QC Buffer', id
@@ -22,17 +22,17 @@ class QB(Storage):
         gc.SetPen(wx.Pen('black', 0.5))
         gc.DrawLines([(0, 0), (l_sx, 0)])
         gc.DrawLines([(0, QB.sy), (l_sx, QB.sy)])
-#        for c in self.holding_containers.values():
-#            old_tr = gc.GetTransform()
-#            gc.Translate(c.px, c.py)
-#            c.draw(gc)
-#            gc.SetTransform(old_tr)
+        for c in self.holding_containers.values():
+            old_tr = gc.GetTransform()
+            gc.Translate(c.px, c.py)
+            c.draw(gc)
+            gc.SetTransform(old_tr)
 class TP(Storage):
     num_of_stacks = 4
-    bay_pos_info = container_hs / 2
+    sx, sy = container_vs * 1.2, container_hs * 1.2
+    bay_pos_info = sy / 2
     stack_pos_info = {}
-    for x in xrange(num_of_stacks): stack_pos_info[x + 1] = container_vs / 2 + container_vs * x * 2
-    
+    for x in xrange(num_of_stacks): stack_pos_info[x + 1] = sx / 2 + container_vs * x * 2
     def __init__(self, id, px, py):
         Storage.__init__(self)
         self.name, self.id = 'TP', id
@@ -41,12 +41,12 @@ class TP(Storage):
         gc.SetPen(wx.Pen('black', 0.2))
         change_b_color(gc, 'white')
         for s_px in TP.stack_pos_info.values() :
-            gc.DrawRectangle(s_px - container_vs / 2, 0, container_vs, container_hs)
-#        for c in self.holding_containers.values():
-#            old_tr = gc.GetTransform()
-#            gc.Translate(c.px, c.py)
-#            c.draw(gc)
-#            gc.SetTransform(old_tr)
+            gc.DrawRectangle(s_px - TP.sx / 2, 0, TP.sx, TP.sy)
+        for c in self.holding_containers.values():
+            old_tr = gc.GetTransform()
+            gc.Translate(c.px, c.py)
+            c.draw(gc)
+            gc.SetTransform(old_tr)
 class Block(Storage):
     num_of_bays = 97
     num_of_stacks = 8

@@ -2,18 +2,18 @@ from __future__ import division
 import wx
 
 # standard size of 40ft container
-#container_hs = 20
-#container_vs = 5
-container_hs = int(12.192)
-container_vs = int(2.438)
+container_hs = 20
+container_vs = 5
+#container_hs = int(12.192)
+#container_vs = int(2.438)
 
 #visualizer horizontal size
 l_sx = container_hs * 54.8
 
 # visualizer control
 frame_milsec = 1000 / 15
-play_speed = 1.0
-play_x = 3.0
+play_speed = 30.0
+play_x = 10.0
 
 # num of resource
 total_num_bitt = 19

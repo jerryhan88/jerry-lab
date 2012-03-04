@@ -8,7 +8,6 @@ def run(real_log=True, checking_log=False):
         log_text = open('real_log_sorted_by_dt')
     else:
         log_text = open('maked_log_sorted_by_dt')
-    
     for l in log_text.readlines():
         e = l[:-1].split('_')
         EVT.append(e)
@@ -107,16 +106,16 @@ def init_real_log(vessels, qcs, ycs, scs, containers, EVT):
     start_evt = EVT[0]
     end_evt = EVT[-1]
     vehicle, pos, c_id, operation = 'Vessel', 'Bitt06', None, None 
-    if len(start_evt) == 7: 
-        dt, _, _, _, _, v_info, state = start_evt
+    if len(start_evt) == 8: 
+        dt, _, _, _,_, _, v_info, state = start_evt
     else: 
         dt, _, _, _, _, _, _, _, v_info, state = start_evt
     v_name, v_voyage_txt, _ = v_info.split('/')
     vessel = Vessel(v_name, int(v_voyage_txt))
     work_type = 'Arrival'
     vessel.evt_seq.append(Evt(dt, vehicle, work_type, c_id, operation, v_info, state, pos))
-    if len(end_evt) == 7: 
-        dt, _, _, _, _, v_info, state = end_evt
+    if len(end_evt) == 8: 
+        dt, _, _, _,_, _, v_info, state = end_evt
     else: 
         dt, _, _, _, _, _, _, _, v_info, state = end_evt
     work_type = 'Departure'
@@ -126,8 +125,7 @@ def init_real_log(vessels, qcs, ycs, scs, containers, EVT):
         vehicle = e[1]
         if vehicle[:3] == 'STS':
             # ex : 2012-02-14-10-59-20_STS101_TwistLock_HLXU3395821_LOADING_MCEN/003/2012_N
-            dt, vehicle, work_type, c_id, operation, v_info, state = e
-            pos = None
+            dt, vehicle, work_type, c_id, pos, operation, v_info, state = e
             #  when state is not 'N', what should I do?
             target_qc = None
             qc_id = int(vehicle[3:]) 
@@ -138,7 +136,7 @@ def init_real_log(vessels, qcs, ycs, scs, containers, EVT):
             else:
                 target_qc = QC(qc_id)
                 qcs.append(target_qc)
-            target_qc.evt_seq.append(Evt(dt, vehicle, work_type, c_id, operation, v_info, state))
+            target_qc.evt_seq.append(Evt(dt, vehicle, work_type, c_id, operation, v_info, state, pos))
         elif vehicle[:3] == 'ASC':
             # ex : 2012-02-14-09-02-44_ASC012_1186239_2012-02-14-09-01-13_TwistLock_DFSU2914565_A1-83-6-1_LOADING_MCEN/003/2012_N
             dt, vehicle, _, _, work_type, c_id, pos, operation, v_info, state = e

@@ -27,7 +27,6 @@ if real_log:
 else:
     log_text = open('maked_log.txt')
     for l in log_text.readlines():
-        l
         e = l[:-1].split('_')
         dt = e[0]
         EVT.append(e)

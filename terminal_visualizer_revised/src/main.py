@@ -13,26 +13,89 @@ Blocks = {}
 TPs = {}
 
 class Input_dialog(wx.Dialog):
-    def __init__(self, parent, name, size=(570, 180), pos=(400, 300)):
-        wx.Dialog.__init__(self, None, -1, 'Monitoring Input', pos , size)
-        wx.StaticText(self, -1, 'Vessel', (15, 10)), wx.StaticText(self, -1, 'Voyage', (450, 10)), wx.StaticText(self, -1, 'Date', (15, 50))
+    def __init__(self, parent, name, size=(800, 600), pos=(400, 300)):
+        wx.Dialog.__init__(self, None, -1, 'Monitoring', pos , size)
+        self.SetBackgroundColour(wx.Colour(255, 255, 255))
+        bg_img = wx.Image('pic/monitoring_bg.png', wx.BITMAP_TYPE_PNG)
+        sx, sy = self.GetSize()
+        bg = wx.StaticBitmap(self, -1, wx.BitmapFromImage(bg_img), style=wx.NO_BORDER)
+        bg_end_px, bg_end_py = bg.GetSize()
+        wx.StaticBox(self, -1, "", pos=(2, bg_end_py - 4), size=(bg_end_px - 10, 90))
+
+        txt_font = wx.Font(13, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
+        self.SetFont(txt_font)
+        c_begin_py = bg_end_py + 20
+        margin = 15
+        vn_txt = wx.StaticText(self, -1, 'Vessel', (23, c_begin_py))
+        vn_txt_px, vn_txt_py = vn_txt.GetPosition()
+        vn_txt_sx, vn_txt_sy = vn_txt.GetSize()
+        vy_txt = wx.StaticText(self, -1, 'Voyage', (20, c_begin_py + vn_txt_sy + margin))
+        v_name, vo_name = ['MCEN', 'MAERSK'], ['01', '02', '03', '04', '05', '06', '07']
+        vy_txt_px, vy_txt_py = vy_txt.GetPosition()
+        vy_txt_sx, vy_txt_sy = vy_txt.GetSize()
         
-        v_name, vo_name = ['HANJIN', 'MAERSK'], ['01', '02', '03', '04', '05', '06', '07']
+        self.v_name_ch = wx.Choice(self, -1, (vy_txt_px + vy_txt_sx + margin, vn_txt_py - 3), choices=v_name)
+        vn_ch_sx, vn_ch_sy = self.v_name_ch.GetSize()
+        vn_ch_px, vn_ch_py = self.v_name_ch.GetPosition()
+        self.vo_name_ch = wx.Choice(self, -1, (vy_txt_px + vy_txt_sx + margin, vy_txt_py - 3), self.v_name_ch.GetSize(), choices=vo_name)
+        self.v_name_ch.SetSelection(0), self.vo_name_ch.SetSelection(2)
+        sd_txt = wx.StaticText(self, -1, 'Start', (vn_ch_sx + vn_ch_px + margin * 2, vn_ch_py))
+        d_txt_px, d_txt_py = sd_txt.GetPosition()
+        d_txt_sx, d_txt_sy = sd_txt.GetSize()
+        ed_txt = wx.StaticText(self, -1, 'End', (d_txt_px + d_txt_sx + margin * 3, d_txt_py + d_txt_sy + margin * 1.5)) 
         year, month, day = [str(x) for x in xrange(2005, 2013)], [str(x) for x in xrange(1, 13)], [str(x) for x in xrange(1, 32)]
         
-        self.v_name_ch, self.vo_name_ch = wx.Choice(self, -1, (60, 10), choices=v_name), wx.Choice(self, -1, (510, 10), choices=vo_name)
-        self.v_name_ch.SetSelection(0), self.vo_name_ch.SetSelection(1)
-        
-        self.sy_ch, self.sm_ch, self.sd_ch = wx.Choice(self, -1, (60, 50), choices=year), wx.Choice(self, -1, (120, 50), choices=month), wx.Choice(self, -1, (165, 50), choices=day)
-        self.ey_ch, self.em_ch, self.ed_ch = wx.Choice(self, -1, (320, 50), choices=year), wx.Choice(self, -1, (380, 50), choices=month), wx.Choice(self, -1, (425, 50), choices=day)
+        txt_font = wx.Font(10, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
+        self.SetFont(txt_font)
+        self.sy_ch = wx.Choice(self, -1, (d_txt_px + d_txt_sx + margin, d_txt_py - 3), choices=year)
+        px, py = self.sy_ch.GetPosition()
+        sx, sy = self.sy_ch.GetSize()
+        wx.StaticText(self, -1, "-", (px + sx + 5, py + 3), size=(25, -1))
+        self.sm_ch = wx.Choice(self, -1, (px + sx + margin, py), choices=month)
+        px, py = self.sm_ch.GetPosition()
+        sx, sy = self.sm_ch.GetSize()
+        wx.StaticText(self, -1, "-", (px + sx + 5, py + 3), size=(25, -1))
+        self.sd_ch = wx.Choice(self, -1, (px + sx + margin, py), choices=day)
+        px, py = self.sd_ch.GetPosition()
+        sx, sy = self.sd_ch.GetSize()
+        self.sh_txt = wx.TextCtrl(self, -1, "08", (px + sx + margin, py), size=(25, -1))
+        px, py = self.sh_txt.GetPosition()
+        sx, sy = self.sh_txt.GetSize()
+        wx.StaticText(self, -1, ":", (px + sx + 5, py + 3), size=(10, -1))
+        self.smi_txt = wx.TextCtrl(self, -1, "17", (px + sx + margin, py), size=(25, -1))
+        px, py = self.smi_txt.GetPosition()
+        sx, sy = self.smi_txt.GetSize()
+        wx.StaticText(self, -1, ":", (px + sx + 5, py + 3), size=(10, -1))
+        self.ss_txt = wx.TextCtrl(self, -1, "21", (px + sx + margin, py), size=(25, -1))        
         self.sy_ch.SetSelection(7), self.sm_ch.SetSelection(1), self.sd_ch.SetSelection(13)
-        self.ey_ch.SetSelection(7), self.em_ch.SetSelection(1), self.ed_ch.SetSelection(13) 
-        self.sh_txt, self.smi_txt, self.ss_txt = wx.TextCtrl(self, -1, "08", (210, 50), size=(25, -1)), wx.TextCtrl(self, -1, "17", (240, 50), size=(25, -1)), wx.TextCtrl(self, -1, "21", (270, 50), size=(25, -1))
-        self.eh_txt, self.emi_txt, self.es_txt = wx.TextCtrl(self, -1, "13", (470, 50), size=(25, -1)), wx.TextCtrl(self, -1, "23", (500, 50), size=(25, -1)), wx.TextCtrl(self, -1, "06", (530, 50), size=(25, -1))
-        wx.StaticText(self, -1, ':', (236, 50)), wx.StaticText(self, -1, ':', (266, 50)), wx.StaticText(self, -1, '-', (305, 50)), wx.StaticText(self, -1, ':', (496, 50)), wx.StaticText(self, -1, ':', (526, 50))
         
-        setting_btn = wx.Button(self, -1, "setting", (480, 90))
-        setting_btn.SetConstraints(anchors.LayoutAnchors(setting_btn, False, True, False, False))
+        sx, sy = ed_txt.GetSize()
+        px, py = ed_txt.GetPosition()
+        self.ey_ch = wx.Choice(self, -1, (px + sx + margin, py - 3), choices=year)
+        px, py = self.ey_ch.GetPosition()
+        sx, sy = self.ey_ch.GetSize()
+        wx.StaticText(self, -1, "-", (px + sx + 5, py + 3), size=(25, -1))
+        self.em_ch = wx.Choice(self, -1, (px + sx + margin, py), choices=month)
+        px, py = self.em_ch.GetPosition()
+        sx, sy = self.em_ch.GetSize()
+        wx.StaticText(self, -1, "-", (px + sx + 5, py + 3), size=(25, -1))
+        self.ed_ch = wx.Choice(self, -1, (px + sx + margin, py), choices=day)
+        px, py = self.ed_ch.GetPosition()
+        sx, sy = self.ed_ch.GetSize()
+        self.eh_txt = wx.TextCtrl(self, -1, "13", (px + sx + margin, py), size=(25, -1))
+        px, py = self.eh_txt.GetPosition()
+        sx, sy = self.eh_txt.GetSize()
+        wx.StaticText(self, -1, ":", (px + sx + 5, py + 3), size=(10, -1))
+        self.emi_txt = wx.TextCtrl(self, -1, "23", (px + sx + margin, py), size=(25, -1))
+        px, py = self.emi_txt.GetPosition()
+        sx, sy = self.emi_txt.GetSize()
+        wx.StaticText(self, -1, ":", (px + sx + 5, py + 3), size=(10, -1))
+        self.es_txt = wx.TextCtrl(self, -1, "06", (px + sx + margin, py), size=(25, -1)) 
+        px, py = self.es_txt.GetPosition()
+        sx, sy = self.es_txt.GetSize()
+        self.ey_ch.SetSelection(7), self.em_ch.SetSelection(1), self.ed_ch.SetSelection(13) 
+
+        setting_btn = wx.Button(self, -1, "  setting  ", (px + sx + margin * 1.8, py - 1))
         
         self.Bind(wx.EVT_BUTTON, self.setting, setting_btn)
         self.Bind(wx.EVT_CLOSE, self.OnClose)
@@ -103,7 +166,7 @@ class MainFrame(wx.Frame):
             self.simul_clock = self.simul_clock_saved
             self.simul_clock_saved = None
             self.saved_time = time()
-        self.vp.Update_picture(self.simul_clock)
+        self.vp.update_picture(self.simul_clock)
         self.cp.Update_control_time(self.simul_clock)
         
     def OnClose(self, event):
@@ -122,7 +185,7 @@ class Input_View_Panel(wx.Panel):
         v_txt.append(wx.StaticText(self, -1, v_name, (65, 10), size=(65, -1)))
         v_txt.append(wx.StaticText(self, -1, v_voyage, (215, 10), size=(25, -1)))             
         for x in v_txt:
-            x.SetFont(wx.Font(13, wx.SWISS, wx.NORMAL, wx.NORMAL)) 
+            x.SetFont(wx.Font(13, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
         #Date/Time
         y_name1_px = 410
         sdt_edt_txt = []
@@ -221,7 +284,7 @@ class Viewer_Panel(Drag_zoom_panel):
         self.SetConstraints(anchors.LayoutAnchors(self, True, True, True, True))
         self.vessels, self.qcs, self.ycs, self.scs, self.containers = vessels, qcs, ycs, scs, containers
         simul_clock = parent.simul_clock
-        
+        self.sx, self.sy = self.GetSize()
         l3_py = self.set_deco_pos()
         self.make_storage(l3_py)
 
@@ -252,19 +315,14 @@ class Viewer_Panel(Drag_zoom_panel):
                 else:
                     b_or_tp_id = start_evt.pos[:2]
                 v.px = YC.Blocks[b_or_tp_id].px + YC.sy / 2
-                v.py = 300.0
+                v.set_evt_data(v.target_evt_id, simul_clock)
             elif isinstance(v, SC):
                 SC.QBs, SC.TPs, SC.QCs = QBs, TPs, qcs
                 start_evt = v.evt_seq[v.target_evt_id]
-                print v, start_evt
-                v.px = 300
-                v.py = 150.0
+                v.set_evt_data(v.target_evt_id, simul_clock)
             else:
                 assert False, 'not suitable vehicle'
-#        for v in self.vessels: v.cur_evt_update(v.cur_evt_id, Bitts, self.simul_clock)
-#        for qc in self.qcs: qc.cur_evt_update(qc.cur_evt_id, self.vessels, QBs)
-#        for yc in self.ycs: yc.cur_evt_update(yc.cur_evt_id, TPs, Blocks)
-#        for sc in self.scs: sc.cur_evt_update(sc.cur_evt_id, QBs, TPs, self.qcs)
+                
     def set_container_pos(self, vessels, containers, simul_clock):
         ### set container position
         for c in containers:
@@ -272,7 +330,8 @@ class Viewer_Panel(Drag_zoom_panel):
             tg_evt = c.evt_seq[c.target_evt_id]
             vehicle = tg_evt.vehicle
             work_type = tg_evt.work_type
-            if vehicle[:3] == 'STS' and work_type == 'TwistLock':
+            operation = tg_evt.operation
+            if vehicle[:3] == 'STS' and work_type == 'TwistLock' and operation == 'DISCHARGING':
                 # container from Vessel
                 vessel_info = tg_evt.v_info
                 target_v_name, target_v_voyage_txt, _ = vessel_info.split('/')
@@ -283,6 +342,10 @@ class Viewer_Panel(Drag_zoom_panel):
                         break
                 else:
                     assert False , 'there is no target_v'
+                c.hs, c.vs = container_hs, container_vs
+                cur_pos = tg_evt.pos
+                bay_id, stack_id = int(cur_pos[2:4]), int(cur_pos[5:7]) 
+                c.px, c.py = target_v.bay_pos_info[bay_id] , target_v.stack_pos_info[stack_id]
                 target_v.holding_containers[tg_evt.c_id] = c
                 #TODO scatter container in ship bay
             elif vehicle[:3] == 'STS' and work_type == 'TwistUnlock':
@@ -326,7 +389,7 @@ class Viewer_Panel(Drag_zoom_panel):
             if x == 0: QBs[x + 1] = QB(x + 1, 0, l3_py)
             else: QBs[x + 1] = QB(x + 1, 0, l3_py + container_vs * (8 + x * 2.2))
         ### make TP and Block
-        block0_px, block0_py = Bitts[3].px, QBs[4].py + container_vs * 31
+        block0_px, block0_py = Bitts[1].px, QBs[4].py + container_vs * 31
         for x in xrange(total_num_b):
             block_id = tp_id = None
             if x < 8:
@@ -349,16 +412,20 @@ class Viewer_Panel(Drag_zoom_panel):
             Bitts[x + 1] = Bitt(x + 1, bit0_px + container_hs * 2.95 * x, l0_py)
         return l3_py
     
-    def Update_picture(self, simul_clock):
-        for v in self.vessels + self.ycs + self.qcs + self.scs:
-            v.Update_pos(simul_clock)
-            v.Update_container_ownership(simul_clock)
+    def update_picture(self, simul_clock):
+        for v in self.vessels + self.qcs + self.scs + self.ycs:
+            v.update(simul_clock)
         self.RefreshGC()
     
     def Draw(self, gc):
         gc.Translate(self.translate_x, self.translate_y)
         gc.Scale(self.scale, self.scale)
         old_tr = gc.GetTransform()
+        bg_clr = wx.Colour(47, 203, 250)
+        gc.SetBrush(wx.Brush(bg_clr))
+        gc.SetPen(wx.Pen(bg_clr, 0))
+        mg = 400 
+        gc.DrawLines([(-mg, -mg), (self.sx + mg, -mg), (self.sx + mg, self.sy + mg), (-mg, self.sy + mg)])
         
         gc.SetPen(wx.Pen("black", 1))
         for py in self.lines_py:
@@ -368,7 +435,6 @@ class Viewer_Panel(Drag_zoom_panel):
             gc.Translate(x.px, x.py)
             x.draw(gc)
             gc.SetTransform(old_tr)
-        
         #draw vehicle
         old_tr = gc.GetTransform()
         for x in self.vessels + self.qcs + self.ycs + self.scs:
