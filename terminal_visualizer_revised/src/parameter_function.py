@@ -12,7 +12,7 @@ l_sx = container_hs * 54.8
 
 # visualizer control
 frame_milsec = 1000 / 15
-play_speed = 30.0
+play_speed = 1.0
 play_x = 10.0
 
 # num of resource
@@ -29,6 +29,7 @@ def calc_proportional_pos(start_pos, target_pos, start_time, target_time, simul_
 
 def change_b_color(gc, color):
     if color == 'orange': r, g, b = 228, 108, 10
+    elif color == 'd_orange': r, g, b = 255, 127, 39 
     elif color == 'white': r, g, b = 255, 255, 255
     elif color == 'black': r, g, b = 0, 0, 0
     elif color == 'purple': r, g, b = 90, 14, 160
