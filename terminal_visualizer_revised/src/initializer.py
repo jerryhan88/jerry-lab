@@ -11,7 +11,7 @@ def run(real_log=True, checking_log=False):
     for l in log_text.readlines():
         e = l[:-1].split('_')
         EVT.append(e)
-    vessels, qcs , ycs, scs , containers = [], [], [], [], []
+    vessels, qcs, ycs, scs, containers = [], [], [], [], []
     
     if real_log:
         init_real_log(vessels, qcs, ycs, scs, containers, EVT)
@@ -19,12 +19,55 @@ def run(real_log=True, checking_log=False):
         init_maked_log(vessels, qcs , ycs, scs , containers, EVT)
         
     if checking_log: 
-        wrong_c = check_log(containers)
+        wrong_c = check_c_log(containers)
         wc_set, c_set = set(wrong_c), set(containers)
         print 'correct moving container : ', c_set - wc_set 
         print 'wrong moving container : ', wc_set
+        wrong_v = check_v_log(vessels, qcs, ycs, scs)
+        print 'wrong moving vehicles : '
+        for v in wrong_v:
+            print v, v.wrong_evt_id, len(v.evt_seq) 
     
     return vessels, qcs , ycs, scs , containers
+
+def check_v_log(vessels, qcs, ycs, scs):
+    wront_v = []
+    for v in vessels:
+        ar_evt, dp_evt = v.evt_seq[0], v.evt_seq[1]
+        if len(v.evt_seq) != 2 or ar_evt.work_type != 'Arrival'or dp_evt.work_type != 'Departure':
+            wront_v.append(v)
+            break
+    for v in qcs + ycs + scs:
+        ce_id = -1
+        while ce_id != len(v.evt_seq):
+            ce_id += 1
+            ne_id = ce_id + 1
+            if ne_id < len(v.evt_seq):
+                ce, ne = v.evt_seq[ce_id], v.evt_seq[ne_id]
+                c_ms_wt, n_ms_wt = ce.work_type, ne.work_type
+                if (c_ms_wt == 'TwistLock' and n_ms_wt == 'TwistLock') or (c_ms_wt == 'TwistUnlock' and n_ms_wt == 'TwistUnlock'):
+                    v.wrong_evt_id = (ce_id, ne_id)
+                    wront_v.append(v)
+                    break
+    return wront_v
+
+def check_c_log(containers):
+    wrong_log_containers = []
+    for c in containers:
+        cur_evt_id = -1
+        while cur_evt_id != len(c.evt_seq):
+            cur_evt_id += 1
+            next_ms_id = cur_evt_id + 1
+            cur_ms = c.evt_seq[cur_evt_id]
+            if next_ms_id != len(c.evt_seq):
+                next_ms = c.evt_seq[next_ms_id]
+                c_ms_wt, n_ms_wt = cur_ms.work_type, next_ms.work_type
+                if (c_ms_wt == 'TwistLock' and n_ms_wt == 'TwistLock')or (c_ms_wt == 'TwistUnlock' and n_ms_wt == 'TwistUnlock'):
+                    wrong_log_containers.append(c)
+                    break
+            else:
+                break
+    return wrong_log_containers
 
 def init_maked_log(vessels, qcs , ycs, scs , containers, EVT):
     for e in EVT:
@@ -107,7 +150,7 @@ def init_real_log(vessels, qcs, ycs, scs, containers, EVT):
     end_evt = EVT[-1]
     vehicle, pos, c_id, operation = 'Vessel', 'Bitt06', None, None 
     if len(start_evt) == 8: 
-        dt, _, _, _,_, _, v_info, state = start_evt
+        dt, _, _, _, _, _, v_info, state = start_evt
     else: 
         dt, _, _, _, _, _, _, _, v_info, state = start_evt
     v_name, v_voyage_txt, _ = v_info.split('/')
@@ -115,7 +158,7 @@ def init_real_log(vessels, qcs, ycs, scs, containers, EVT):
     work_type = 'Arrival'
     vessel.evt_seq.append(Evt(dt, vehicle, work_type, c_id, operation, v_info, state, pos))
     if len(end_evt) == 8: 
-        dt, _, _, _,_, _, v_info, state = end_evt
+        dt, _, _, _, _, _, v_info, state = end_evt
     else: 
         dt, _, _, _, _, _, _, _, v_info, state = end_evt
     work_type = 'Departure'
@@ -175,24 +218,6 @@ def init_real_log(vessels, qcs, ycs, scs, containers, EVT):
             target_c = Container(c_id)
             containers.append(target_c)
         target_c.evt_seq.append(Evt(dt, vehicle, work_type, c_id, operation, v_info, state, pos))
-        
-def check_log(containers):
-    wrong_log_containers = []
-    for c in containers:
-        cur_evt_id = -1
-        while cur_evt_id != len(c.evt_seq):
-            cur_evt_id += 1
-            next_ms_id = cur_evt_id + 1
-            cur_ms = c.evt_seq[cur_evt_id]
-            if next_ms_id != len(c.evt_seq):
-                next_ms = c.evt_seq[next_ms_id]
-                c_ms_wt, n_ms_wt = cur_ms.work_type, next_ms.work_type
-                if (c_ms_wt == 'TwistLock' and n_ms_wt == 'TwistLock')or (c_ms_wt == 'TwistUnlock' and n_ms_wt == 'TwistUnlock'):
-                    wrong_log_containers.append(c)
-                    break
-            else:
-                break
-    return wrong_log_containers
 
 if __name__ == '__main__':
     run(True, True)
