@@ -38,7 +38,16 @@ class TP(Storage):
         Storage.__init__(self)
         self.name, self.id = 'TP', id
         self.px, self.py = px, py
+        mg = 2
+        self.bg_ps = [(-mg, -mg),
+                      (container_vs * TP.num_of_stacks + TP.sx * 2.6 + mg, -mg),
+                      (container_vs * TP.num_of_stacks + TP.sx * 2.6 + mg, TP.sy + mg),
+                      (-mg, TP.sy + mg)
+                      ]
     def draw(self, gc):
+        gc.SetPen(wx.Pen(wx.Colour(210, 209, 208), 0))
+        gc.SetBrush(wx.Brush(wx.Colour(210, 209, 208)))
+        gc.DrawLines(self.bg_ps)
         gc.SetPen(wx.Pen(wx.Colour(100, 100, 100), 0.5))
         for s_px in TP.stack_pos_info.values() :
             gc.DrawLines([(s_px - TP.sx / 2, 0), (s_px + TP.sx / 2, 0)])
@@ -71,7 +80,17 @@ class Block(Storage):
         Storage.__init__(self)
         self.name, self.id = 'Block', id
         self.px, self.py = px, py
+        mg = 2
+        self.bg_ps = [(-mg, -mg),
+                      (container_vs * Block.num_of_stacks + mg, -mg),
+                      (container_vs * Block.num_of_stacks + mg, Block.bay_pos_info[97]*1.96 + container_hs / 2 + mg),
+                      (-mg, Block.bay_pos_info[97]*1.96 + container_hs / 2 + mg),
+                      ]
     def draw(self, gc):
+        gc.SetPen(wx.Pen(wx.Colour(210, 209, 208), 0))
+        gc.SetBrush(wx.Brush(wx.Colour(210, 209, 208)))
+        gc.DrawLines(self.bg_ps)
+        
         gc.SetPen(wx.Pen(wx.Colour(100, 100, 100), 0.5))
         for x in xrange((Block.num_of_bays - 1) // 2 + 1):
             gc.DrawLines([(0, container_hs * x), (container_vs * Block.num_of_stacks , container_hs * x)])

@@ -58,7 +58,7 @@ class Evt(object):
 
 class Vessel(object):
     Bitts = None
-    LOA = container_hs * 18
+    LOA = container_hs * 19
     Beam = container_vs * (13 + 4)
     num_of_bay, num_of_stack = 51, 13
     btn_bay = 1.2
@@ -157,14 +157,14 @@ class Vessel(object):
         self.update_pos(simul_clock)
         
     def draw(self, gc):
-        gc.SetPen(wx.Pen(wx.Colour(65, 51, 128), 2))
-        gc.SetBrush(wx.Brush(wx.Colour(45, 189, 45)))
         #draw vessel surface
         if self.isVisible:
+            gc.SetPen(wx.Pen(wx.BLACK, 1))
+            gc.SetBrush(wx.Brush(wx.Colour(125, 160, 255)))       
 #            gc.DrawRectangle(0, 0, Vessel.LOA, Vessel.Beam)
             gc.DrawLines(self.v_d_p)
-            gc.SetPen(wx.Pen(wx.Colour(150, 150, 150), 0))
-            gc.SetBrush(wx.Brush(wx.Colour(150, 150, 150)))
+            gc.SetPen(wx.Pen(wx.Colour(210, 209, 208), 0))
+            gc.SetBrush(wx.Brush(wx.Colour(210, 209, 208)))
             gc.DrawLines(self.hatch)
             for x, px in enumerate(self.drawing_bays_px):
                 gc.SetPen(wx.Pen(wx.Colour(100, 100, 100), 0.5))

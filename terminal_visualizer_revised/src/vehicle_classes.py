@@ -175,17 +175,19 @@ class QC(Vehicles):
     def draw(self, gc):
         gc.SetPen(wx.Pen('black', 0.5))
         r, g, b = (0, 0, 0)
-        brushclr = wx.Colour(r, g, b, 200)
+        brushclr = wx.Colour(r, g, b)
         paint = wx.Colour(r, g, b, 0)
         gc.SetPen(wx.Pen(brushclr, 1))
         gc.SetBrush(wx.Brush(paint))
         
-        gc.DrawRectangle(-QC.sx / 2 - container_hs * 0.1, -QC.sy, QC.sx + container_hs * 0.1, QC.sy)
+#        gc.DrawRectangle(-QC.sx / 2 - container_hs * 0.1, -QC.sy, QC.sx + container_hs * 0.1, QC.sy)
         
+        gc.DrawLines([(QC.sx / 2, -QC.sy), (QC.sx / 2, 0)])
         gc.DrawLines([(-QC.sx / 2, -QC.sy), (-QC.sx / 2, 0)])
         gc.DrawLines([(-QC.sx / 2, -container_hs), (QC.sx / 2, 0)])
         gc.DrawLines([(QC.sx / 2, -container_hs), (-QC.sx / 2, 0)])
         gc.DrawLines([(-QC.sx / 2, -container_hs), (QC.sx / 2, -container_hs)])
+        gc.DrawLines([(-QC.sx / 2, 0), (QC.sx / 2, 0)])
         
         for i in range(12):
             gc.DrawLines([(-QC.sx / 2, container_hs * 0.5 * i - QC.sy), (QC.sx / 2, container_hs * 0.5 * i - QC.sy)])
