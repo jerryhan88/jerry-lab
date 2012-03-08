@@ -46,7 +46,7 @@ def check_v_log(vessels, qcs, ycs, scs):
                 ce, ne = v.evt_seq[ce_id], v.evt_seq[ne_id]
                 c_ms_wt, n_ms_wt = ce.work_type, ne.work_type
                 if (c_ms_wt == 'TwistLock' and n_ms_wt == 'TwistLock') or (c_ms_wt == 'TwistUnlock' and n_ms_wt == 'TwistUnlock'):
-                    v.wrong_evt_id = (ce_id, ne_id)
+                    v.wrong_evt_id = (ce_id, ce.c_id, c_ms_wt,ne_id,ne.c_id, n_ms_wt )
                     wront_v.append(v)
                     break
     return wront_v

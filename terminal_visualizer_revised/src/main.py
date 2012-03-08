@@ -13,7 +13,7 @@ Blocks = {}
 TPs = {}
 
 class Input_dialog(wx.Dialog):
-    def __init__(self, parent, name, size=(800, 600), pos=(400, 300)):
+    def __init__(self, parent, name, size=(800, 600), pos=(50, 50)):
         wx.Dialog.__init__(self, None, -1, 'Monitoring', pos , size)
         self.SetBackgroundColour(wx.Colour(255, 255, 255))
         bg_img = wx.Image('pic/monitoring_bg.png', wx.BITMAP_TYPE_PNG)
@@ -119,7 +119,7 @@ class Input_dialog(wx.Dialog):
         
 class MainFrame(wx.Frame):
     def __init__(self, input_info):
-        wx.Frame.__init__(self, None, -1, 'Monitoring', size=(1024, 768), pos=(150, 120))
+        wx.Frame.__init__(self, None, -1, 'Monitoring', size=(1024, 768), pos=(150, 50))
         self.input_info = input_info
         f_sx, f_sy = self.GetSize()
         self.SetBackgroundColour(wx.Colour(236, 233, 216))
