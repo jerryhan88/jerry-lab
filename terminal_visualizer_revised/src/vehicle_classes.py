@@ -291,31 +291,35 @@ class YC(Vehicles):
             assert False
 
     def update_container_ownership(self, simul_clock):
-        pass
-#        if self.tg_work_type == 'TwistLock' and self.tg_operation == 'DISCHARGING':
-#            tg_container = self.target_tp.holding_containers.pop(self.tg_container)
-#            tg_container.px, tg_container.py = 0, 0
-#            self.holding_containers[self.tg_container] = tg_container
-#        elif self.tg_work_type == 'TwistUnlock' and self.tg_operation == 'DISCHARGING':
-##            print self.tg_container, self, self.target_evt
-#            tg_container = self.holding_containers.pop(self.tg_container)
-#            tg_container.px, tg_container.py = self.target_block.stack_pos_info[self.stack_id], self.target_block.bay_pos_info[self.bay_id]
-#            self.target_block.holding_containers[self.tg_container] = tg_container
-#        elif self.tg_work_type == 'TwistLock' and self.tg_operation == 'LOADING':
-#            tg_container = self.target_block.holding_containers.pop(self.tg_container)
-#            tg_container.px, tg_container.py = 0, 0
-#            self.holding_containers[self.tg_container] = tg_container
-#            print 11111111111
-#            print self, self.target_evt
-#        elif self.tg_work_type == 'TwistUnlock' and self.tg_operation == 'LOADING':
-#            tg_container = self.holding_containers.pop(self.tg_container)
-#            tg_container.px, tg_container.py = self.target_tp.stack_pos_info[self.stack_id], self.target_tp.bay_pos_info
-#            self.target_tp.holding_containers[self.tg_container] = tg_container
-#            print 2222222222222
-#            print self, self.target_evt
-#        else:
-#            assert False
-#        tg_container.target_evt_id += 1     
+#        pass
+        if self.tg_work_type == 'TwistLock' and self.tg_operation == 'DISCHARGING':
+            tg_container = self.target_tp.holding_containers.pop(self.tg_container)
+            tg_container.px, tg_container.py = 0, 0
+            if self.tg_container == 'HJCU6126555':
+                print 'HJCU6126555'
+            self.holding_containers[self.tg_container] = tg_container
+        elif self.tg_work_type == 'TwistUnlock' and self.tg_operation == 'DISCHARGING':
+            if self.tg_container == 'HJCU6126555':
+                print 'HJCU6126555~~~~'
+#            print self.tg_container, self, self.target_evt
+            tg_container = self.holding_containers.pop(self.tg_container)
+            tg_container.px, tg_container.py = self.target_block.stack_pos_info[self.stack_id], self.target_block.bay_pos_info[self.bay_id]
+            self.target_block.holding_containers[self.tg_container] = tg_container
+        elif self.tg_work_type == 'TwistLock' and self.tg_operation == 'LOADING':
+            tg_container = self.target_block.holding_containers.pop(self.tg_container)
+            tg_container.px, tg_container.py = 0, 0
+            self.holding_containers[self.tg_container] = tg_container
+            print 11111111111
+            print self, self.target_evt
+        elif self.tg_work_type == 'TwistUnlock' and self.tg_operation == 'LOADING':
+            tg_container = self.holding_containers.pop(self.tg_container)
+            tg_container.px, tg_container.py = self.target_tp.stack_pos_info[self.stack_id], self.target_tp.bay_pos_info
+            self.target_tp.holding_containers[self.tg_container] = tg_container
+            print 2222222222222
+            print self, self.target_evt
+        else:
+            assert False
+        tg_container.target_evt_id += 1     
 #            
 #            stack_id = int(tg_container.evt_seq[tg_container.target_evt_id].pos[8:])
 #            tg_container.px, tg_container.py = self.target_tp.stack_pos_info[stack_id], self.target_tp.bay_pos_info
@@ -521,12 +525,14 @@ class SC(Vehicles):
                 gc.Rotate(-math.pi / 2)
         for c in self.holding_containers.values():
             c.draw(gc)
+        tire_d=5
         gc.SetPen(wx.Pen(wx.Colour(226, 56, 20), 1))
+#        gc.DrawCircles([(self.lu_px,self.lu_px+tire_d), (self.lu_py-tire_d,self.lu_py+SC.sy+tire_d)])
         gc.DrawLines([(self.lu_px, self.lu_py), (self.lu_px + SC.sx, self.lu_py)])
         gc.DrawLines([(self.lu_px, self.lu_py + SC.sy), (self.lu_px + SC.sx, self.lu_py + SC.sy)])
         gc.DrawLines([(self.lu_px, self.lu_py), (self.lu_px, self.lu_py + SC.sy)])
         gc.DrawLines([(self.lu_px + SC.sx, self.lu_py), (self.lu_px + SC.sx, self.lu_py + SC.sy)])
-        
+#        gc.DrawLines([(self.lu_px+tire_d*0.2,self.lu_py),(self.lu_px,self.lu_py+tire_d*0.5),(self.lu_px + SC.sx*0.5-tire_d*0.2,self.lu_py)])
         gc.SetBrush(wx.Brush(wx.Colour(226, 56, 20)))
         
         gc.DrawLines([(self.lu_px + SC.sx, self.lu_py + 1), (self.lu_px + SC.sx - container_vs * 0.7, self.lu_py + 1), (self.lu_px + SC.sx - container_vs * 0.7, self.lu_py + SC.sy / 2), (self.lu_px + SC.sx, self.lu_py + SC.sy / 2)])
