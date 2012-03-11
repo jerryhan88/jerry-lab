@@ -41,14 +41,24 @@ def change_b_color(gc, color):
     
 def find_target_evt(evt_id, evt_seq, simul_clock):
     evt_end = False
-    if evt_id == -1:
-        evt = evt_seq[evt_id + 1]
-    else:
-        evt = evt_seq[evt_id]
+    evt = evt_seq[evt_id]
     while evt.dt < simul_clock:
         evt_id += 1
         if evt_id == len(evt_seq) - 1: 
             evt_end = True
             break
         evt = evt_seq[evt_id]
-    return evt_id + 1, evt_end
+    return evt_id, evt_end
+
+def find_init_pos(evt_id, evt_seq, simul_clock):
+    evt_end = False
+    if evt_seq[0].dt > simul_clock:
+        return evt_id - 1, evt_end
+    evt = evt_seq[evt_id]
+    while evt.dt < simul_clock:
+        evt_id += 1
+        if evt_id == len(evt_seq) - 1: 
+            evt_end = True
+            break
+        evt = evt_seq[evt_id]
+    return evt_id , evt_end

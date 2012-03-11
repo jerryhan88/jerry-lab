@@ -3,7 +3,7 @@ import wx, initializer
 import  wx.lib.anchors as anchors
 from datetime import datetime, timedelta
 from time import time
-from parameter_function import frame_milsec, play_speed, play_x , container_hs, container_vs, total_num_bitt, total_num_qb, total_num_b, l_sx, find_target_evt
+from parameter_function import frame_milsec, play_speed, play_x , container_hs, container_vs, total_num_bitt, total_num_qb, total_num_b, l_sx, find_target_evt, find_init_pos
 from others_classes import Vessel, Drag_zoom_panel, Bitt
 from storage_classes import QB, TP, Block
 from vehicle_classes import  QC, YC, SC
@@ -62,11 +62,11 @@ class Input_dialog(wx.Dialog):
         px, py = self.sh_txt.GetPosition()
         sx, sy = self.sh_txt.GetSize()
         wx.StaticText(self, -1, ":", (px + sx + 5, py + 3), size=(10, -1))
-        self.smi_txt = wx.TextCtrl(self, -1, "17", (px + sx + margin, py), size=(25, -1))
+        self.smi_txt = wx.TextCtrl(self, -1, "19", (px + sx + margin, py), size=(25, -1))
         px, py = self.smi_txt.GetPosition()
         sx, sy = self.smi_txt.GetSize()
         wx.StaticText(self, -1, ":", (px + sx + 5, py + 3), size=(10, -1))
-        self.ss_txt = wx.TextCtrl(self, -1, "35", (px + sx + margin, py), size=(25, -1))        
+        self.ss_txt = wx.TextCtrl(self, -1, "18", (px + sx + margin, py), size=(25, -1))        
         self.sy_ch.SetSelection(7), self.sm_ch.SetSelection(1), self.sd_ch.SetSelection(13)
         
         sx, sy = ed_txt.GetSize()
@@ -181,16 +181,16 @@ class Input_View_Panel(wx.Panel):
         v_t = wx.StaticText(self, -1, 'Vessel', (60, 6))
         px, py = v_t.GetPosition()
         sx, sy = v_t.GetSize()
-        v_n = wx.StaticText(self, -1, v_name, (px + sx + margin*0.9, py))
+        v_n = wx.StaticText(self, -1, v_name, (px + sx + margin * 0.9, py))
         px, py = v_n.GetPosition()
         sx, sy = v_n.GetSize()
-        v_v = wx.StaticText(self, -1, 'Voyage', (px + sx + margin*1.2, py))
+        v_v = wx.StaticText(self, -1, 'Voyage', (px + sx + margin * 1.2, py))
         px, py = v_v.GetPosition()
         sx, sy = v_v.GetSize()
-        v_vo = wx.StaticText(self, -1, v_voyage, (px + sx + margin*0.9, py))
+        v_vo = wx.StaticText(self, -1, v_voyage, (px + sx + margin * 0.9, py))
         px, py = v_vo.GetPosition()
         sx, sy = v_vo.GetSize()
-        d = wx.StaticText(self, -1, 'Date', (px + sx + margin*4, py))
+        d = wx.StaticText(self, -1, 'Date', (px + sx + margin * 4, py))
         
         for x in [v_t, v_v, d]:
             x.SetFont(wx.Font(13, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
@@ -207,7 +207,7 @@ class Input_View_Panel(wx.Panel):
         sdt_edt_txt.append(wx.StaticText(self, -1, str(start_time.minute), (y_name1_px + 130, py), size=(25, -1)))
         sdt_edt_txt.append(wx.StaticText(self, -1, ':', (y_name1_px + 155, py)))
         sdt_edt_txt.append(wx.StaticText(self, -1, str(start_time.second), (y_name1_px + 170, py), size=(25, -1)))
-        sdt_edt_txt.append(wx.StaticText(self, -1, '-', (670, py-2)))
+        sdt_edt_txt.append(wx.StaticText(self, -1, '-', (670, py - 2)))
         y_name2_px = 700
         sdt_edt_txt.append(wx.StaticText(self, -1, str(end_time.year), (y_name2_px, py), size=(40, -1)))
         sdt_edt_txt.append(wx.StaticText(self, -1, str(end_time.month), (y_name2_px + 53, py), size=(25, -1)))
@@ -300,8 +300,9 @@ class Viewer_Panel(Drag_zoom_panel):
         self.sx, self.sy = self.GetSize()
         l3_py = self.set_deco_pos()
         self.make_storage(l3_py)
-        self.set_container_pos(self.vessels, containers, simul_clock)
         self.set_vehicle_pos(self.vessels, self.qcs, self.ycs, self.scs, simul_clock)
+        self.set_container_pos(self.vessels, self.qcs, containers, simul_clock)
+        
         mg = 20
         l_mg = 2
         
@@ -348,34 +349,65 @@ class Viewer_Panel(Drag_zoom_panel):
             else:
                 assert False, 'not suitable vehicle'
                 
-    def set_container_pos(self, vessels, containers, simul_clock):
+    def set_container_pos(self, vessels, qcs, containers, simul_clock):
         ### set container position
         for c in containers:
-            c.target_evt_id, c.evt_end = find_target_evt(c.target_evt_id, c.evt_seq, simul_clock)
-            tg_evt = c.evt_seq[c.target_evt_id]
+            c.target_evt_id, c.evt_end = find_init_pos(c.target_evt_id, c.evt_seq, simul_clock)
+            if c.target_evt_id == -1:
+                tg_evt = c.evt_seq[c.target_evt_id + 1]
+            else:
+                tg_evt = c.evt_seq[c.target_evt_id]
             vehicle = tg_evt.vehicle
             work_type = tg_evt.work_type
             operation = tg_evt.operation
+            pos = tg_evt.pos
             if vehicle[:3] == 'STS' and work_type == 'TwistLock' and operation == 'DISCHARGING':
-                # container from Vessel
-                vessel_info = tg_evt.v_info
-                target_v_name, target_v_voyage_txt, _ = vessel_info.split('/')
-                target_v = None
-                for v in vessels:
-                    if v.name == target_v_name and v.voyage == int(target_v_voyage_txt):
-                        target_v = v
-                        break
+                print c.target_evt_id, tg_evt
+                if c.target_evt_id == -1:
+                    # container from Vessel
+                    vessel_info = tg_evt.v_info
+                    target_v_name, target_v_voyage_txt, _ = vessel_info.split('/')
+                    target_v = None
+                    for v in vessels:
+                        if v.name == target_v_name and v.voyage == int(target_v_voyage_txt):
+                            target_v = v
+                            break
+                    else:
+                        assert False , 'there is no target_v'
+                    c.hs, c.vs = container_hs, container_vs
+                    cur_pos = tg_evt.pos
+                    bay_id, stack_id = int(cur_pos[2:4]), int(cur_pos[5:7]) 
+                    c.px, c.py = target_v.bay_pos_info[bay_id] , target_v.stack_pos_info[stack_id]
+                    target_v.holding_containers[tg_evt.c_id] = c
                 else:
-                    assert False , 'there is no target_v'
-                c.hs, c.vs = container_hs, container_vs
-                cur_pos = tg_evt.pos
-                bay_id, stack_id = int(cur_pos[2:4]), int(cur_pos[5:7]) 
-                c.px, c.py = target_v.bay_pos_info[bay_id] , target_v.stack_pos_info[stack_id]
-                target_v.holding_containers[tg_evt.c_id] = c
-                #TODO scatter container in ship bay
+                    target_qc = None
+                    qc_id = int(vehicle[3:])
+                    for qc in qcs:
+                        if qc.veh_id == qc_id:
+                            target_qc = qc
+                            break
+                    else:
+                        assert False , 'there is no target_qc'
+                    c.hs, c.vs = container_hs, container_vs
+                    c.px, c.py = 0, 0
+                    target_qc.holding_containers[tg_evt.c_id] = c
             elif vehicle[:3] == 'STS' and work_type == 'TwistUnlock':
-                #TODO scatter container in QC Buffer
-                pass
+                assert False
+#                target_qc = None
+#                print pos, tg_evt, c.target_evt_id
+#                qc_id = int(pos[3:6])
+#                
+#                for qc in qcs:
+#                    if qc.veh_id == qc_id:
+#                        target_qc = qc
+#                        break
+#                else:
+#                    assert False , 'there is no target_qc'
+#                qb_id = int(pos[-2:])
+#                target_qb = QBs[qb_id]
+#                target_qb.holding_containers[tg_evt.c_id] = c
+#                c.hs, c.vs = container_hs, container_vs
+#                c.px, c.py = target_qc.px, target_qb.v_c_pos_info
             elif vehicle[:3] == 'ASC' and work_type == 'TwistLock':
                 # container from Block or TP
                 pos = tg_evt.pos
@@ -400,11 +432,10 @@ class Viewer_Panel(Drag_zoom_panel):
                 #TODO
                 pass
             elif vehicle[:2] == 'SH' and work_type == 'TwistLock':
-                #TODO
-                pass
+                print tg_evt, c.target_evt_id
+                assert False
             elif vehicle[:2] == 'SH' and work_type == 'TwistUnlock':
-                #TODO
-                pass
+                assert False
             else:
                 assert False, vehicle
         

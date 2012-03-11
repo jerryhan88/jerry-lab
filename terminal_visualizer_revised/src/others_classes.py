@@ -8,7 +8,7 @@ seed(10)
 class Container(object):
     def __init__(self, c_id):
         self.c_id = c_id
-        self.evt_seq, self.target_evt_id = [], -1
+        self.evt_seq, self.target_evt_id = [], 0
         self.size = None
         self.hs, self.vs = None, None
         self.px, self.py = None, None
@@ -65,7 +65,7 @@ class Vessel(object):
     def __init__(self, name, voyage):
         self.name = name
         self.voyage = voyage
-        self.evt_seq, self.target_evt_id, self.evt_end = [], -1, False
+        self.evt_seq, self.target_evt_id, self.evt_end = [], 0, False
         self.start_time, self.start_px, self.start_py = None, None, None
         self.end_time, self.end_px, self.end_py = None, None, None
         self.ar_time, self.dp_time, self.anchored_px, self.anchored_py = None, None, None, None

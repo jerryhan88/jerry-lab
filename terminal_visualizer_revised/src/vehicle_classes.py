@@ -8,7 +8,7 @@ import wx, math
 class Vehicles(object):
     def __init__(self):
         self.veh_id, self.name = None, None
-        self.evt_seq, self.target_evt_id, self.evt_end = [], -1, False
+        self.evt_seq, self.target_evt_id, self.evt_start, self.evt_end = [], 0, True, False
         self.start_time, self.start_px, self.start_py = None, None, None
         self.tg_time, self.tg_pos, self.tg_container, self.tg_work_type, self.tg_px, self.tg_py = None, None, None, None, None, None
         self.px, self.py = None, None
@@ -68,14 +68,14 @@ class QC(Vehicles):
         elif isinstance(res, QB): py = res.py
         else: assert False
         return py - (self.py - QC.sy) 
+    
     def set_evt_data(self, target_evt_id, simul_clock):
-#        if target_evt_id == len(self.evt_seq) - 1:
-#            self.evt_end = True
-#        else:
+        print target_evt_id, self.holding_containers, simul_clock,self.evt_seq[target_evt_id]
+        for v in self.holding_containers.values():
+            print v.target_evt_id, v.evt_seq
         self.target_evt = self.evt_seq[target_evt_id]
         self.tg_time, self.tg_container, self.tg_work_type, tg_pos, self.tg_operation = self.target_evt.dt, self.target_evt.c_id, self.target_evt.work_type, self.target_evt.pos, self.target_evt.operation
         v_name, v_voyage_txt, _ = self.target_evt.v_info.split('/')
-        
         if self.target_v == None or self.target_v.name != v_name:    
             for v in QC.Vessels:
                 if v.name == v_name and v.voyage == int(v_voyage_txt):
@@ -86,11 +86,18 @@ class QC(Vehicles):
         if tg_pos[:2] == 'SB':
             bay_id = int(tg_pos[2:4]) 
             self.tg_px = self.target_v.px + self.target_v.bay_pos_info[bay_id]
+        elif tg_pos[7:-2] == 'Lane':
+            pe_evt = self.evt_seq[target_evt_id - 1]
+            bay_id = int(pe_evt.pos[2:4]) 
+            self.tg_px = self.target_v.px + self.target_v.bay_pos_info[bay_id]
         
-        if target_evt_id == 0:
-            self.start_time = self.tg_time - timedelta(seconds=5)
-            self.start_px = self.px = self.tg_px + container_hs * 2
-            self.trolly.start_px, self.trolly.start_py = self.trolly.px, self.trolly.py = 0 , 0
+        if self.evt_start:
+            if target_evt_id == 0:
+                self.start_time = self.tg_time - timedelta(seconds=5)
+            else:
+                self.start_time = self.evt_seq[target_evt_id-1].dt
+            self.start_px = self.px = self.tg_px
+            self.trolly.start_px, self.trolly.start_py = self.trolly.px, self.trolly.py = 0 , container_hs*4
             time_interval = self.tg_time - self.start_time
             assert 0 <= time_interval.total_seconds() < 3600 * 24, False
             self.tro_ms_time = self.start_time + timedelta(seconds=time_interval.total_seconds() * (1 / 5))
@@ -112,7 +119,7 @@ class QC(Vehicles):
             self.trolly.tg_py = self.calc_tro_ori_py(self.target_qb) + self.target_qb.v_c_pos_info
                 
     def update_pos(self, simul_clock):
-        if self.target_evt_id == 0:
+        if self.evt_start:
             if self.start_time <= simul_clock < self.tro_ms_time:
                 #straddler moving
                 self.px = self.start_px + calc_proportional_pos(self.start_px, self.tg_px, self.start_time, self.tro_ms_time, simul_clock)
@@ -134,6 +141,7 @@ class QC(Vehicles):
                 self.trolly.py = self.trolly.tg_py
         if self.tg_time <= simul_clock:
             self.pe_time, self.trolly.pe_py, self.pe_px = self.tg_time, self.trolly.tg_py, self.tg_px
+            if self.evt_start: self.evt_start = False
     def update_container_ownership(self, simul_time):
         if self.tg_work_type == 'TwistLock' and self.tg_operation == 'DISCHARGING':
             tg_container = self.target_v.holding_containers.pop(self.tg_container)
@@ -396,7 +404,6 @@ class SC(Vehicles):
     def set_evt_data(self, target_evt_id, simul_clock):
 #        if target_evt_id == len(self.evt_seq) - 1:
 #            self.evt_end = True
-#        else:
         self.target_evt = self.evt_seq[target_evt_id]
         self.tg_time, self.tg_container, tg_pos, self.tg_work_type = self.target_evt.dt, self.target_evt.c_id, self.target_evt.pos, self.target_evt.work_type
         if tg_pos[:3] == 'STS':
@@ -525,7 +532,7 @@ class SC(Vehicles):
                 gc.Rotate(-math.pi / 2)
         for c in self.holding_containers.values():
             c.draw(gc)
-        tire_d=5
+        tire_d = 5
         gc.SetPen(wx.Pen(wx.Colour(226, 56, 20), 1))
 #        gc.DrawCircles([(self.lu_px,self.lu_px+tire_d), (self.lu_py-tire_d,self.lu_py+SC.sy+tire_d)])
         gc.DrawLines([(self.lu_px, self.lu_py), (self.lu_px + SC.sx, self.lu_py)])
