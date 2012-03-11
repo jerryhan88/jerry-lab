@@ -113,15 +113,9 @@ class Vessel(object):
         return str(self.name + str(self.voyage))
     
     def set_evt_data(self, target_evt_id, simul_clock):
-        if self.evt_end:
-            end_evt = self.evt_seq[-1]
-            self.end_time = end_evt.dt + timedelta(seconds=15)
-            bitt_id = int(end_evt.pos[4:])
-            end_evt_px, end_evt_py = Vessel.Bitts[bitt_id].px - Vessel.LOA * 1 / 3, Vessel.Bitts[bitt_id].py - Vessel.Beam * 1.1
-            self.end_px, self.end_py = end_evt_px, end_evt_py - container_hs * 2
-        else:
-            self.set_start_evt_date()    
+        self.set_start_evt_date()    
         self.set_anchor_evt_date()
+        self.set_end_evt_date()
             
         if self.start_time and simul_clock <= self.start_time:
             self.px, self.py = 0, 0
@@ -130,8 +124,10 @@ class Vessel(object):
             self.px = self.start_px
             self.py = self.start_py + calc_proportional_pos(self.start_py, self.anchored_py, self.start_time, self.ar_time, simul_clock)
         elif self.ar_time and self.ar_time <= simul_clock < self.dp_time:
+            self.isVisible = True
             self.px, self.py = self.anchored_px, self.anchored_py
         elif self.end_time and self.dp_time <= simul_clock < self.end_time:
+            self.isVisible = True
             self.px = self.anchored_px
             self.py = self.anchored_py + calc_proportional_pos(self.anchored_py, self.end_py, self.dp_time, self.end_time, simul_clock) 
         elif self.end_time and self.end_time <= simul_clock:
@@ -178,13 +174,6 @@ class Vessel(object):
                     gc.SetPen(wx.Pen(wx.Colour(200, 200, 200), 1))
                     gc.DrawRectangle(px - container_hs / 2, self.margin_py - container_vs * 1, container_hs, container_vs * Vessel.num_of_stack + container_vs * 2)
                     gc.DrawRectangle(px - container_hs / 2 + container_vs / 2, self.margin_py + container_vs * Vessel.num_of_stack / 4, container_hs / 2, container_vs * Vessel.num_of_stack / 2)
-#            p1, p2, p3, p4, p5, p6 = (0, Vessel.Beam * 0.25), (20, 0), (Vessel.LOA - 20, 0), (Vessel.LOA - 10, Vessel.Beam * 0.125), (Vessel.LOA - 5, Vessel.Beam * 0.2), (Vessel.LOA, Vessel.Beam * 0.35)
-#            p7, p8, p9 = (Vessel.LOA, Vessel.Beam * 0.65), (Vessel.LOA - 5, Vessel.Beam * 0.8), (Vessel.LOA - 10, Vessel.Beam * 0.875)
-#            p10 = (Vessel.LOA - 20, Vessel.Beam-10)
-#            gc.DrawLines([p1, p2, p3, p4, p5 , p6
-#                          , p7, p8, p9, p10])
-##                          , , (20, Vessel.Beam), (0, Vessel.Beam * 0.75), (0, Vessel.Beam * 0.25)])
-#            gc.DrawLines([(10, Vessel.Beam * 0.125), (10, Vessel.Beam * 0.875)]) 
             for c in self.holding_containers.values():
                 old_tr = gc.GetTransform()
                 gc.Translate(c.px, c.py)
@@ -203,6 +192,13 @@ class Vessel(object):
         self.dp_time = self.evt_seq[1].dt
         bitt_id = int(self.evt_seq[0].pos[4:])
         self.anchored_px, self.anchored_py = Vessel.Bitts[bitt_id].px - Vessel.LOA * 1 / 3, Vessel.Bitts[bitt_id].py - Vessel.Beam * 1.1
+        
+    def set_end_evt_date(self):
+        end_evt = self.evt_seq[-1]
+        self.end_time = end_evt.dt + timedelta(seconds=15)
+        bitt_id = int(end_evt.pos[4:])
+        end_evt_px, end_evt_py = Vessel.Bitts[bitt_id].px - Vessel.LOA * 1 / 3, Vessel.Bitts[bitt_id].py - Vessel.Beam * 1.1
+        self.end_px, self.end_py = end_evt_px, end_evt_py - container_hs * 2
 
 class Drag_zoom_panel(wx.Panel):
     def __init__(self, parent, pos, size):

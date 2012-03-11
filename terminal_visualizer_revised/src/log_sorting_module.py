@@ -1,8 +1,6 @@
 from __future__ import division
 import datetime
 
-real_log = True
-
 def dt_cmp(e1, e2):
     dt1_txt, dt2_txt = e1[0], e2[0]
     year, month, day, hour, minute, second = dt1_txt.split('-') 
@@ -18,18 +16,11 @@ def dt_cmp(e1, e2):
         return 1
 
 EVT = []
-if real_log:
-    log_text = open('real_log.txt')
-    for l in log_text.readlines():
-        e = l[:-1].split('\t')
-        dt = e[0]
-        EVT.append(e)
-else:
-    log_text = open('maked_log.txt')
-    for l in log_text.readlines():
-        e = l[:-1].split('_')
-        dt = e[0]
-        EVT.append(e)
+log_text = open('real_log.txt')
+for l in log_text.readlines():
+    e = l[:-1].split('\t')
+    dt = e[0]
+    EVT.append(e)
         
 EVT.sort(dt_cmp)
 revised_EVT = []
@@ -44,9 +35,6 @@ for e in EVT:
 for e in revised_EVT:
     print e
 
-if real_log:
-    f = open('real_log_sorted_by_dt', 'w')
-else:
-    f = open('maked_log_sorted_by_dt', 'w')
+f = open('real_log_sorted_by_dt', 'w')
     
 f.write('\n'.join(revised_EVT))

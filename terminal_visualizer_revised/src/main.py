@@ -66,7 +66,7 @@ class Input_dialog(wx.Dialog):
         px, py = self.smi_txt.GetPosition()
         sx, sy = self.smi_txt.GetSize()
         wx.StaticText(self, -1, ":", (px + sx + 5, py + 3), size=(10, -1))
-        self.ss_txt = wx.TextCtrl(self, -1, "21", (px + sx + margin, py), size=(25, -1))        
+        self.ss_txt = wx.TextCtrl(self, -1, "35", (px + sx + margin, py), size=(25, -1))        
         self.sy_ch.SetSelection(7), self.sm_ch.SetSelection(1), self.sd_ch.SetSelection(13)
         
         sx, sy = ed_txt.GetSize()
