@@ -22,7 +22,6 @@ def run(real_log=True, checking_log=False):
     
 #    for  v in vessels+ qcs + ycs+ scs:
 #        print v, v.evt_seq
-    
     return vessels, qcs , ycs, scs , containers
 
 def init_real_log(vessels, qcs, ycs, scs, containers, EVT):
@@ -73,7 +72,7 @@ def init_real_log(vessels, qcs, ycs, scs, containers, EVT):
             # ex : 2012-02-14-08-49-03_SH19_1185046_2012-02-14-08-48-16_TwistLock_CLHU2825928_STS101-Lane3_DISCHARGING_MCEN/003/2012_N
             dt, vehicle, _, _, work_type, c_id, pos, operation, v_info, state = e
             target_sc = None
-            sc_id = int(vehicle[3:]) 
+            sc_id = int(vehicle[-2:]) 
             for sc in scs:
                 if sc.veh_id == sc_id:
                     target_sc = sc

@@ -20,7 +20,6 @@ class QB(Storage):
         self.px, self.py = px, py
     def draw(self, gc):
         gc.SetPen(wx.Pen(wx.Colour(251, 194, 0), 0.5))
-        
         gc.DrawLines([(0, 0), (l_sx, 0)])
         gc.DrawLines([(0, QB.sy), (l_sx, QB.sy)])
         for c in self.holding_containers.values():

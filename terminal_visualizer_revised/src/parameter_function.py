@@ -61,4 +61,16 @@ def find_init_pos(evt_id, evt_seq, simul_clock):
             evt_end = True
             break
         evt = evt_seq[evt_id]
-    return evt_id , evt_end
+    return evt_id - 1 , evt_end
+
+        
+def update(simul_clock, vehicle):
+    vehicle.update_pos(simul_clock)
+    if vehicle.tg_time <= simul_clock:
+        print vehicle.target_evt
+        vehicle.update_container_ownership(simul_clock)
+        vehicle.target_evt_id += 1
+        if vehicle.target_evt_id == len(vehicle.evt_seq):
+            vehicle.evt_end = True
+        else:
+            vehicle.set_evt_data(vehicle.target_evt_id, simul_clock)
