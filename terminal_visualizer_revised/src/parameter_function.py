@@ -54,6 +54,8 @@ def find_init_pos(evt_id, evt_seq, simul_clock):
     evt_end = False
     if evt_seq[0].dt > simul_clock:
         return evt_id - 1, evt_end
+    elif evt_seq[-1].dt <simul_clock:
+        return len(evt_seq) - 1, evt_end
     evt = evt_seq[evt_id]
     while evt.dt < simul_clock:
         evt_id += 1

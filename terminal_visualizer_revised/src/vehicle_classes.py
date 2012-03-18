@@ -62,26 +62,47 @@ class QC(Vehicles):
         else: assert False
         return py - (self.py - QC.sy) 
 
-    def calc_qc_pos(self, evt_id):
-        pos, pe_pos = self.evt_seq[evt_id].pos, self.evt_seq[evt_id - 1].pos
-        if pos[:2] == 'SB':
-            bay_id = int(pos[2:4]) 
+    def calc_qc_pos(self, evt_id, is_calc_tg):
+        pos, pe_pos = self.evt_seq[evt_id].pos, None
+        wt, oper = self.evt_seq[evt_id].work_type, self.evt_seq[evt_id].operation
+        pe_evt_id = evt_id - 1
+        if pe_evt_id != -1: pe_pos = self.evt_seq[pe_evt_id].pos
+        if is_calc_tg and wt == 'TwistLock' and oper == 'LOADING':
+            ne_pos = self.evt_seq[evt_id+1].pos
+            bay_id = int(ne_pos[2:4])
             px = self.target_v.px + self.target_v.bay_pos_info[bay_id]
-        elif pos[7:-2] == 'Lane':
-            bay_id = int(pe_pos[2:4]) 
+            return px 
+            
+        if pe_pos:
+            if pos[:2] == 'SB' and pe_pos[7:-2] == 'Lane':
+                bay_id = int(pos[2:4])
+                px = self.target_v.px + self.target_v.bay_pos_info[bay_id]
+            elif pos[7:-2] == 'Lane' and pe_pos[:2] == 'SB':
+                bay_id = int(pe_pos[2:4]) 
+                px = self.target_v.px + self.target_v.bay_pos_info[bay_id]
+            elif pos[7:-2] == 'Lane' and pe_pos[7:-2] == 'Lane':
+                ne_pos = self.evt_seq[evt_id + 1].pos
+                bay_id = int(ne_pos[2:4]) 
+                px = self.target_v.px + self.target_v.bay_pos_info[bay_id]
+            elif pos[:2] == 'SB' and pe_pos[:2] == 'SB':
+                assert False
+        else:
+            bay_id = int(pos[2:4]) 
             px = self.target_v.px + self.target_v.bay_pos_info[bay_id]
         return px
     
     def calc_tro_pos(self, target_evt_id):
         evt = self.evt_seq[target_evt_id]
         pos, wt, oper = evt.pos, evt.work_type, evt.operation
-        if wt == 'TwistLock' and oper == 'DISCHARGING':
+        if wt == 'TwistLock' and oper == 'DISCHARGING' or (wt == 'TwistUnlock' and oper == 'LOADING'):
             stack_id = int(pos[5:7])
             py = self.calc_tro_ori_py(self.target_v) + self.target_v.stack_pos_info[stack_id]
-        elif wt == 'TwistUnlock' and oper == 'DISCHARGING':
+        elif (wt == 'TwistUnlock' and oper == 'DISCHARGING') or (wt == 'TwistLock' and oper == 'LOADING'):
             qb_id = int(pos[-2:])
             self.target_qb = QC.QBs[qb_id]
             py = self.calc_tro_ori_py(self.target_qb) + self.target_qb.v_c_pos_info
+        else:
+            assert False 
         return py    
     
     def set_evt_data(self, target_evt_id, simul_clock):
@@ -95,8 +116,9 @@ class QC(Vehicles):
                     break
             else:
                 assert False, 'There is not target Vessel'
-        self.tg_px = self.calc_qc_pos(target_evt_id)
+        self.tg_px = self.calc_qc_pos(target_evt_id, True)
         self.trolly.tg_py = self.calc_tro_pos(target_evt_id)
+        
         if target_evt_id == 0:
             self.pe_time = self.tg_time - timedelta(seconds=5)
             self.pe_px = self.px = self.tg_px
@@ -105,7 +127,7 @@ class QC(Vehicles):
             if self.evt_start:
                 pe_id = target_evt_id - 1
                 self.pe_time = self.evt_seq[pe_id].dt
-                self.pe_px = self.calc_qc_pos(pe_id)
+                self.pe_px = self.calc_qc_pos(pe_id, False)
                 self.trolly.pe_px, self.trolly.pe_py = self.trolly.px, self.trolly.py = 0 , self.calc_tro_pos(pe_id)
             self.trolly.py = self.trolly.pe_py
             self.px = self.pe_px
@@ -116,6 +138,13 @@ class QC(Vehicles):
         self.update_pos(simul_clock)
                 
     def update_pos(self, simul_clock):
+#        evt = self.evt_seq[self.target_evt_id]
+#        pos, wt, oper, tg_container = evt.pos, evt.work_type, evt.operation, evt.c_id
+#        if wt == 'TwistLock' and oper == 'LOADING':
+#            target_qb = QC.QBs[int(pos[-2:])]
+#            if tg_container in target_qb.holding_containers:
+#                self.tg_px = target_qb.holding_containers[tg_container].px
+#            
         if self.pe_time <= simul_clock < self.tro_ms_time:
             #straddler moving
             self.px = self.pe_px + calc_proportional_pos(self.pe_px, self.tg_px, self.pe_time, self.tro_ms_time, simul_clock)
@@ -142,6 +171,19 @@ class QC(Vehicles):
             tg_container = self.holding_containers.pop(c_id)
             tg_container.px, tg_container.py = self.px, self.target_qb.v_c_pos_info
             self.target_qb.holding_containers[c_id] = tg_container
+        elif wt == 'TwistLock' and oper == 'LOADING':
+            pos = evt.pos
+            qb_id = int(pos[-2:])
+            target_qb = QC.QBs[qb_id]
+            tg_container = target_qb.holding_containers.pop(c_id)
+            tg_container.px, tg_container.py = 0, 0
+            self.holding_containers[c_id] = tg_container
+        elif wt == 'TwistUnlock' and oper == 'LOADING':
+            pos = evt.pos    
+            tg_container = self.holding_containers.pop(c_id)
+            bay_id, stack_id = int(pos[2:4]), int(pos[5:7]) 
+            tg_container.px, tg_container.py = self.target_v.bay_pos_info[bay_id] , self.target_v.stack_pos_info[stack_id]
+            self.target_v.holding_containers[c_id] = tg_container
         else:
             assert False
         tg_container.target_evt_id += 1 
@@ -169,7 +211,7 @@ class QC(Vehicles):
         gc.SetTransform(old_tr)
 
 class SC(Vehicles):
-    QBs, TPs, QCs = None, None, None
+    Vessels, QBs, TPs, QCs = None, None, None, None
     sx, sy = container_hs * 1.2, container_vs * 1.2
     def __init__(self, veh_id):
         Vehicles.__init__(self)
@@ -177,7 +219,7 @@ class SC(Vehicles):
         self.veh_id = veh_id
         self.target_qb, self.target_tp, self.target_qc = None, None, None
         ## ss: sea side, ls: land side 
-        self.is_ss_to_ls = True
+        self.ss_ls, self.ss_ss, self.ls_ss, self.ls_ls = False, False, False, False
         self.waypoint1_time, self.waypoint2_time, self.waypoint3_time = None, None, None
         self.waypoint1_pos , self.waypoint2_pos, self.waypoint3_pos = (None, None), (None, None), (None, None)
         self.thr_wp1, self.thr_wp2, self.thr_wp3 = None, None, None
@@ -187,7 +229,11 @@ class SC(Vehicles):
         evt = self.evt_seq[evt_id] 
         pos = evt.pos
         c_id = evt.c_id
+        pe_evt_id = evt_id - 1
+        pe_evt = None
+        if pe_evt_id != -1: pe_evt = self.evt_seq[pe_evt_id] 
         target_qb, target_tp = None, None
+        ss_ls, ss_ss, ls_ss, ls_ls = False, False, False, False
         if pos[:3] == 'STS':
             target_qc_id = int(pos[3:6]) 
             for qc in SC.QCs:
@@ -199,16 +245,78 @@ class SC(Vehicles):
             qb_id = int(pos[-1:])
             target_qb = SC.QBs[qb_id]
             px, py = target_qc.px, target_qb.py + target_qb.v_c_pos_info
-            is_ss_to_ls = False
+            if pe_evt and pe_evt.pos[:2] == 'LM':
+                oper = evt.operation
+                wt = evt.work_type
+                if wt == 'TwistUnlock' and oper == 'LOADING':
+                    target_qc = None
+                    qc_id = int(pos[3:6])
+                    for qc in SC.QCs:
+                        if qc.veh_id == qc_id:
+                            target_qc = qc
+                            break
+                    cur_qc_evt_id = 0
+                    c_qc_evt = target_qc.evt_seq[cur_qc_evt_id]  
+                    while c_id != c_qc_evt.c_id or c_qc_evt.dt < evt.dt:
+                        cur_qc_evt_id += 1
+                        c_qc_evt = target_qc.evt_seq[cur_qc_evt_id]
+                    qc_ne_evt = target_qc.evt_seq[cur_qc_evt_id + 1]
+                    ne_pos = qc_ne_evt.pos 
+                    bay_id, stack_id = int(ne_pos[2:4]), int(ne_pos[5:7])
+                    target_v = None
+                    v_name, v_voyage_txt, _ = self.target_evt.v_info.split('/')
+                    for v in SC.Vessels:
+                        if v.name == v_name and v.voyage == int(v_voyage_txt):
+                            target_v = v
+                            break
+                    else:
+                        assert False, 'There is not target Vessel'
+                            
+                    px = target_v.px + target_v.bay_pos_info[bay_id]
+                ls_ss = True
+            elif pe_evt and pe_evt.pos[:3] == 'STS':
+                target_qc = None
+                qc_id = int(pos[3:6])
+                for qc in SC.QCs:
+                    if qc.veh_id == qc_id:
+                        target_qc = qc
+                        break
+                cur_qc_evt_id = 0
+                c_qc_evt = target_qc.evt_seq[cur_qc_evt_id]  
+                while c_id != c_qc_evt.c_id or c_qc_evt.dt < evt.dt:
+                    cur_qc_evt_id += 1
+                    c_qc_evt = target_qc.evt_seq[cur_qc_evt_id]
+                qc_ne_evt = target_qc.evt_seq[cur_qc_evt_id + 1]
+                ne_pos = qc_ne_evt.pos 
+                bay_id, stack_id = int(ne_pos[2:4]), int(ne_pos[5:7])
+                target_v = None
+                v_name, v_voyage_txt, _ = self.target_evt.v_info.split('/')
+                for v in SC.Vessels:
+                    if v.name == v_name and v.voyage == int(v_voyage_txt):
+                        target_v = v
+                        break
+                else:
+                    assert False, 'There is not target Vessel'
+                px = target_v.px + target_v.bay_pos_info[bay_id]
+                ss_ss = True
+            else:
+                assert not pe_evt
         elif pos[:2] == 'LM':
             tp_id, stack_id = pos[3:5], int(pos[8:])
             target_tp = SC.TPs[tp_id]
             px, py = target_tp.px + target_tp.stack_pos_info[stack_id], target_tp.py + target_tp.bay_pos_info
-            is_ss_to_ls = True
             
+            if pe_evt and pe_evt.pos[:2] == 'LM':
+                ls_ls = True
+            elif pe_evt and pe_evt.pos[:3] == 'STS':
+                ss_ls = True
+            else:
+                assert not pe_evt
+        else:
+            assert False
         if is_tg_evt:
             self.target_qb, self.target_tp = target_qb, target_tp 
-            self.is_ss_to_ls = is_ss_to_ls
+            self.ss_ls, self.ss_ss, self.ls_ss, self.ls_ls = ss_ls, ss_ss, ls_ss, ls_ls
             self.tg_container = c_id
         return px, py
     
@@ -220,7 +328,7 @@ class SC(Vehicles):
         if target_evt_id == 0:
             self.pe_time = self.tg_time - timedelta(seconds=8)
             self.pe_px, self.pe_py = self.px, self.py = self.tg_px - container_hs * 10, self.tg_py
-            self.is_ss_to_ls = True
+            self.ss_ls = True
         else:
             if self.evt_start:
                 pe_evt_id = target_evt_id - 1
@@ -231,20 +339,29 @@ class SC(Vehicles):
             assert 0 <= time_interval.total_seconds() < 3600 * 24, False
             ti_ts = time_interval.total_seconds()
             
-            if self.is_ss_to_ls:
+            if self.ss_ls:
                 self.waypoint1_time = self.pe_time + timedelta(0, ti_ts * (3 / 10))
                 self.waypoint2_time = self.pe_time + timedelta(0, ti_ts * (6 / 10))
                 self.waypoint3_time = self.pe_time + timedelta(0, ti_ts * (9 / 10))
                 self.wp1_px, self.wp1_py = (self.pe_px + container_hs * 10, self.pe_py)
                 self.wp2_px, self.wp2_py = (self.pe_px + container_hs * 10, self.tg_py - container_hs)
                 self.wp3_px, self.wp3_py = (self.tg_px, self.tg_py - container_hs)
-            else:
+            elif self.ls_ss:
                 self.waypoint1_time = self.pe_time + timedelta(0, ti_ts * (0.1 / 10))
                 self.waypoint2_time = self.pe_time + timedelta(0, ti_ts * (4 / 10))
                 self.waypoint3_time = self.pe_time + timedelta(0, ti_ts * (9 / 10))
                 self.wp1_px, self.wp1_py = (self.pe_px, self.pe_py - container_hs)
                 self.wp2_px, self.wp2_py = (self.pe_px - container_hs * 4, self.pe_py - container_hs)
                 self.wp3_px, self.wp3_py = (self.pe_px - container_hs * 4, self.tg_py)
+            elif self.ls_ls:
+                self.waypoint1_time = self.pe_time + timedelta(0, ti_ts * (0.1 / 10))
+                self.waypoint2_time = self.pe_time + timedelta(0, ti_ts * (9 / 10))
+                self.wp1_px, self.wp1_py = (self.pe_px, self.pe_py - container_hs)
+                self.wp2_px, self.wp2_py = (self.tg_px, self.tg_py - container_hs)
+            elif self.ss_ss:
+                pass
+            else:
+                assert False
             self.update_pos(simul_clock)
                 
         self.thr_wp1 = False
@@ -266,6 +383,37 @@ class SC(Vehicles):
             tg_container.hs = tg_container.vs
             tg_container.vs = save_c_hs
             self.target_tp.holding_containers[c_id] = tg_container
+        elif wt == 'TwistLock' and oper == 'LOADING':
+            if pos[:3] == 'STS':
+                target_qb = SC.QBs[int(pos[-2:])]
+                tg_container = target_qb.holding_containers.pop(c_id)
+                tg_container.px, tg_container.py = 0, 0
+                self.holding_containers[c_id] = tg_container
+            else:
+                tp_id, stack_id = pos[3:5], int(pos[8:])
+                target_tp = SC.TPs[tp_id]
+                tg_container = target_tp.holding_containers.pop(c_id)
+                tg_container.px, tg_container.py = 0, 0
+                save_c_hs = tg_container.hs 
+                tg_container.hs = tg_container.vs
+                tg_container.vs = save_c_hs
+                self.holding_containers[c_id] = tg_container
+        elif wt == 'TwistUnlock' and oper == 'LOADING':
+            tg_container = self.holding_containers.pop(c_id)
+            qb_id = int(pos[-1:])
+            target_qb = SC.QBs[qb_id]
+            target_v = None
+            c_ne_pos = tg_container.evt_seq[tg_container.target_evt_id + 3].pos
+            bay_id = int(c_ne_pos[2:4]) 
+            v_name, v_voyage_txt, _ = tg_evt.v_info.split('/')
+            for v in SC.Vessels:
+                if v.name == v_name and v.voyage == int(v_voyage_txt):
+                    target_v = v
+                    break
+            else:
+                assert False, 'There is not target Vessel'
+            tg_container.px, tg_container.py = target_v.px + target_v.bay_pos_info[bay_id], target_qb.v_c_pos_info
+            target_qb.holding_containers[c_id] = tg_container
         else:
             assert False
         tg_container.target_evt_id += 1   
@@ -277,7 +425,7 @@ class SC(Vehicles):
             if self.pe_time <= simul_clock < self.tg_time:
                 self.px = self.pe_px + calc_proportional_pos(self.pe_px, self.tg_px, self.pe_time, self.tg_time, simul_clock)
         else:
-            if self.is_ss_to_ls:
+            if self.ss_ls:
                 if self.pe_time <= simul_clock < self.waypoint1_time:
                     self.px = self.pe_px + calc_proportional_pos(self.pe_px, self.wp1_px, self.pe_time, self.waypoint1_time, simul_clock) 
                     self.py = self.pe_py
@@ -295,7 +443,7 @@ class SC(Vehicles):
                     self.thr_wp3 = True
                     self.px = self.wp3_px
                     self.py = self.wp3_py + calc_proportional_pos(self.wp3_py, self.tg_py, self.waypoint3_time, self.tg_time, simul_clock) 
-            else:
+            elif self.ls_ss:
                 if self.tg_container in self.target_qb.holding_containers:
                     self.tg_px = self.target_qb.holding_containers[self.tg_container].px
                 if self.pe_time <= simul_clock < self.waypoint1_time:
@@ -315,14 +463,28 @@ class SC(Vehicles):
                     self.thr_wp3 = True
                     self.px = self.wp3_px + calc_proportional_pos(self.wp3_px, self.tg_px, self.waypoint3_time, self.tg_time, simul_clock) 
                     self.py = self.wp3_py
-        
+            elif self.ls_ls:
+                if self.pe_time <= simul_clock < self.waypoint1_time:
+                    self.px = self.pe_px
+                    self.py = self.pe_py + calc_proportional_pos(self.pe_py, self.wp1_py, self.pe_time, self.waypoint1_time, simul_clock)
+                elif self.waypoint1_time <= simul_clock < self.waypoint2_time:
+                    self.thr_wp1 = True
+                    self.px = self.wp1_px + calc_proportional_pos(self.wp1_px, self.wp2_px, self.waypoint1_time, self.waypoint2_time, simul_clock)
+                    self.py = self.wp1_py
+                elif self.waypoint2_time <= simul_clock < self.tg_time:
+                    self.thr_wp1 = False
+                    self.thr_wp2 = True
+                    self.px = self.wp2_px
+                    self.py = self.wp2_py + calc_proportional_pos(self.wp2_py, self.tg_py, self.waypoint2_time, self.tg_time, simul_clock)
+            elif self.ss_ss:
+                self.px = self.pe_px + calc_proportional_pos(self.pe_px, self.tg_px, self.pe_time, self.tg_time, simul_clock)
         if self.tg_time <= simul_clock:
             self.pe_time = self.tg_time
             self.pe_px, self.pe_py = self.px, self.py = self.tg_px, self.tg_py
             if self.evt_start: self.evt_start = False 
     
     def draw(self, gc):
-        if self.is_ss_to_ls:
+        if self.ss_ls:
             if self.thr_wp1:
                 gc.Rotate(math.pi / 2)
             elif self.thr_wp2:
@@ -331,13 +493,20 @@ class SC(Vehicles):
                 gc.Rotate(math.pi / 2)
             else:
                 gc.Rotate(0)
-        else:
+        elif self.ls_ss:
             if self.thr_wp1:
                 gc.Rotate(-math.pi)
             elif self.thr_wp2:
                 gc.Rotate(-math.pi / 2)
             elif self.thr_wp3:
                 gc.Rotate(0)
+            else:
+                gc.Rotate(-math.pi / 2)
+        elif self.ls_ls:
+            if self.thr_wp1:
+                gc.Rotate(-math.pi)
+            elif self.thr_wp2:
+                gc.Rotate(math.pi / 2)    
             else:
                 gc.Rotate(-math.pi / 2)
         for c in self.holding_containers.values():

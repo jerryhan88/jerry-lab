@@ -13,8 +13,12 @@ Blocks = {}
 TPs = {}
 
 SH = '08'
-SMI = '52'
-SS = '01'  
+SMI = '15'
+SS = '02'
+
+#SH = '09'
+#SMI = '19'
+#SS = '10'
 
 class Input_dialog(wx.Dialog):
     def __init__(self, parent, name, size=(800, 600), pos=(50, 50)):
@@ -351,7 +355,7 @@ class Viewer_Panel(Drag_zoom_panel):
                 v.px = YC.Blocks[b_or_tp_id].px + YC.sy / 2
                 v.set_evt_data(v.target_evt_id, simul_clock)
             elif isinstance(v, SC):
-                SC.QBs, SC.TPs, SC.QCs = QBs, TPs, qcs
+                SC.Vessels, SC.QBs, SC.TPs, SC.QCs = vessels, QBs, TPs, qcs
                 start_evt = v.evt_seq[v.target_evt_id]
                 v.set_evt_data(v.target_evt_id, simul_clock)
             else:
@@ -369,7 +373,7 @@ class Viewer_Panel(Drag_zoom_panel):
             work_type = tg_evt.work_type
             operation = tg_evt.operation
             pos = tg_evt.pos
-            print c.target_evt_id, vehicle
+            print c.target_evt_id, vehicle, '    ', tg_evt
             if vehicle[:3] == 'STS' and work_type == 'TwistLock' and operation == 'DISCHARGING':
                 if c.target_evt_id == -1: 
                     # container from Vessel
@@ -411,7 +415,7 @@ class Viewer_Panel(Drag_zoom_panel):
                 c.hs, c.vs = container_hs, container_vs
                 c.px, c.py = target_qc.px, target_qb.v_c_pos_info
                 target_qb.holding_containers[tg_evt.c_id] = c
-            
+                
             elif vehicle[:2] == 'SH' and work_type == 'TwistLock' and operation == 'DISCHARGING':
                 if c.target_evt_id == -1:
                     target_qc, target_qb = None , None
@@ -477,6 +481,87 @@ class Viewer_Panel(Drag_zoom_panel):
                 else:
                     c.hs, c.vs = container_vs, container_hs / 2
                 target_block.holding_containers[tg_evt.c_id] = c
+            
+            elif vehicle[:3] == 'STS' and work_type == 'TwistLock' and operation == 'LOADING':
+                target_qc = None
+                qc_id = int(vehicle[3:])
+                for qc in qcs:
+                    if qc.veh_id == qc_id:
+                        target_qc = qc
+                        break
+                else:
+                    assert False , 'there is no target_qc'
+                pe_pos = c.evt_seq[c.target_evt_id + 1].pos
+                bay_id = int(pe_pos[2:4])
+                if bay_id % 2 == 0:
+                    c.hs, c.vs = container_hs, container_vs
+                else:
+                    c.hs, c.vs = container_hs / 2, container_vs
+                c.px, c.py = 0, 0
+                target_qc.holding_containers[tg_evt.c_id] = c
+                
+            elif vehicle[:3] == 'STS' and work_type == 'TwistUnlock' and operation == 'LOADING':
+                bay_id, stack_id = int(pos[2:4]), int(pos[5:7]) 
+                target_v = None
+                v_name, v_voyage_txt, _ = tg_evt.v_info.split('/')
+                for v in vessels:
+                    if v.name == v_name and v.voyage == int(v_voyage_txt):
+                        target_v = v
+                        break
+                else:
+                    assert False, 'There is not target Vessel'
+                    
+                if bay_id % 2 == 0 :
+                    c.hs, c.vs = container_hs, container_vs
+                else:
+                    c.hs, c.vs = container_hs / 2, container_vs
+                c.px, c.py = target_v.bay_pos_info[bay_id] , target_v.stack_pos_info[stack_id]
+                target_v.holding_containers[tg_evt.c_id] = c
+            
+            elif vehicle[:2] == 'SH' and work_type == 'TwistLock' and operation == 'LOADING':
+                target_sc = None
+                sc_id = int(vehicle[-2:])
+                for sc in scs:
+                    if sc.veh_id == sc_id:
+                        target_sc = sc
+                        break
+                else:
+                    assert False , 'there is no target_sc'
+                pe_pe_pos = c.evt_seq[c.target_evt_id - 2].pos 
+                bay_id = int(pe_pe_pos[3:5])
+                if bay_id % 2 == 0:
+                    c.hs, c.vs = container_hs, container_vs 
+                else:
+                    c.hs, c.vs = container_hs / 2, container_vs 
+                c.px, c.py = 0, 0
+                target_sc.holding_containers[tg_evt.c_id] = c
+            
+            elif vehicle[:2] == 'SH' and work_type == 'TwistUnlock' and operation == 'LOADING':
+                target_qc, target_qb = None , None
+                qc_id , qb_id = int(pos[3:6]) , int(pos[-2:])
+                for qc in qcs:
+                    if qc.veh_id == qc_id:
+                        target_qc = qc
+                        break
+                target_qb = QBs[qb_id]
+                ne_ne_evt = c.evt_seq[c.target_evt_id + 2]
+                ne_pos = ne_ne_evt.pos
+                bay_id, stack_id = int(ne_pos[2:4]), int(ne_pos[5:7])
+                target_v = None
+                v_name, v_voyage_txt, _ = tg_evt.v_info.split('/')
+                for v in vessels:
+                    if v.name == v_name and v.voyage == int(v_voyage_txt):
+                        target_v = v
+                        break
+                else:
+                    assert False, 'There is not target Vessel'
+                    
+                if bay_id % 2 == 0 :
+                    c.hs, c.vs = container_hs, container_vs
+                else:
+                    c.hs, c.vs = container_hs / 2, container_vs
+                c.px, c.py = target_v.px + target_v.bay_pos_info[bay_id], target_qb.v_c_pos_info
+                target_qb.holding_containers[tg_evt.c_id] = c
                     
             elif vehicle[:3] == 'ASC' and work_type == 'TwistLock' and operation == 'LOADING':
                 if c.target_evt_id == -1:
@@ -514,9 +599,7 @@ class Viewer_Panel(Drag_zoom_panel):
                 pos = tg_evt.pos
                 tp_id, stack_id = pos[3:5], int(pos[8:])
                 target_tp = SC.TPs[tp_id]
-                
-#                c.hs, c.vs = container_vs, container_hs
-                pe_pos = c.evt_seq[c.target_evt_id-1].pos 
+                pe_pos = c.evt_seq[c.target_evt_id - 1].pos 
                 bay_id = int(pe_pos[3:5])
                 if bay_id % 2 == 0:
                     c.hs, c.vs = container_vs, container_hs
