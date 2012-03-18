@@ -312,8 +312,8 @@ class Viewer_Panel(Drag_zoom_panel):
         self.sx, self.sy = self.GetSize()
         l3_py = self.set_deco_pos()
         self.make_storage(l3_py)
-        self.set_vehicle_pos(self.vessels, self.qcs, self.ycs, self.scs, simul_clock)
-        self.set_container_pos(self.vessels, self.qcs, self.scs, self.ycs, containers, simul_clock)
+        self.set_vehicle_pos(self.vessels, self.qcs, self.ycs, self.scs, self.containers, simul_clock)
+        self.set_container_pos(self.vessels, self.qcs, self.scs, self.ycs, self.containers, simul_clock)
         
         mg = 20
         l_mg = 2
@@ -331,14 +331,17 @@ class Viewer_Panel(Drag_zoom_panel):
         
         self.InitBuffer()
 
-    def set_vehicle_pos(self, vessels, qcs, ycs, scs, simul_clock):
+    def set_vehicle_pos(self, vessels, qcs, ycs, scs, containers, simul_clock):
         for v in vessels + qcs + ycs + scs:
             v.target_evt_id, v.evt_end = find_target_evt(v.target_evt_id, v.evt_seq, simul_clock)
             if isinstance(v, Vessel):
                 Vessel.Bitts = Bitts
                 v.set_evt_data(v.target_evt_id, simul_clock)
             elif isinstance(v, QC):
-                QC.Vessels, QC.QBs = vessels, QBs
+                c_dic = {}
+                for c in containers:
+                    c_dic[c.c_id] = c
+                QC.Vessels, QC.QBs, QC.TPs, QC.Containers = vessels, QBs, TPs, c_dic
                 last_QB_id = 0
                 for qb_id in QBs.keys():
                     if qb_id > last_QB_id : last_QB_id = qb_id

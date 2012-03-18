@@ -15,6 +15,9 @@ frame_milsec = 1000 / 15
 play_speed = 1.0
 play_x = 2.0
 
+# time horizon(sec)
+time_horizon = 3600
+
 # num of resource
 total_num_bitt = 19
 total_num_qb = 4
@@ -54,7 +57,7 @@ def find_init_pos(evt_id, evt_seq, simul_clock):
     evt_end = False
     if evt_seq[0].dt > simul_clock:
         return evt_id - 1, evt_end
-    elif evt_seq[-1].dt <simul_clock:
+    elif evt_seq[-1].dt < simul_clock:
         return len(evt_seq) - 1, evt_end
     evt = evt_seq[evt_id]
     while evt.dt < simul_clock:
