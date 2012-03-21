@@ -46,8 +46,7 @@ def init_real_log(vessels, qcs, ycs, scs, containers, EVT):
             target_v.evt_seq.append(Evt(dt, vehicle, work_type, c_id, operation, v_info, state, pos))
         elif vehicle[:3] == 'STS':
             # ex : 2012-02-14-10-59-20_STS101_TwistLock_HLXU3395821_LOADING_MCEN/003/2012_N
-            print e
-            dt, vehicle, work_type, c_id, pos, operation, v_info, state , _ = e
+            dt, vehicle, work_type, c_id, pos, operation, v_info, state = e
             #  when state is not 'N', what should I do?
             target_qc = None
             qc_id = int(vehicle[3:]) 
@@ -114,9 +113,11 @@ def check_v_log(vessels, qcs, ycs, scs):
             if ne_id < len(v.evt_seq):
                 ce, ne = v.evt_seq[ce_id], v.evt_seq[ne_id]
                 c_ms_wt, n_ms_wt = ce.work_type, ne.work_type
+                c_ms_dt, n_ms_dt = ce.dt, ne.dt
                 if (c_ms_wt == 'TwistLock' and n_ms_wt == 'TwistLock') or (c_ms_wt == 'TwistUnlock' and n_ms_wt == 'TwistUnlock'):
-                    v.wrong_evt_id = (ce_id, ce.c_id, c_ms_wt, ne_id, ne.c_id, n_ms_wt)
-                    wront_v.append(v)
+                    if c_ms_dt!=n_ms_dt: 
+                        v.wrong_evt_id = (ce_id, ce.c_id, c_ms_wt, ne_id, ne.c_id, n_ms_wt)
+                        wront_v.append(v)
                     break
     return wront_v
 

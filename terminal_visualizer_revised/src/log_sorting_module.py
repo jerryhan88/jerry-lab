@@ -15,30 +15,98 @@ def dt_cmp(e1, e2):
     elif dt1 > dt2:
         return 1
 
+f = open('test.txt', 'w')
 EVT = []
 log_text = open('real_log.txt')
+sts_tl_loading = []
 for l in log_text.readlines():
     e = l[:-1].split('_')
     dt = e[0]
-#    if e[4] == 'OCRCHECK':
-#        e[4] = 'TwistLock'
-#    c_id = None
-#    if len(e) == len('2012-03-03-02-09-09_STS103_TwistLock_MRKU6817080_A7-21-7-5_LOADING_WALS/002/2012_N'.split('_')):
-#        c_id = e[3]
-#    elif len(e) == len('2012-03-03-02-14-03_ASC131_1244718_2012-03-03-02-12-59_TwistLock_MSKU3366180_B5-27-2-4_LOADING_WALS/002/2012_N'.split('_')):
-#        c_id = e[5]
-#    elif len(e) == len('2012-03-03-05-46-00_SH19_1245049_2012-03-03-05-44-00_TwistLock_TTNU1412090_LM-A6-TP3_LOADING_WALS/002/2012_N'.split('_')):    
-#        c_id = e[5]
-#    elif e[1] == 'Vessel':
-#        c_id = None
-#    else:
-#        assert False
-#    if c_id in ['MSKU2192572', 'MRKU8001100', 'TRLU3668829', 'MRKU7535137', 'IPXU3051594', 'MSKU2373890', 'MRKU7630936', 'MSKU4220760', 'MSKU7144324', 'CAXU6658754', 'MSKU3161323', 'PONU2020022', 'MAEU6796171', 'MRKU7285660', 'MSKU5278134', 'MSKU2691313', 'MSKU3597045', 'MSKU4403334', 'MSKU5972926', 'MSKU2486772', 'MSKU2562152', 'MSKU2596532', 'MSKU2354040', 'MSKU2969940', 'MRKU6995272', 'MRKU7246582', 'MRKU6991507', 'INBU3276542', 'MSKU5828586', 'MSKU7786432', 'MSKU5999188', 'PONU2012080', 'GLDU5586298', 'MSKU4025825', 'MSKU7977969', 'MSKU2762356', 'MRKU6557933', 'MRKU7274563', 'MSKU2370226', 'MSKU7989086', 'MSKU7332770', 'MRKU7254700', 'MSKU7916238', 'MSKU7962423', 'POCU0448316', 'MRKU7468424', 'PONU0408092', 'MRKU7730010', 'MSKU4232740', 'PONU0051831', 'MSKU2577980', 'MSKU3835760', 'PONU0689575', 'MSKU5046925', 'PONU0867466', 'MRKU7638407', 'CAIU2477798', 'MSKU7910538', 'MSKU7470589', 'MRKU8217948', 'MSKU3157827', 'CAIU2390810', 'MAEU7867942', 'MRKU7001213',
-#                'POCU0329960']:
-#            continue
+    if e[1][:3] == 'STS' and e[4][:4] == 'Lane':
+        e[4] = e[1] + '-' + e[4]
+#        print e
+    if e[1][:3] == 'STS' and len(e) == 9 and e[2] == 'TwistUnlock':
+        e.pop()
+#    if e[1][:3] == 'STS'and e[2] == 'TwistUnlock' and e[5] == 'DISCHARGING':
+    if e[1][:3] == 'STS' and e[2] == 'TwistLock'and e[5] == 'DISCHARGING':
+        sb = e[-1]
+        bay_id = int(sb[:2])
+        if bay_id % 4 == 0 or bay_id % 4 == 1 or bay_id % 4 == 3:
+            e[-1] = '%d' % (bay_id - 2) + e[-1][2:]
+        pos = e.pop()
+        e[4] = pos
+    if e[1][:3] == 'STS' and e[2] == 'TwistLock'and e[5] == 'LOADING':
+        if e[4] == 'OCRCHECK':
+            continue
+        sts_tl_loading.append(e)
+        
+    if e[1][:3] == 'STS' and e[2] == 'TwistUnlock'and e[5] == 'LOADING':
+        sb = e[4]
+        bay_id = int(sb[:2])
+        if bay_id % 4 == 0 or bay_id % 4 == 1 or bay_id % 4 == 3:
+            st = bay_id - 2
+            if st < 10:
+                st = '0' + str(bay_id - 2)
+            else:
+                st = str(bay_id - 2)
+            e[4] = st + e[4][2:]
+            
+    if e[1][:2] == 'SH':
+        if e[3] == '':
+            e[3] = '2012-03-19-13-55-39'
+            
+#    if e[1][:2] == 'SH' and e[4] =='TwistLock' and e[7] == 'LOADING':
+
+    EVT.append(e)
+ori_EVT = EVT[:]
+EVT = []
+for e in ori_EVT:
+    if e[1][:2] == 'SH' and e[4] == 'TwistUnlock' and e[7] == 'LOADING':
+        for ie in sts_tl_loading:
+            if ie[3] == e[5] and ie[4] != e[6]:
+                e[6] = ie[4]
+    
+#    if e[1][:2] == 'SH':
+#    if e[1][:3] == 'ASC':             
+    c_id = None 
+    if e[1][:3] == 'ASC' and len(e)== len('2012-03-19-06-50-26_ASC021_1290568_2012-03-19-06-47-55_TwistUnlock_GESU6804037_LM-A2-TP3_LOADING_HNVN/002/2012_N'.split('_')):
+        c_id = e[5]
+    elif e[1][:3] == 'STS' and len(e)== len('2012-03-19-12-33-17_STS101_TwistLock_TPHU8144329_STS101-Lane3_LOADING_HNVN/002/2012_N'.split('_')):
+        c_id = e[3]
+    elif e[1][:2] == 'SH' and len(e)== len('2012-03-19-12-33-35_SH11_1290336_2012-03-19-12-32-44_TwistLock_UACU3562734_LM-A4-TP2_LOADING_HNVN/002/2012_N'.split('_')):
+        c_id = e[5]
+    elif e[1] == 'Vessel':
+        pass
+    else:
+        print e
+        assert False
+    if c_id in ['TRIU0615820', 'TPHU8144329', 'HJCU1458916', 'UACU3680423', 'UACU5432154', 'UACU3372380', 'HJCU1232174', 'TRLU8986041', 'HJCU4292114', 'DFSU4310841', 'DFSU6856955', 'TRLU3153438', 'IPXU3989333', 'UACU8016654', 'HJCU2115871', 'HJCU8150993', 'TGHU0392423', 'UACU5522957', 'BMOU9509536', 'HJCU8311228', 'WWWU9802682', 'FCIU3676473', 'HJCU8056380',
+                'HJCU1566119',
+                'CBHU8884682',
+                'CBHU6116849',
+                'CBHU8415010',
+                'UACU5008845',
+                'HJCU3205476',
+                'CBHU5950693']:
+
+        continue
     EVT.append(e)
         
 EVT.sort(dt_cmp)
+
+ori_EVT = EVT[:]
+EVT = []
+for e in ori_EVT:
+    if e[1][:3] =='STS':
+        if e[4][:3]!= 'STS':
+            e[4] = 'SB'+ e[4]
+            for i, t in enumerate(e):
+                if i != len(e) - 1:
+                    f.write(t + '_')
+                else:
+                    f.write(t + '\n')
+    EVT.append(e)
+
 revised_EVT = []
 for e in EVT:
     e_txt = ''
@@ -48,8 +116,9 @@ for e in EVT:
             e_txt += '_'
     revised_EVT.append(e_txt)
 
-for e in revised_EVT:
-    print e
+#for e in revised_EVT:
+#    print e
+
 
 f = open('real_log_sorted_by_dt', 'w')
     

@@ -15,7 +15,8 @@ class Container(object):
         self.evt_end = False
         self.color = randrange(5)
     def __repr__(self):
-        return 'Container ' + str(self.c_id)
+        return self.c_id
+#        return 'Container ' + str(self.c_id)
     
     def draw(self, gc):
         gc.SetPen(wx.Pen('black', 0))
@@ -63,7 +64,7 @@ class Vessel(object):
     Bitts = None
     LOA = container_hs * 21
     Beam = container_vs * (13 + 4)
-    num_of_bay, num_of_stack = 51, 13
+    num_of_bay, num_of_stack = 55, 13
     btn_bay = 1.2
     def __init__(self, name, voyage):
         self.name = name

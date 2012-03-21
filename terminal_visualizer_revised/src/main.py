@@ -12,14 +12,16 @@ QBs = {}
 Blocks = {}
 TPs = {}
 
-SH = '08'
-SMI = '15'
-SS = '02'
+SH = '02'
+SMI = '14'
+SS = '00'
 
 #SH = '09'
 #SMI = '19'
 #SS = '10'
 
+2012-03-19-02-14-00
+2012-03-19-14-30-00
 class Input_dialog(wx.Dialog):
     def __init__(self, parent, name, size=(800, 600), pos=(450, 170)):
         wx.Dialog.__init__(self, None, -1, 'Monitoring', pos , size)
@@ -38,7 +40,7 @@ class Input_dialog(wx.Dialog):
         vn_txt_px, vn_txt_py = vn_txt.GetPosition()
         vn_txt_sx, vn_txt_sy = vn_txt.GetSize()
         vy_txt = wx.StaticText(self, -1, 'Voyage', (20, c_begin_py + vn_txt_sy + margin))
-        v_name, vo_name = ['MCEN', 'MAERSK'], ['01', '02', '03', '04', '05', '06', '07']
+        v_name, vo_name = ['HNVN','MCEN', 'MAERSK'], ['01', '02', '03', '04', '05', '06', '07']
         vy_txt_px, vy_txt_py = vy_txt.GetPosition()
         vy_txt_sx, vy_txt_sy = vy_txt.GetSize()
         
@@ -46,7 +48,7 @@ class Input_dialog(wx.Dialog):
         vn_ch_sx, vn_ch_sy = self.v_name_ch.GetSize()
         vn_ch_px, vn_ch_py = self.v_name_ch.GetPosition()
         self.vo_name_ch = wx.Choice(self, -1, (vy_txt_px + vy_txt_sx + margin, vy_txt_py - 3), self.v_name_ch.GetSize(), choices=vo_name)
-        self.v_name_ch.SetSelection(0), self.vo_name_ch.SetSelection(2)
+        self.v_name_ch.SetSelection(0), self.vo_name_ch.SetSelection(1)
         sd_txt = wx.StaticText(self, -1, 'Start', (vn_ch_sx + vn_ch_px + margin * 2, vn_ch_py))
         d_txt_px, d_txt_py = sd_txt.GetPosition()
         d_txt_sx, d_txt_sy = sd_txt.GetSize()
@@ -78,7 +80,7 @@ class Input_dialog(wx.Dialog):
         wx.StaticText(self, -1, ":", (px + sx + 5, py + 3), size=(10, -1))
         self.ss_txt = wx.TextCtrl(self, -1, SS, (px + sx + margin, py), size=(25, -1))
 #        self.ss_txt = wx.TextCtrl(self, -1, "18", (px + sx + margin, py), size=(25, -1))        
-        self.sy_ch.SetSelection(7), self.sm_ch.SetSelection(1), self.sd_ch.SetSelection(13)
+        self.sy_ch.SetSelection(7), self.sm_ch.SetSelection(2), self.sd_ch.SetSelection(18)
         
         sx, sy = ed_txt.GetSize()
         px, py = ed_txt.GetPosition()
@@ -93,18 +95,18 @@ class Input_dialog(wx.Dialog):
         self.ed_ch = wx.Choice(self, -1, (px + sx + margin, py), choices=day)
         px, py = self.ed_ch.GetPosition()
         sx, sy = self.ed_ch.GetSize()
-        self.eh_txt = wx.TextCtrl(self, -1, "13", (px + sx + margin, py), size=(25, -1))
+        self.eh_txt = wx.TextCtrl(self, -1, "14", (px + sx + margin, py), size=(25, -1))
         px, py = self.eh_txt.GetPosition()
         sx, sy = self.eh_txt.GetSize()
         wx.StaticText(self, -1, ":", (px + sx + 5, py + 3), size=(10, -1))
-        self.emi_txt = wx.TextCtrl(self, -1, "23", (px + sx + margin, py), size=(25, -1))
+        self.emi_txt = wx.TextCtrl(self, -1, "30", (px + sx + margin, py), size=(25, -1))
         px, py = self.emi_txt.GetPosition()
         sx, sy = self.emi_txt.GetSize()
         wx.StaticText(self, -1, ":", (px + sx + 5, py + 3), size=(10, -1))
-        self.es_txt = wx.TextCtrl(self, -1, "06", (px + sx + margin, py), size=(25, -1)) 
+        self.es_txt = wx.TextCtrl(self, -1, "00", (px + sx + margin, py), size=(25, -1)) 
         px, py = self.es_txt.GetPosition()
         sx, sy = self.es_txt.GetSize()
-        self.ey_ch.SetSelection(7), self.em_ch.SetSelection(1), self.ed_ch.SetSelection(13) 
+        self.ey_ch.SetSelection(7), self.em_ch.SetSelection(2), self.ed_ch.SetSelection(18) 
 
         setting_btn = wx.Button(self, -1, "  Start  ", (px + sx + margin * 1.8, py - 1))
         

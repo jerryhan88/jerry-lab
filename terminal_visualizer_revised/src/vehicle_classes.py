@@ -127,18 +127,29 @@ class QC(Vehicles):
             if pos[:2] == 'SB' and pe_pos[7:-2] == 'Lane':
                 bay_id = int(pos[2:4])
                 px = self.target_v.px + self.target_v.bay_pos_info[bay_id]
-            elif pos[7:-2] == 'Lane' and pe_pos[:2] == 'SB':
+            elif pos[7:-1] == 'Lane' and pe_pos[:2] == 'SB':
                 bay_id = int(pe_pos[2:4]) 
                 px = self.target_v.px + self.target_v.bay_pos_info[bay_id]
-            elif pos[7:-2] == 'Lane' and pe_pos[7:-2] == 'Lane':
+            elif pos[7:-1] == 'Lane' and pe_pos[7:-1] == 'Lane':
                 ne_pos = self.evt_seq[evt_id + 1].pos
                 bay_id = int(ne_pos[2:4]) 
                 px = self.target_v.px + self.target_v.bay_pos_info[bay_id]
             elif pos[:2] == 'SB' and pe_pos[:2] == 'SB':
                 assert False
         else:
-            bay_id = int(pos[2:4]) 
-            px = self.target_v.px + self.target_v.bay_pos_info[bay_id]
+#            print pos
+            if pos[:2] == 'SB':
+                bay_id_1 = int(pos[2:4]) + 1
+                px = self.target_v.px + self.target_v.bay_pos_info[bay_id_1]
+            elif pos[7:-1] == 'Lane':
+                if wt == 'TwistLock':
+#                    ne = self.evt_seq[evt_id - 1]
+#                    print ne
+                    pass
+                else:
+                    ne = self.evt_seq[evt_id + 1]
+                    print ne
+                
         return px
     
     def calc_tro_pos(self, target_evt_id):
@@ -333,7 +344,7 @@ class QC(Vehicles):
         
         if id_show:
             gc.SetFont(wx.Font(5, wx.SWISS, wx.NORMAL, wx.NORMAL))
-            gc.DrawText(str(self.name + '-' + str(self.veh_id)), -container_hs*1.8, -container_vs)
+            gc.DrawText(str(self.name + '-' + str(self.veh_id)), -container_hs * 1.8, -container_vs)
 
 class SC(Vehicles):
     Vessels, QBs, TPs, QCs = None, None, None, None
