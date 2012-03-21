@@ -21,7 +21,7 @@ SS = '02'
 #SS = '10'
 
 class Input_dialog(wx.Dialog):
-    def __init__(self, parent, name, size=(800, 600), pos=(50, 50)):
+    def __init__(self, parent, name, size=(800, 600), pos=(450, 170)):
         wx.Dialog.__init__(self, None, -1, 'Monitoring', pos , size)
         self.SetBackgroundColour(wx.Colour(255, 255, 255))
         bg_img = wx.Image('pic/monitoring_bg.png', wx.BITMAP_TYPE_PNG)
@@ -130,7 +130,7 @@ class Input_dialog(wx.Dialog):
         
 class MainFrame(wx.Frame):
     def __init__(self, input_info):
-        wx.Frame.__init__(self, None, -1, 'Monitoring', size=(1024, 768), pos=(150, 50))
+        wx.Frame.__init__(self, None, -1, 'Monitoring', size=(1024, 768), pos=(243, 80))
         self.input_info = input_info
         f_sx, f_sy = self.GetSize()
         self.SetBackgroundColour(wx.Colour(236, 233, 216))
@@ -306,6 +306,7 @@ class Control_Panel(wx.Panel):
 class Viewer_Panel(Drag_zoom_panel):
     def __init__(self, parent, pos, size, vessels, qcs, ycs, scs, containers):
         Drag_zoom_panel.__init__(self, parent, pos, size)
+        self.id_show = False
         self.SetConstraints(anchors.LayoutAnchors(self, True, True, True, True))
         self.vessels, self.qcs, self.ycs, self.scs, self.containers = vessels, qcs, ycs, scs, containers
         simul_clock = parent.simul_clock
@@ -376,7 +377,7 @@ class Viewer_Panel(Drag_zoom_panel):
             work_type = tg_evt.work_type
             operation = tg_evt.operation
             pos = tg_evt.pos
-            print c.target_evt_id, vehicle, '    ', tg_evt
+#            print c.target_evt_id, vehicle, '    ', tg_evt
             if vehicle[:3] == 'STS' and work_type == 'TwistLock' and operation == 'DISCHARGING':
                 if c.target_evt_id == -1: 
                     # container from Vessel
@@ -653,6 +654,10 @@ class Viewer_Panel(Drag_zoom_panel):
     def Draw(self, gc):
         gc.Translate(self.translate_x, self.translate_y)
         gc.Scale(self.scale, self.scale)
+        if (self.scale > 2): 
+            self.id_show = True
+        else:
+            self.id_show = False
         old_tr = gc.GetTransform()
         #brush sea
         bg_clr = wx.Colour(222, 242, 243)
@@ -673,14 +678,14 @@ class Viewer_Panel(Drag_zoom_panel):
             
         for x in Bitts.values() + QBs.values() + TPs.values() + Blocks.values():
             gc.Translate(x.px, x.py)
-            x.draw(gc)
+            x.draw(gc, self.id_show)
             gc.SetTransform(old_tr)
         #draw vehicle
         old_tr = gc.GetTransform()
         for x in self.vessels + self.qcs + self.ycs + self.scs:
 #            print x, x.px, x.py
             gc.Translate(x.px, x.py)
-            x.draw(gc)
+            x.draw(gc, self.id_show)
             gc.SetTransform(old_tr)
         
 if __name__ == '__main__':

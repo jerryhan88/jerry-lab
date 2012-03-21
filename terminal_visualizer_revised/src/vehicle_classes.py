@@ -57,6 +57,47 @@ class QC(Vehicles):
         self.calc_tro_ori_py = lambda res : res.py - (self.py - QC.sy)
         #performance and workload
         self.cur_time_interval = []
+        
+        
+        self.bridge_sx = container_hs * 1.2
+        
+        self.bridge_sy = container_hs * 2.7
+         
+        self.bridge_bd = container_vs * 0.25
+        self.bridge_wd = container_vs
+        
+        
+        br_r_end_px = QC.sx / 2 + container_vs * 0.5
+        self.br_u_end_py = container_hs * 5.6 - QC.sy
+        
+        #bridge_rightside
+        br_p1 = (br_r_end_px, self.br_u_end_py)
+        br_p2 = (br_r_end_px + self.bridge_sx, self.br_u_end_py)
+        br_p3 = (br_r_end_px + self.bridge_sx, self.br_u_end_py + self.bridge_bd)
+        br_p4 = (br_r_end_px + self.bridge_sx - self.bridge_wd, self.br_u_end_py + self.bridge_bd)
+        br_p5 = (br_r_end_px + self.bridge_sx - self.bridge_wd, self.br_u_end_py + self.bridge_sy - self.bridge_bd)
+        br_p6 = (br_r_end_px + self.bridge_sx, self.br_u_end_py + self.bridge_sy - self.bridge_bd)
+        br_p7 = (br_r_end_px + self.bridge_sx, self.br_u_end_py + self.bridge_sy)
+        br_p8 = (br_r_end_px, self.br_u_end_py + self.bridge_sy)
+        
+        #bridge_leftside
+        br_l_end_px = -QC.sx / 2 - container_vs * 0.5 
+        br_p16 = (br_l_end_px, self.br_u_end_py)
+        br_p15 = (br_l_end_px - self.bridge_sx, self.br_u_end_py)
+        br_p14 = (br_l_end_px - self.bridge_sx, self.br_u_end_py + self.bridge_bd)
+        br_p13 = (br_l_end_px - self.bridge_sx + self.bridge_wd, self.br_u_end_py + self.bridge_bd)
+        br_p12 = (br_l_end_px - self.bridge_sx + self.bridge_wd, self.br_u_end_py + self.bridge_sy - self.bridge_bd)
+        br_p11 = (br_l_end_px - self.bridge_sx, self.br_u_end_py + self.bridge_sy - self.bridge_bd)
+        br_p10 = (br_l_end_px - self.bridge_sx, self.br_u_end_py + self.bridge_sy)
+        br_p9 = (br_l_end_px, self.br_u_end_py + self.bridge_sy)
+        
+        
+        self.qc_frame = [(-QC.sx / 2 - container_vs * 0.5, -QC.sy - container_vs * 0.5), (-QC.sx / 2 - container_vs * 0.5 + QC.sx + container_vs, -QC.sy - container_vs * 0.5),
+                      br_p1, br_p2, br_p3, br_p4, br_p5, br_p6, br_p7, br_p8,
+                      (-QC.sx / 2 - container_vs * 0.5 + QC.sx + container_vs, container_vs * 0.5),
+                      (-QC.sx / 2 - container_vs * 0.5, container_vs * 0.5),
+                      br_p9, br_p10, br_p11, br_p12, br_p13, br_p14, br_p15, br_p16,
+                      (-QC.sx / 2 - container_vs * 0.5, -QC.sy - container_vs * 0.5)]
     
     def update_time_interval(self, simul_clock):
         time_interval = []
@@ -192,20 +233,46 @@ class QC(Vehicles):
             assert False
         tg_container.target_evt_id += 1 
         
-    def draw(self, gc):
+    def draw(self, gc, id_show):
         gc.SetPen(wx.Pen('black', 0.5))
         r, g, b = (0, 0, 0)
         brushclr = wx.Colour(r, g, b)
         paint = wx.Colour(r, g, b, 0)
         gc.SetPen(wx.Pen(brushclr, 1))
         gc.SetBrush(wx.Brush(paint))
+        '''
         gc.DrawLines([(QC.sx / 2, -QC.sy), (QC.sx / 2, 0)])
         gc.DrawLines([(-QC.sx / 2, -QC.sy), (-QC.sx / 2, 0)])
         gc.DrawLines([(-QC.sx / 2, -container_hs), (QC.sx / 2, 0)])
         gc.DrawLines([(QC.sx / 2, -container_hs), (-QC.sx / 2, 0)])
         gc.DrawLines([(-QC.sx / 2, -container_hs), (QC.sx / 2, -container_hs)])
         gc.DrawLines([(-QC.sx / 2, 0), (QC.sx / 2, 0)])
+        '''
         
+        gc.DrawLines(self.qc_frame)
+        
+        space_sx = (self.bridge_sx - self.bridge_wd - 2 * self.bridge_bd) / 2
+        space_sy = self.bridge_sy - 2 * self.bridge_bd
+        space_px1, space_py1 = -QC.sx / 2 - container_vs * 0.5 - 2 * space_sx - self.bridge_bd, self.br_u_end_py + self.bridge_bd
+        space_px2, space_py2 = -QC.sx / 2 - container_vs * 0.5 - space_sx, self.br_u_end_py + self.bridge_bd
+        space_px3, space_py3 = -QC.sx / 2 - container_vs * 0.5 + QC.sx + container_vs, self.br_u_end_py + self.bridge_bd
+        space_px4, space_py4 = -QC.sx / 2 - container_vs * 0.5 + QC.sx + container_vs + space_sx + self.bridge_bd, self.br_u_end_py + self.bridge_bd
+#        
+        gc.DrawRectangle(-QC.sx / 2, -QC.sy, QC.sx, container_hs * 0.5 * 12)
+        gc.DrawRectangle(-QC.sx / 2, self.br_u_end_py + self.bridge_bd, QC.sx, self.bridge_sy - self.bridge_bd * 2)
+        gc.DrawRectangle(-QC.sx / 2, self.br_u_end_py + self.bridge_sy, QC.sx, QC.sy - container_hs * 0.5 * 12 - self.bridge_sy)
+        
+        
+        gc.DrawRectangle(space_px1, space_py1, space_sx, space_sy)
+        gc.DrawRectangle(space_px2, space_py2, space_sx, space_sy)
+        gc.DrawRectangle(space_px3, space_py3, space_sx, space_sy)
+        gc.DrawRectangle(space_px4, space_py4, space_sx, space_sy)
+        
+        
+        gc.DrawLines([(-QC.sx / 2, -container_hs), (QC.sx / 2, 0)])
+        gc.DrawLines([(QC.sx / 2, -container_hs), (-QC.sx / 2, 0)])
+        gc.DrawLines([(-QC.sx / 2, -container_hs), (QC.sx / 2, -container_hs)])
+
         for i in range(12):
             gc.DrawLines([(-QC.sx / 2, container_hs * 0.5 * i - QC.sy), (QC.sx / 2, container_hs * 0.5 * i - QC.sy)])
         
@@ -232,7 +299,7 @@ class QC(Vehicles):
             elif v > 1: r, g, b = (0, 0, 255)
             elif v > 0: r, g, b = (0, 255, 0)
             gc.SetPen(wx.Pen(wx.Colour(r, g, b), 2))
-            gc.DrawLines([(0, 0), (tg_px-self.px, tg_py-self.py)])
+            gc.DrawLines([(0, 0), (tg_px - self.px, tg_py - self.py)])
             
         if num_tl > 9:
             r, g, b = (0, 255, 0)
@@ -263,6 +330,10 @@ class QC(Vehicles):
         gc.Translate(self.trolly.px, self.trolly.py)
         self.trolly.draw(gc, self.holding_containers)
         gc.SetTransform(old_tr)
+        
+        if id_show:
+            gc.SetFont(wx.Font(5, wx.SWISS, wx.NORMAL, wx.NORMAL))
+            gc.DrawText(str(self.name + '-' + str(self.veh_id)), -container_hs*1.8, -container_vs)
 
 class SC(Vehicles):
     Vessels, QBs, TPs, QCs = None, None, None, None
@@ -537,7 +608,7 @@ class SC(Vehicles):
             self.pe_px, self.pe_py = self.px, self.py = self.tg_px, self.tg_py
             if self.evt_start: self.evt_start = False 
     
-    def draw(self, gc):
+    def draw(self, gc, id_show):
         if self.ss_ls:
             if self.thr_wp1:
                 gc.Rotate(math.pi / 2)
@@ -566,14 +637,61 @@ class SC(Vehicles):
         for c in self.holding_containers.values():
             c.draw(gc)
         tire_d = 5
-        gc.SetPen(wx.Pen(wx.Colour(226, 56, 20), 1))
+#        gc.SetPen(wx.Pen(wx.Colour(226, 56, 20), 1))
+#        gc.DrawLines([(self.lu_px, self.lu_py), (self.lu_px + SC.sx, self.lu_py)])
+#        gc.DrawLines([(self.lu_px, self.lu_py + SC.sy), (self.lu_px + SC.sx, self.lu_py + SC.sy)])
+#        gc.DrawLines([(self.lu_px, self.lu_py), (self.lu_px, self.lu_py + SC.sy)])
+#        gc.DrawLines([(self.lu_px + SC.sx, self.lu_py), (self.lu_px + SC.sx, self.lu_py + SC.sy)])
+#        gc.SetBrush(wx.Brush(wx.Colour(226, 56, 20)))
+#        gc.DrawLines([(self.lu_px + SC.sx, self.lu_py + 1), (self.lu_px + SC.sx - container_vs * 0.7, self.lu_py + 1), (self.lu_px + SC.sx - container_vs * 0.7, self.lu_py + SC.sy / 2), (self.lu_px + SC.sx, self.lu_py + SC.sy / 2)])
+        gc.SetPen(wx.Pen(wx.Colour(226, 56, 20), 0.2))
+#        gc.DrawCircles([(self.lu_px,self.lu_px+tire_d), (self.lu_py-tire_d,self.lu_py+SC.sy+tire_d)])
+        
         gc.DrawLines([(self.lu_px, self.lu_py), (self.lu_px + SC.sx, self.lu_py)])
         gc.DrawLines([(self.lu_px, self.lu_py + SC.sy), (self.lu_px + SC.sx, self.lu_py + SC.sy)])
         gc.DrawLines([(self.lu_px, self.lu_py), (self.lu_px, self.lu_py + SC.sy)])
         gc.DrawLines([(self.lu_px + SC.sx, self.lu_py), (self.lu_px + SC.sx, self.lu_py + SC.sy)])
+        gc.DrawRectangle(self.lu_px + SC.sx, self.lu_py + SC.sy * 0.1, SC.sy * 0.4, SC.sy * 0.4)
+#        gc.DrawLines([(self.lu_px+tire_d*0.2,self.lu_py),(self.lu_px,self.lu_py+tire_d*0.5),(self.lu_px + SC.sx*0.5-tire_d*0.2,self.lu_py)])
+###
+        clr = wx.Colour(227, 74, 0)
+        gc.SetPen(wx.Pen(clr, 0))
+        gc.SetBrush(wx.Brush(clr))
+        path = gc.CreatePath()
+        path.AddLineToPoint(self.lu_px + SC.sx * 0.15, self.lu_py)
+        path.AddCurveToPoint(self.lu_px + SC.sx * 0.25, self.lu_py - SC.sy * 0.3, self.lu_px + SC.sx * 0.25, self.lu_py - SC.sy * 0.3,
+                              self.lu_px + SC.sx * 0.35, self.lu_py)
+        gc.DrawPath(path)
+        
+        path = gc.CreatePath()
+        path.AddLineToPoint(self.lu_px + SC.sx * 0.65, self.lu_py)
+        path.AddCurveToPoint(self.lu_px + SC.sx * 0.75, self.lu_py - SC.sy * 0.3, self.lu_px + SC.sx * 0.75, self.lu_py - SC.sy * 0.3,
+                              self.lu_px + SC.sx * 0.85, self.lu_py)
+        gc.DrawPath(path)
+        
+        path = gc.CreatePath()
+        path.AddLineToPoint(self.lu_px + SC.sx * 0.15, self.lu_py + SC.sy)
+        path.AddCurveToPoint(self.lu_px + SC.sx * 0.25, self.lu_py + SC.sy + SC.sy * 0.3, self.lu_px + SC.sx * 0.25, self.lu_py + SC.sy + SC.sy * 0.3,
+                              self.lu_px + SC.sx * 0.35, self.lu_py + SC.sy)
+        gc.DrawPath(path)
+        
+        path = gc.CreatePath()
+        path.AddLineToPoint(self.lu_px + SC.sx * 0.65, self.lu_py + SC.sy)
+        path.AddCurveToPoint(self.lu_px + SC.sx * 0.75, self.lu_py + SC.sy + SC.sy * 0.3, self.lu_px + SC.sx * 0.75, self.lu_py + SC.sy + SC.sy * 0.3,
+                              self.lu_px + SC.sx * 0.85, self.lu_py + SC.sy)
+        gc.DrawPath(path)
+                  
+#        gc.SetPen(wx.Pen(wx.Colour(0, 0, 250), 1))
+#        gc.DrawRectangle(self.lu_px, self.lu_py,SC.sx,SC.sy)
         gc.SetBrush(wx.Brush(wx.Colour(226, 56, 20)))
+        
         gc.DrawLines([(self.lu_px + SC.sx, self.lu_py + 1), (self.lu_px + SC.sx - container_vs * 0.7, self.lu_py + 1), (self.lu_px + SC.sx - container_vs * 0.7, self.lu_py + SC.sy / 2), (self.lu_px + SC.sx, self.lu_py + SC.sy / 2)])
         
+        if id_show:
+            gc.SetFont(wx.Font(5, wx.SWISS, wx.NORMAL, wx.NORMAL))
+            gc.DrawText(str(self.name + '-' + str(self.veh_id)), -container_hs * 1.5, 0)
+#        gc.DrawLines([(self.lu_px + SC.sx + container_vs, self.lu_py + SC.sy / 2), (self.lu_px + SC.sx + container_vs, self.lu_py + SC.sy / 2)])
+#        gc.DrawRectangle(-SC.sx / 2, -SC.sy / 2, SC.sx, SC.sy)
 class YC(Vehicles):
     TPs, Blocks = None, None
     tro_sx, tro_sy = container_vs * 0.8, container_hs * 0.8
@@ -609,7 +727,7 @@ class YC(Vehicles):
         #trolly operating start time
         self.tro_mf_time = None
     
-    def draw(self, gc):
+    def draw(self, gc, id_show):
         gc.SetPen(wx.Pen('purple', 0))
         change_b_color(gc, 'purple')
         gc.DrawRectangle(-container_vs * 1.1 - YC.sy / 2, -container_hs * 1.1 / 2, container_vs * 1.1, container_hs * 1.1)
@@ -619,7 +737,11 @@ class YC(Vehicles):
         old_tr = gc.GetTransform()
         gc.Translate(self.trolly.px, self.trolly.py)
         self.trolly.draw(gc, self.holding_containers)
-        gc.SetTransform(old_tr)    
+        gc.SetTransform(old_tr)
+        
+        if id_show:
+            gc.SetFont(wx.Font(5, wx.SWISS, wx.NORMAL, wx.NORMAL))
+            gc.DrawText(str(self.name + '-' + str(self.veh_id)), -container_hs, -container_hs)    
     
     def calc_yc_pos(self, evt_id, is_tg_evt):
         evt = self.evt_seq[evt_id]

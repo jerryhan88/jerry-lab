@@ -41,12 +41,15 @@ class Bitt(object):
         self.px, self.py = px, py
     def __repr__(self):
         return self.name + str(self.id)
-    def draw(self, gc):
+    def draw(self, gc, id_show):
         ## draw Bit
         bitt_clr = wx.Colour(251, 194, 0)
         gc.SetBrush(wx.Brush(bitt_clr))
         gc.SetPen(wx.Pen(bitt_clr, 0))
         gc.DrawRectangle(0, 0.5, Bitt.sx, Bitt.sy)
+        if id_show:
+            gc.SetFont(wx.Font(5, wx.SWISS, wx.NORMAL, wx.NORMAL))
+            gc.DrawText(str(self.name + '-' + str(self.id)), -container_hs, -container_vs)
     
 class Evt(object):
     def __init__(self, dt_txt, vehicle, work_type, c_id, operation, v_info, state, pos=None):
@@ -58,7 +61,7 @@ class Evt(object):
 
 class Vessel(object):
     Bitts = None
-    LOA = container_hs * 19
+    LOA = container_hs * 21
     Beam = container_vs * (13 + 4)
     num_of_bay, num_of_stack = 51, 13
     btn_bay = 1.2
@@ -87,23 +90,17 @@ class Vessel(object):
              
         for x in xrange(self.num_of_stack):
             self.stack_pos_info[x + 1] = x * container_vs + container_vs / 2 + self.margin_py
-        
+
         self.v_d_p = [(0, Vessel.Beam * 0.15),
                       (Vessel.LOA * 0.05, Vessel.Beam * 0.05),
                       (Vessel.LOA * 0.1, 0),
-                      (Vessel.LOA * 0.75, 0),
-                      (Vessel.LOA * 0.90, Vessel.Beam * 0.02),
-                      (Vessel.LOA * 0.95, Vessel.Beam * 0.1),
-                      (Vessel.LOA * 0.97, Vessel.Beam * 0.2),
-                      (Vessel.LOA, Vessel.Beam * 0.5),
-                      (Vessel.LOA * 0.97, Vessel.Beam * 0.8),
-                      (Vessel.LOA * 0.95, Vessel.Beam * 0.9),
-                      (Vessel.LOA * 0.90, Vessel.Beam * 0.98),
-                      (Vessel.LOA * 0.75, Vessel.Beam),
+                      (Vessel.LOA * 0.77, 0),
+                      (Vessel.LOA * 0.77, Vessel.Beam),
                       (Vessel.LOA * 0.1, Vessel.Beam),
                       (Vessel.LOA * 0.05, Vessel.Beam * 0.95),
                       (0, Vessel.Beam * 0.85),
                       (0, Vessel.Beam * 0.15)]
+        
         mg = 2
         self.hatch = [(self.margin_px - mg, self.margin_py - mg),
                       (self.drawing_bays_px[-1] + container_hs / 2 + mg, self.margin_py - mg),
@@ -152,13 +149,21 @@ class Vessel(object):
     def update(self, simul_clock):
         self.update_pos(simul_clock)
         
-    def draw(self, gc):
+    def draw(self, gc, id_show):
         #draw vessel surface
         if self.isVisible:
             gc.SetPen(wx.Pen(wx.BLACK, 1))
             gc.SetBrush(wx.Brush(wx.Colour(125, 160, 255)))       
-#            gc.DrawRectangle(0, 0, Vessel.LOA, Vessel.Beam)
-            gc.DrawLines(self.v_d_p)
+            path = gc.CreatePath()
+            for i, pos in enumerate(self.v_d_p):
+                px, py = pos
+                if i == 4:
+                    cpx1, cpy1 = Vessel.LOA * 0.95, Vessel.Beam * 0.4
+                    cpx2, cpy2 = Vessel.LOA * 0.95, Vessel.Beam * 0.6
+                    path.AddCurveToPoint(cpx1, cpy1, cpx2, cpy2, px, py)
+                else:
+                    path.AddLineToPoint(px, py)
+            gc.DrawPath(path)
             gc.SetPen(wx.Pen(wx.Colour(210, 209, 208), 0))
             gc.SetBrush(wx.Brush(wx.Colour(210, 209, 208)))
             gc.DrawLines(self.hatch)
@@ -179,6 +184,9 @@ class Vessel(object):
                 gc.Translate(c.px, c.py)
                 c.draw(gc)
                 gc.SetTransform(old_tr)
+        if id_show:
+            gc.SetFont(wx.Font(5, wx.SWISS, wx.NORMAL, wx.NORMAL))
+            gc.DrawText(self.name + '/' + str(self.voyage), -container_hs, 0)
             
     def set_start_evt_date(self):
         start_evt = self.evt_seq[0]

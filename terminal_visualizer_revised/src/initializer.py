@@ -7,14 +7,18 @@ def run(real_log=True, checking_log=False):
     log_text = open('real_log_sorted_by_dt')
     for l in log_text.readlines():
         e = l[:-1].split('_')
+#        print e
+#        assert False
         EVT.append(e)
+#        print e
+#    assert False
     vessels, qcs, ycs, scs, containers = [], [], [], [], []
     init_real_log(vessels, qcs, ycs, scs, containers, EVT)
     if checking_log: 
         wrong_c = check_c_log(containers)
         wc_set, c_set = set(wrong_c), set(containers)
-        print 'correct moving container : ', c_set - wc_set 
-        print 'wrong moving container : ', wc_set
+        print 'correct moving container : ', len(c_set - wc_set), c_set - wc_set 
+        print 'wrong moving container : ', len(wc_set), wc_set
         wrong_v = check_v_log(vessels, qcs, ycs, scs)
         print 'wrong moving vehicles : '
         for v in wrong_v:
@@ -42,7 +46,8 @@ def init_real_log(vessels, qcs, ycs, scs, containers, EVT):
             target_v.evt_seq.append(Evt(dt, vehicle, work_type, c_id, operation, v_info, state, pos))
         elif vehicle[:3] == 'STS':
             # ex : 2012-02-14-10-59-20_STS101_TwistLock_HLXU3395821_LOADING_MCEN/003/2012_N
-            dt, vehicle, work_type, c_id, pos, operation, v_info, state = e
+            print e
+            dt, vehicle, work_type, c_id, pos, operation, v_info, state , _ = e
             #  when state is not 'N', what should I do?
             target_qc = None
             qc_id = int(vehicle[3:]) 
@@ -110,7 +115,7 @@ def check_v_log(vessels, qcs, ycs, scs):
                 ce, ne = v.evt_seq[ce_id], v.evt_seq[ne_id]
                 c_ms_wt, n_ms_wt = ce.work_type, ne.work_type
                 if (c_ms_wt == 'TwistLock' and n_ms_wt == 'TwistLock') or (c_ms_wt == 'TwistUnlock' and n_ms_wt == 'TwistUnlock'):
-                    v.wrong_evt_id = (ce_id, ce.c_id, c_ms_wt,ne_id,ne.c_id, n_ms_wt )
+                    v.wrong_evt_id = (ce_id, ce.c_id, c_ms_wt, ne_id, ne.c_id, n_ms_wt)
                     wront_v.append(v)
                     break
     return wront_v

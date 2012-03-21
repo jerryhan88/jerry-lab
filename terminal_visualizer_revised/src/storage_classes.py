@@ -18,7 +18,7 @@ class QB(Storage):
         Storage.__init__(self)
         self.name, self.id = 'QC Buffer', id
         self.px, self.py = px, py
-    def draw(self, gc):
+    def draw(self, gc, id_show):
         gc.SetPen(wx.Pen(wx.Colour(251, 194, 0), 0.5))
         gc.DrawLines([(0, 0), (l_sx, 0)])
         gc.DrawLines([(0, QB.sy), (l_sx, QB.sy)])
@@ -27,6 +27,9 @@ class QB(Storage):
             gc.Translate(c.px, c.py)
             c.draw(gc)
             gc.SetTransform(old_tr)
+        if id_show:
+            gc.SetFont(wx.Font(5, wx.SWISS, wx.NORMAL, wx.NORMAL))
+            gc.DrawText(str(self.name + '-' + str(self.id)), -container_hs, -container_hs)
 class TP(Storage):
     num_of_stacks = 4
     sx, sy = container_vs * 1.2, container_hs * 1.2
@@ -43,7 +46,7 @@ class TP(Storage):
                       (container_vs * TP.num_of_stacks + TP.sx * 2.6 + mg, TP.sy + mg),
                       (-mg, TP.sy + mg)
                       ]
-    def draw(self, gc):
+    def draw(self, gc, id_show):
         gc.SetPen(wx.Pen(wx.Colour(210, 209, 208), 0))
         gc.SetBrush(wx.Brush(wx.Colour(210, 209, 208)))
         gc.DrawLines(self.bg_ps)
@@ -59,6 +62,9 @@ class TP(Storage):
             gc.Translate(c.px, c.py)
             c.draw(gc)
             gc.SetTransform(old_tr)
+        if id_show:
+            gc.SetFont(wx.Font(5, wx.SWISS, wx.NORMAL, wx.NORMAL))
+            gc.DrawText(str(self.name + '-' + str(self.id)), -container_hs * 0.6, -container_vs * 1.6)
 class Block(Storage):
     num_of_bays = 97
     num_of_stacks = 8
@@ -85,7 +91,7 @@ class Block(Storage):
                       (container_vs * Block.num_of_stacks + mg, Block.bay_pos_info[97]*1.96 + container_hs / 2 + mg),
                       (-mg, Block.bay_pos_info[97]*1.96 + container_hs / 2 + mg),
                       ]
-    def draw(self, gc):
+    def draw(self, gc, id_show):
         gc.SetPen(wx.Pen(wx.Colour(210, 209, 208), 0))
         gc.SetBrush(wx.Brush(wx.Colour(210, 209, 208)))
         gc.DrawLines(self.bg_ps)
@@ -93,6 +99,12 @@ class Block(Storage):
         gc.SetPen(wx.Pen(wx.Colour(100, 100, 100), 0.5))
         for x in xrange((Block.num_of_bays - 1) // 2 + 1):
             gc.DrawLines([(0, container_hs * x), (container_vs * Block.num_of_stacks , container_hs * x)])
+            if id_show:
+                if x * 4 < 10:
+                    px = container_vs * Block.num_of_stacks + container_vs * 1.5
+                else:
+                    px = container_vs * Block.num_of_stacks + container_vs * 1.1
+                gc.DrawText(str(x * 4), px , container_hs * x - container_vs * 0.2)
         for x in xrange(Block.num_of_stacks + 1):
             gc.DrawLines([(container_vs * x, 0), (container_vs * x , container_hs * (Block.num_of_bays - 1) // 2)])
         for c in self.holding_containers.values():
@@ -100,3 +112,6 @@ class Block(Storage):
             gc.Translate(c.px, c.py)
             c.draw(gc)
             gc.SetTransform(old_tr)
+        if id_show:
+            gc.SetFont(wx.Font(5, wx.SWISS, wx.NORMAL, wx.NORMAL))
+            gc.DrawText(str(self.name + '-' + str(self.id)), -container_hs * 0.4 , -container_vs * 1.5)
