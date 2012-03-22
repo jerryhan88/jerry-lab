@@ -57,9 +57,11 @@ class QC(Vehicles):
         self.calc_tro_ori_py = lambda res : res.py - (self.py - QC.sy)
         #performance and workload
         self.cur_time_interval = []
+        self.is_twin = False
+        self.max_productivity = 35
         
         
-        self.bridge_sx = container_hs * 1.2
+        self.bridge_sx = container_hs * 0.8
         
         self.bridge_sy = container_hs * 2.7
          
@@ -122,9 +124,9 @@ class QC(Vehicles):
             bay_id = int(ne_pos[2:4])
             px = self.target_v.px + self.target_v.bay_pos_info[bay_id]
             return px 
-            
+        
         if pe_pos:
-            if pos[:2] == 'SB' and pe_pos[7:-2] == 'Lane':
+            if pos[:2] == 'SB' and pe_pos[7:-1] == 'Lane':
                 bay_id = int(pos[2:4])
                 px = self.target_v.px + self.target_v.bay_pos_info[bay_id]
             elif pos[7:-1] == 'Lane' and pe_pos[:2] == 'SB':
@@ -135,12 +137,15 @@ class QC(Vehicles):
                 bay_id = int(ne_pos[2:4]) 
                 px = self.target_v.px + self.target_v.bay_pos_info[bay_id]
             elif pos[:2] == 'SB' and pe_pos[:2] == 'SB':
+                bay_id = int(pos[2:4]) 
+                px = self.target_v.px + self.target_v.bay_pos_info[bay_id]
+            else:
                 assert False
         else:
 #            print pos
             if pos[:2] == 'SB':
                 bay_id_1 = int(pos[2:4]) + 1
-                px = self.target_v.px + self.target_v.bay_pos_info[bay_id_1]
+                px = self.target_v.px + self.target_v.bay_pos_info[bay_id_1 - 1]
             elif pos[7:-1] == 'Lane':
                 if wt == 'TwistLock':
 #                    ne = self.evt_seq[evt_id - 1]
@@ -148,8 +153,11 @@ class QC(Vehicles):
                     pass
                 else:
                     ne = self.evt_seq[evt_id + 1]
-                    print ne
-                
+                    pos = ne.pos
+                    bay_id_1 = int(pos[2:4]) + 1
+                    px = self.target_v.px + self.target_v.bay_pos_info[bay_id_1 - 1]
+            else:
+                assert False
         return px
     
     def calc_tro_pos(self, target_evt_id):
@@ -159,7 +167,7 @@ class QC(Vehicles):
             stack_id = int(pos[5:7])
             py = self.calc_tro_ori_py(self.target_v) + self.target_v.stack_pos_info[stack_id]
         elif (wt == 'TwistUnlock' and oper == 'DISCHARGING') or (wt == 'TwistLock' and oper == 'LOADING'):
-            qb_id = int(pos[-2:])
+            qb_id = int(pos[-1:])
             self.target_qb = QC.QBs[qb_id]
             py = self.calc_tro_ori_py(self.target_qb) + self.target_qb.v_c_pos_info
         else:
@@ -180,9 +188,19 @@ class QC(Vehicles):
         self.tg_px = self.calc_qc_pos(target_evt_id, True)
         self.trolly.tg_py = self.calc_tro_pos(target_evt_id)
         
+#        ne = self.evt_seq[target_evt_id + 1]
+#        
+#        if self.target_evt.dt == ne.dt:
+#            self.is_twin = True
+#            center_bay = (int(ne.pos[2:4])+int(self.target_evt.pos[2:4]))//2
+#            self.tg_px = self.target_v.px + self.target_v.bay_pos_info[center_bay]
+#        else:
+#            self.is_twin = False
+            
+        
         if target_evt_id == 0:
             self.pe_time = self.tg_time - timedelta(seconds=5)
-            self.pe_px = self.px = self.tg_px
+            self.pe_px = self.px = self.tg_px - container_hs * 2
             self.trolly.pe_px, self.trolly.pe_py = self.trolly.px, self.trolly.py = 0 , container_hs * 4
         else:
             if self.evt_start:
@@ -244,7 +262,7 @@ class QC(Vehicles):
             assert False
         tg_container.target_evt_id += 1 
         
-    def draw(self, gc, id_show):
+    def draw(self, gc, id_show, is_gauge_show, is_al_loading_show, is_al_discharging_show):
         gc.SetPen(wx.Pen('black', 0.5))
         r, g, b = (0, 0, 0)
         brushclr = wx.Colour(r, g, b)
@@ -292,7 +310,7 @@ class QC(Vehicles):
         for e in self.cur_time_interval:
             if e.work_type == 'TwistLock':
                 num_tl += 1
-            elif e.work_type == 'TwistUnlock' and e.operation == 'DISCHARGING':
+            elif is_al_discharging_show and (e.work_type == 'TwistUnlock' and e.operation == 'DISCHARGING'):
                 tg_container = QC.Containers[e.c_id]
                 e_id = tg_container.target_evt_id
                 if e_id == -1: e_id = 0
@@ -303,39 +321,51 @@ class QC(Vehicles):
                         t_dic[tp_id] = 1
                     else:
                         t_dic[tp_id] += 1
+            elif is_al_loading_show and (e.work_type == 'TwistLock' and e.operation == 'LOADING'):
+                tg_container = QC.Containers[e.c_id]
+                e_id = tg_container.target_evt_id
+#                print tg_container, e_id
+#                assert False
+                
                         
         for k, v in t_dic.items():
             tg_px, tg_py = QC.TPs[k].px, QC.TPs[k].py
-            if v > 2: r, g, b = (255, 0, 0)
-            elif v > 1: r, g, b = (0, 0, 255)
-            elif v > 0: r, g, b = (0, 255, 0)
-            gc.SetPen(wx.Pen(wx.Colour(r, g, b), 2))
-            gc.DrawLines([(0, 0), (tg_px - self.px, tg_py - self.py)])
+            if v > 10: 
+                r, g, b = (255, 0, 0)
+                gc.SetPen(wx.Pen(wx.Colour(r, g, b), 4))
+            elif v > 5: 
+                r, g, b = (0, 0, 255)
+                gc.SetPen(wx.Pen(wx.Colour(r, g, b), 2))
+            elif v > 0: 
+                r, g, b = (0, 255, 0)
+                gc.SetPen(wx.Pen(wx.Colour(r, g, b), 0.5))
             
-        if num_tl > 9:
-            r, g, b = (0, 255, 0)
+            gc.DrawLines([(0, 0), (tg_px - self.px, tg_py - self.py)])
+         
+        if is_gauge_show:
+            if num_tl >= 25:
+                r, g, b = (0, 100, 0)
+            elif num_tl < 25:
+                r, g, b = (0, 200, 0)
+            elif num_tl < 20:
+                r, g, b = (30, 255, 30)
+            elif num_tl < 15:
+                r, g, b = (77, 255, 77)
+            elif num_tl < 10:
+                r, g, b = (155, 255, 155)
+            elif num_tl < 5:
+                r, g, b = (255, 0, 0)
+            
             brushclr = wx.Colour(r, g, b)
             gc.SetPen(wx.Pen(brushclr, 0))
             gc.SetBrush(wx.Brush(brushclr))
-            gc.DrawRectangle(container_hs / 2, -container_vs / 2, container_vs * 2, container_vs / 2)
-        if num_tl > 12:
-            r, g, b = (0, 0, 255)
-            brushclr = wx.Colour(r, g, b)
-            gc.SetPen(wx.Pen(brushclr, 0))
-            gc.SetBrush(wx.Brush(brushclr))
-            gc.DrawRectangle(container_hs / 2, -container_vs / 2 * 2, container_vs * 2, container_vs / 2)
-        if num_tl > 14:
-            r, g, b = (255, 0, 0)
-            brushclr = wx.Colour(r, g, b)
-            gc.SetPen(wx.Pen(brushclr, 0))
-            gc.SetBrush(wx.Brush(brushclr))
-            gc.DrawRectangle(container_hs / 2, -container_vs / 2 * 3, container_vs * 2, container_vs / 2)
-        if num_tl > 16:
-            r, g, b = (0, 0, 0)
-            brushclr = wx.Colour(r, g, b)
-            gc.SetPen(wx.Pen(brushclr, 0))
-            gc.SetBrush(wx.Brush(brushclr))
-            gc.DrawRectangle(container_hs / 2, -container_vs / 2 * 4, container_vs * 2, container_vs / 2)
+            sy = container_hs * num_tl / self.max_productivity
+            gc.DrawRectangle(-container_vs, -QC.sy - container_hs * 0.3 - sy, container_vs * 2, sy)
+            bt = 1
+            gc.SetPen(wx.Pen('black', 0.2))
+#            gc.DrawRectangle(-container_vs - bt, -QC.sy - container_hs * 1.5 + bt, container_vs * 2 + bt * 2, container_hs * 1.5 + bt)
+            gc.DrawLines([(-container_vs - bt, -QC.sy - container_hs * 1.5 + bt), (-container_vs + container_vs * 2 + bt, -QC.sy - container_hs * 1.5 + bt)])
+#            gc.DrawLines([(-container_vs - bt, -QC.sy - container_hs * 1.5 + bt), (-container_vs + container_vs * 2 + bt, -QC.sy - container_hs * 1.5 + bt)])
             
         old_tr = gc.GetTransform()
         gc.Translate(self.trolly.px, self.trolly.py)
@@ -440,8 +470,10 @@ class SC(Vehicles):
         elif pos[:2] == 'LM':
             tp_id, stack_id = pos[3:5], int(pos[8:])
             target_tp = SC.TPs[tp_id]
-            px, py = target_tp.px + target_tp.stack_pos_info[stack_id], target_tp.py + target_tp.bay_pos_info
-            
+            if stack_id < 4:
+                px, py = target_tp.px + target_tp.stack_pos_info[stack_id], target_tp.py + target_tp.bay_pos_info
+            else:
+                px, py = target_tp.px + target_tp.stack_pos_info[stack_id], target_tp.py + target_tp.bay_pos_info + container_hs * 1.2
             if pe_evt and pe_evt.pos[:2] == 'LM':
                 ls_ls = True
             elif pe_evt and pe_evt.pos[:3] == 'STS':
@@ -463,7 +495,7 @@ class SC(Vehicles):
         
         if target_evt_id == 0:
             self.pe_time = self.tg_time - timedelta(seconds=8)
-            self.pe_px, self.pe_py = self.px, self.py = self.tg_px - container_hs * 10, self.tg_py
+            self.pe_px, self.pe_py = self.px, self.py = self.tg_px - container_hs * 5, self.tg_py
             self.ss_ls = True
         else:
             if self.evt_start:
@@ -480,20 +512,20 @@ class SC(Vehicles):
                 self.waypoint2_time = self.pe_time + timedelta(0, ti_ts * (6 / 10))
                 self.waypoint3_time = self.pe_time + timedelta(0, ti_ts * (9 / 10))
                 self.wp1_px, self.wp1_py = (self.pe_px + container_hs * 10, self.pe_py)
-                self.wp2_px, self.wp2_py = (self.pe_px + container_hs * 10, self.tg_py - container_hs)
-                self.wp3_px, self.wp3_py = (self.tg_px, self.tg_py - container_hs)
+                self.wp2_px, self.wp2_py = (self.pe_px + container_hs * 10, self.tg_py - container_hs * 2.4)
+                self.wp3_px, self.wp3_py = (self.tg_px, self.tg_py - container_hs * 2.4)
             elif self.ls_ss:
                 self.waypoint1_time = self.pe_time + timedelta(0, ti_ts * (0.1 / 10))
                 self.waypoint2_time = self.pe_time + timedelta(0, ti_ts * (4 / 10))
                 self.waypoint3_time = self.pe_time + timedelta(0, ti_ts * (9 / 10))
-                self.wp1_px, self.wp1_py = (self.pe_px, self.pe_py - container_hs)
-                self.wp2_px, self.wp2_py = (self.pe_px - container_hs * 4, self.pe_py - container_hs)
+                self.wp1_px, self.wp1_py = (self.pe_px, self.pe_py - container_hs * 2.4)
+                self.wp2_px, self.wp2_py = (self.pe_px - container_hs * 4, self.pe_py - container_hs * 2.4)
                 self.wp3_px, self.wp3_py = (self.pe_px - container_hs * 4, self.tg_py)
             elif self.ls_ls:
                 self.waypoint1_time = self.pe_time + timedelta(0, ti_ts * (0.1 / 10))
                 self.waypoint2_time = self.pe_time + timedelta(0, ti_ts * (9 / 10))
-                self.wp1_px, self.wp1_py = (self.pe_px, self.pe_py - container_hs)
-                self.wp2_px, self.wp2_py = (self.tg_px, self.tg_py - container_hs)
+                self.wp1_px, self.wp1_py = (self.pe_px, self.pe_py - container_hs * 2.4)
+                self.wp2_px, self.wp2_py = (self.tg_px, self.tg_py - container_hs * 2.4)
             elif self.ss_ss:
                 pass
             else:
@@ -514,7 +546,10 @@ class SC(Vehicles):
         elif wt == 'TwistUnlock' and oper == 'DISCHARGING':
             tg_container = self.holding_containers.pop(c_id)
             stack_id = int(pos[8:])
-            tg_container.px, tg_container.py = self.target_tp.stack_pos_info[stack_id], self.target_tp.bay_pos_info
+            if stack_id < 4: 
+                tg_container.px, tg_container.py = self.target_tp.stack_pos_info[stack_id], self.target_tp.bay_pos_info
+            else:
+                tg_container.px, tg_container.py = self.target_tp.stack_pos_info[stack_id], self.target_tp.bay_pos_info + container_hs * 1.2
             save_c_hs = tg_container.hs 
             tg_container.hs = tg_container.vs
             tg_container.vs = save_c_hs
@@ -791,7 +826,7 @@ class YC(Vehicles):
     
     def set_evt_data(self, target_evt_id, simul_clock):
         self.target_evt = self.evt_seq[target_evt_id]
-        self.tg_time, self.tg_container, self.tg_work_type, self.tg_operation = self.target_evt.dt, self.target_evt.c_id, self.target_evt.work_type, self.target_evt.operation
+        self.tg_time, self.tg_container, self.tg_work_type, self.tg_operation, self.pos = self.target_evt.dt, self.target_evt.c_id, self.target_evt.work_type, self.target_evt.operation, self.target_evt.pos
         self.tg_py = self.calc_yc_pos(target_evt_id, True)
         self.trolly.tg_px = self.calc_tro_pos(target_evt_id)
             
@@ -816,7 +851,10 @@ class YC(Vehicles):
 
     def update_container_ownership(self, simul_clock):
         if self.tg_work_type == 'TwistLock' and self.tg_operation == 'DISCHARGING':
-            tg_container = self.target_tp.holding_containers.pop(self.tg_container)
+            if self.pos[:2] == 'LM':
+                tg_container = self.target_tp.holding_containers.pop(self.tg_container)
+            else:
+                tg_container = self.target_block.holding_containers.pop(self.tg_container)
             tg_container.px, tg_container.py = 0, 0
             self.holding_containers[self.tg_container] = tg_container
         elif self.tg_work_type == 'TwistUnlock' and self.tg_operation == 'DISCHARGING':
@@ -829,7 +867,10 @@ class YC(Vehicles):
             self.holding_containers[self.tg_container] = tg_container
         elif self.tg_work_type == 'TwistUnlock' and self.tg_operation == 'LOADING':
             tg_container = self.holding_containers.pop(self.tg_container)
-            tg_container.px, tg_container.py = self.target_tp.stack_pos_info[self.stack_id], self.target_tp.bay_pos_info
+            if self.stack_id < 4:
+                tg_container.px, tg_container.py = self.target_tp.stack_pos_info[self.stack_id], self.target_tp.bay_pos_info
+            else:
+                tg_container.px, tg_container.py = self.target_tp.stack_pos_info[self.stack_id], self.target_tp.bay_pos_info + container_hs
             self.target_tp.holding_containers[self.tg_container] = tg_container
         else:
             assert False
@@ -850,3 +891,4 @@ class YC(Vehicles):
             self.trolly.px = self.trolly.pe_px = self.trolly.tg_px
             self.pe_time, self.pe_py = self.tg_time, self.tg_py
             if self.evt_start: self.evt_start = False
+

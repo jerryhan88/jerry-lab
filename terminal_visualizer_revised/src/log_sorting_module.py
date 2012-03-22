@@ -1,6 +1,7 @@
 from __future__ import division
 import datetime
-
+from random import randrange, seed
+seed(100)
 def dt_cmp(e1, e2):
     dt1_txt, dt2_txt = e1[0], e2[0]
     year, month, day, hour, minute, second = dt1_txt.split('-') 
@@ -69,11 +70,11 @@ for e in ori_EVT:
 #    if e[1][:2] == 'SH':
 #    if e[1][:3] == 'ASC':             
     c_id = None 
-    if e[1][:3] == 'ASC' and len(e)== len('2012-03-19-06-50-26_ASC021_1290568_2012-03-19-06-47-55_TwistUnlock_GESU6804037_LM-A2-TP3_LOADING_HNVN/002/2012_N'.split('_')):
+    if e[1][:3] == 'ASC' and len(e) == len('2012-03-19-06-50-26_ASC021_1290568_2012-03-19-06-47-55_TwistUnlock_GESU6804037_LM-A2-TP3_LOADING_HNVN/002/2012_N'.split('_')):
         c_id = e[5]
-    elif e[1][:3] == 'STS' and len(e)== len('2012-03-19-12-33-17_STS101_TwistLock_TPHU8144329_STS101-Lane3_LOADING_HNVN/002/2012_N'.split('_')):
+    elif e[1][:3] == 'STS' and len(e) == len('2012-03-19-12-33-17_STS101_TwistLock_TPHU8144329_STS101-Lane3_LOADING_HNVN/002/2012_N'.split('_')):
         c_id = e[3]
-    elif e[1][:2] == 'SH' and len(e)== len('2012-03-19-12-33-35_SH11_1290336_2012-03-19-12-32-44_TwistLock_UACU3562734_LM-A4-TP2_LOADING_HNVN/002/2012_N'.split('_')):
+    elif e[1][:2] == 'SH' and len(e) == len('2012-03-19-12-33-35_SH11_1290336_2012-03-19-12-32-44_TwistLock_UACU3562734_LM-A4-TP2_LOADING_HNVN/002/2012_N'.split('_')):
         c_id = e[5]
     elif e[1] == 'Vessel':
         pass
@@ -97,9 +98,12 @@ EVT.sort(dt_cmp)
 ori_EVT = EVT[:]
 EVT = []
 for e in ori_EVT:
-    if e[1][:3] =='STS':
-        if e[4][:3]!= 'STS':
-            e[4] = 'SB'+ e[4]
+    if e[1][:3] == 'STS':
+        if e[4][:3] != 'STS':
+            stack_id = e[4][3:5]
+            if int(stack_id) > 13:
+                e[4] = e[4][:3] + '0' + str(randrange(1,12)) + e[4][5:] 
+            e[4] = 'SB' + e[4]
             for i, t in enumerate(e):
                 if i != len(e) - 1:
                     f.write(t + '_')

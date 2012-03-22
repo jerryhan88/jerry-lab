@@ -15,13 +15,59 @@ TPs = {}
 SH = '02'
 SMI = '14'
 SS = '00'
+#SH = '03'
+#SMI = '06'
+#SS = '55'
 
-#SH = '09'
-#SMI = '19'
-#SS = '10'
-
-2012-03-19-02-14-00
-2012-03-19-14-30-00
+class Performance_dialog(wx.Dialog):
+    def __init__(self, parent):
+        wx.Dialog.__init__(self, parent, -1, 'Performance', pos=(1050, 150) , size=(200, 170))
+        self.SetBackgroundColour(wx.Colour(236, 233, 216))
+        bt = 8
+        qc = wx.StaticText(self, -1, 'QC', (22, 16))
+        px, py = qc.GetPosition()
+        sx, sy = qc.GetSize()
+        qc.SetFont(wx.Font(12, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+        gauge = wx.CheckBox(self, -1, "Gauge", (px + bt * 3, py + sy + bt), style=wx.NO_BORDER)
+        gauge.SetValue(True)
+        px, py = gauge.GetPosition()
+        sx, sy = gauge.GetSize()
+        a = wx.StaticText(self, -1, 'Allocation of Container', (px - bt * 3, py + sy + bt))
+        a.SetFont(wx.Font(12, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+        px, py = a.GetPosition()
+        sx, sy = a.GetSize()
+        al = wx.CheckBox(self, -1, "Loading", (px + bt * 3, py + sy + bt), style=wx.NO_BORDER)
+        px, py = al.GetPosition()
+        sx, sy = al.GetSize()
+        ad = wx.CheckBox(self, -1, "Discharging", (px, py + sy + bt), style=wx.NO_BORDER)
+        
+        self.Bind(wx.EVT_CHECKBOX, self.EvtCheckBox, gauge)
+        self.Bind(wx.EVT_CHECKBOX, self.EvtCheckBox, al)
+        self.Bind(wx.EVT_CHECKBOX, self.EvtCheckBox, ad)
+    
+    def EvtCheckBox(self, event):
+        ce = event.GetEventObject()
+        st = ce.GetLabelText()
+        print st
+        if st == 'Gauge' :
+            if ce.GetValue():
+                self.Parent.is_gauge_show = True
+            else:
+                self.Parent.is_gauge_show = False
+        elif st == 'Loading':
+            if ce.GetValue():
+                self.Parent.is_al_loading_show = True
+            else:
+                self.Parent.is_al_loading_show = False
+        elif st == 'Discharging':
+            if ce.GetValue():
+                self.Parent.is_al_discharging_show = True
+            else:
+                self.Parent.is_al_discharging_show = False    
+            
+#        if cb.Is3State():
+#            self.log.write("\t3StateValue: %s\n" % cb.Get3StateValue())
+        
 class Input_dialog(wx.Dialog):
     def __init__(self, parent, name, size=(800, 600), pos=(450, 170)):
         wx.Dialog.__init__(self, None, -1, 'Monitoring', pos , size)
@@ -40,7 +86,7 @@ class Input_dialog(wx.Dialog):
         vn_txt_px, vn_txt_py = vn_txt.GetPosition()
         vn_txt_sx, vn_txt_sy = vn_txt.GetSize()
         vy_txt = wx.StaticText(self, -1, 'Voyage', (20, c_begin_py + vn_txt_sy + margin))
-        v_name, vo_name = ['HNVN','MCEN', 'MAERSK'], ['01', '02', '03', '04', '05', '06', '07']
+        v_name, vo_name = ['HNVN', 'MCEN', 'WLTA', 'HUXA'], ['01', '02', '03', '04', '05', '06', '07']
         vy_txt_px, vy_txt_py = vy_txt.GetPosition()
         vy_txt_sx, vy_txt_sy = vy_txt.GetSize()
         
@@ -127,6 +173,8 @@ class Input_dialog(wx.Dialog):
         self.eh, self.emi, self.es = self.eh_txt.GetValue(), self.emi_txt.GetValue(), self.es_txt.GetValue()
         
         win = MainFrame(self)
+        dl = Performance_dialog(win)
+        dl.Show(True)
         win.Show(True)
         self.Show(False)
         
@@ -134,6 +182,9 @@ class MainFrame(wx.Frame):
     def __init__(self, input_info):
         wx.Frame.__init__(self, None, -1, 'Monitoring', size=(1024, 768), pos=(243, 80))
         self.input_info = input_info
+        self.is_gauge_show = True
+        self.is_al_loading_show = False
+        self.is_al_discharging_show = False
         f_sx, f_sy = self.GetSize()
         self.SetBackgroundColour(wx.Colour(236, 233, 216))
         self.SetAutoLayout(True)
@@ -212,16 +263,52 @@ class Input_View_Panel(wx.Panel):
             x.SetFont(wx.Font(13, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD))
         #Date/Time
         y_name1_px = 450
+        bt = 10
+        ch_margin = 2
         sdt_edt_txt = []
-        sdt_edt_txt.append(wx.StaticText(self, -1, str(start_time.year), (y_name1_px, py)))
-        sdt_edt_txt.append(wx.StaticText(self, -1, str(start_time.month), (y_name1_px + 48, py), size=(25, -1)))
-        sdt_edt_txt.append(wx.StaticText(self, -1, str(start_time.day), (y_name1_px + 70, py), size=(25, -1)))
-        sdt_edt_txt.append(wx.StaticText(self, -1, str(start_time.hour), (y_name1_px + 100, py), size=(25, -1)))
-        sdt_edt_txt.append(wx.StaticText(self, -1, ':', (y_name1_px + 120, py)))
-        sdt_edt_txt.append(wx.StaticText(self, -1, str(start_time.minute), (y_name1_px + 130, py), size=(25, -1)))
-        sdt_edt_txt.append(wx.StaticText(self, -1, ':', (y_name1_px + 155, py)))
-        sdt_edt_txt.append(wx.StaticText(self, -1, str(start_time.second), (y_name1_px + 170, py), size=(25, -1)))
-        sdt_edt_txt.append(wx.StaticText(self, -1, '-', (670, py - 2)))
+        t = wx.StaticText(self, -1, str(start_time.year), (y_name1_px, py))
+        sdt_edt_txt.append(t)
+        px, py = t.GetPosition()
+        sx, sy = t.GetSize()
+        t = wx.StaticText(self, -1, '-', (px + sx + bt + ch_margin, py - ch_margin))
+        sdt_edt_txt.append(t)
+        px, py = t.GetPosition()
+        sx, sy = t.GetSize()
+        t = wx.StaticText(self, -1, str(start_time.month), (px + sx + bt + ch_margin * 2, py + ch_margin))
+        sdt_edt_txt.append(t)
+        px, py = t.GetPosition()
+        sx, sy = t.GetSize()
+        t = wx.StaticText(self, -1, '-', (px + sx + bt + ch_margin, py - ch_margin))
+        sdt_edt_txt.append(t)
+        px, py = t.GetPosition()
+        sx, sy = t.GetSize()
+        t = wx.StaticText(self, -1, str(start_time.day), (px + sx + bt + ch_margin, py + 2))
+        sdt_edt_txt.append(t)
+        px, py = t.GetPosition()
+        sx, sy = t.GetSize()
+        t = wx.StaticText(self, -1, str(start_time.hour), (px + sx + bt * 2, py))
+        sdt_edt_txt.append(t)
+        px, py = t.GetPosition()
+        sx, sy = t.GetSize()
+        t = wx.StaticText(self, -1, ':', (px + sx, py))
+        sdt_edt_txt.append(t)
+        px, py = t.GetPosition()
+        sx, sy = t.GetSize()
+        t = wx.StaticText(self, -1, str(start_time.minute), (px + sx + bt, py))
+        sdt_edt_txt.append(t)
+        px, py = t.GetPosition()
+        sx, sy = t.GetSize()
+        t = wx.StaticText(self, -1, ':', (px + sx + bt, py))
+        sdt_edt_txt.append(t)
+        px, py = t.GetPosition()
+        sx, sy = t.GetSize()
+        t = wx.StaticText(self, -1, str(start_time.second), (px + sx + bt, py))
+        sdt_edt_txt.append(t)
+        px, py = t.GetPosition()
+        sx, sy = t.GetSize()
+        t = wx.StaticText(self, -1, '-', (px + sx + bt, py))
+        sdt_edt_txt.append(t)
+        
         y_name2_px = 700
         sdt_edt_txt.append(wx.StaticText(self, -1, str(end_time.year), (y_name2_px, py), size=(40, -1)))
         sdt_edt_txt.append(wx.StaticText(self, -1, str(end_time.month), (y_name2_px + 53, py), size=(25, -1)))
@@ -247,10 +334,10 @@ class Control_Panel(wx.Panel):
         total_time_interval = end_time - self.start_time 
         total_sec = total_time_interval.total_seconds()
 
-        self.time_flow = wx.Slider(self, -1, 0, 0, total_sec, (30, 10), (950, -1), wx.SL_HORIZONTAL)
+        self.time_flow = wx.Slider(self, -1, 0, 0, total_sec, (10, 10), (995, -1), wx.SL_HORIZONTAL)
         self.time_flow.SetConstraints(anchors.LayoutAnchors(self.time_flow, True, False, True, False))
         
-        self.simul_st, self.paly_speed = wx.StaticText(self, -1, self.simul_clock.ctime(), (100, 40)), wx.StaticText(self, -1, str(self.play_speed) + 'x', (500, 40))
+        self.simul_st, self.paly_speed = wx.StaticText(self, -1, self.simul_clock.ctime(), (410, 40)), wx.StaticText(self, -1, str(self.play_speed) + 'x', (825, 40))
         for x in [self.simul_st, self.paly_speed]:
             x.SetFont(wx.Font(13, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD))
 #            x.SetFont(wx.Font(13, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
@@ -258,14 +345,21 @@ class Control_Panel(wx.Panel):
         self.paly_speed.SetConstraints(anchors.LayoutAnchors(self.paly_speed, True, False, True, False))
         s_img, r_img, pa_img, pl_img = wx.Image('pic/stop.bmp', wx.BITMAP_TYPE_BMP), wx.Image("pic/reverse.bmp", wx.BITMAP_TYPE_BMP), wx.Image("pic/pause.bmp", wx.BITMAP_TYPE_BMP), wx.Image("pic/play.bmp", wx.BITMAP_TYPE_BMP) 
         s_bmp, r_bmp, pa_bmp, pl_bmp = s_img.Scale(30, 30), r_img.Scale(30, 30), pa_img.Scale(30, 30), pl_img.Scale(30, 30)
-        s_btn, r_btn , pa_btn, pl_btn = wx.BitmapButton(self, -1, wx.BitmapFromImage(s_bmp), (760, 35), (s_bmp.GetWidth() + 2, s_bmp.GetHeight() + 2)), wx.BitmapButton(self, -1, wx.BitmapFromImage(r_bmp), (790, 35), (r_bmp.GetWidth() + 2, r_bmp.GetHeight() + 2)), wx.BitmapButton(self, -1, wx.BitmapFromImage(pa_bmp), (820, 35), (pa_bmp.GetWidth() + 2, pa_bmp.GetHeight() + 2)), wx.BitmapButton(self, -1, wx.BitmapFromImage(pl_bmp), (850, 35), (pl_bmp.GetWidth() + 2, pl_bmp.GetHeight() + 2))        
+        py = 875
+        bt = 30
+        s_btn, r_btn , pa_btn, pl_btn = wx.BitmapButton(self, -1, wx.BitmapFromImage(s_bmp), (py, 35), (s_bmp.GetWidth() + 2, s_bmp.GetHeight() + 2)), wx.BitmapButton(self, -1, wx.BitmapFromImage(r_bmp), (py + bt, 35), (r_bmp.GetWidth() + 2, r_bmp.GetHeight() + 2)), wx.BitmapButton(self, -1, wx.BitmapFromImage(pa_bmp), (py + bt * 2, 35), (pa_bmp.GetWidth() + 2, pa_bmp.GetHeight() + 2)), wx.BitmapButton(self, -1, wx.BitmapFromImage(pl_bmp), (py + bt * 3, 35), (pl_bmp.GetWidth() + 2, pl_bmp.GetHeight() + 2))        
         for x in [s_btn, r_btn, pa_btn, pl_btn]:
             x.SetConstraints(anchors.LayoutAnchors(x, False, False, True, True))
         self.Bind(wx.EVT_BUTTON, self.time_flow_stop, s_btn)
         self.Bind(wx.EVT_BUTTON, self.time_flow_reverse, r_btn)
         self.Bind(wx.EVT_BUTTON, self.time_flow_pause, pa_btn)
         self.Bind(wx.EVT_BUTTON, self.time_flow_play, pl_btn)
-        
+        self.time_flow.Bind(wx.EVT_SCROLL_CHANGED, self.onChanged)
+    def onChanged(self, evt):
+        self.timer.Stop()
+        print evt.EventObject.GetMin(), evt.EventObject.GetMax() 
+        print evt.EventObject.GetRange()
+        print 'changed: %d' % evt.EventObject.GetValue()  
     def time_flow_stop(self, evt):
         self.time_flow.SetValue(0)
         self.Parent.simul_clock = self.start_time
@@ -276,6 +370,11 @@ class Control_Panel(wx.Panel):
         if not self.timer.IsRunning():
             self.timer.Start(frame_milsec)
         if self.Parent.play_speed > 0:
+            play_x = None
+            if self.Parent.play_speed < 10:
+                play_x = 1
+            elif self.Parent.play_speed >= 10:
+                play_x = 10
             self.Parent.play_speed -= play_x
             self.paly_speed.SetLabel(str(self.Parent.play_speed) + 'x')
         else:
@@ -292,6 +391,11 @@ class Control_Panel(wx.Panel):
     def time_flow_play(self, evt):
         self.Parent.isReverse_play = False
         if self.timer.IsRunning():
+            play_x = None
+            if self.Parent.play_speed < 10:
+                play_x = 1
+            elif self.Parent.play_speed >= 10:
+                play_x = 10    
             self.Parent.play_speed += play_x
             self.paly_speed.SetLabel(str(self.Parent.play_speed) + 'x')
         else: 
@@ -395,6 +499,10 @@ class Viewer_Panel(Drag_zoom_panel):
                     c.hs, c.vs = container_hs, container_vs
                     cur_pos = tg_evt.pos
                     bay_id, stack_id = int(cur_pos[2:4]), int(cur_pos[5:7]) 
+                    if bay_id % 2 == 0 :
+                        c.hs, c.vs = container_hs, container_vs
+                    else:
+                        c.hs, c.vs = container_hs / 2, container_vs
                     c.px, c.py = target_v.bay_pos_info[bay_id] , target_v.stack_pos_info[stack_id]
                     target_v.holding_containers[tg_evt.c_id] = c
                 else:
@@ -412,7 +520,7 @@ class Viewer_Panel(Drag_zoom_panel):
                     
             elif vehicle[:3] == 'STS' and work_type == 'TwistUnlock' and operation == 'DISCHARGING':
                 target_qc, target_qb = None , None
-                qc_id , qb_id = int(pos[3:6]) , int(pos[-2:])
+                qc_id , qb_id = int(pos[3:6]) , int(pos[-1:])
                 for qc in qcs:
                     if qc.veh_id == qc_id:
                         target_qc = qc
@@ -425,7 +533,7 @@ class Viewer_Panel(Drag_zoom_panel):
             elif vehicle[:2] == 'SH' and work_type == 'TwistLock' and operation == 'DISCHARGING':
                 if c.target_evt_id == -1:
                     target_qc, target_qb = None , None
-                    qc_id , qb_id = int(pos[3:6]) , int(pos[-2:])
+                    qc_id , qb_id = int(pos[3:6]) , int(pos[-1:])
                     for qc in qcs:
                         if qc.veh_id == qc_id:
                             target_qc = qc
@@ -631,7 +739,7 @@ class Viewer_Panel(Drag_zoom_panel):
             else:
                 block_id = tp_id = 'B' + str(x - 7)
             Blocks[block_id] = Block(block_id, block0_px + x * container_hs * 2.8, block0_py)
-            TPs[tp_id] = TP(tp_id, block0_px + x * container_hs * 2.8 + container_vs * 0.5, block0_py - container_hs * 3 / 2)
+            TPs[tp_id] = TP(tp_id, block0_px + x * container_hs * 2.8 + container_vs * 0.5, block0_py - container_hs * 5.5 / 2)
             
     def set_deco_pos(self):
         ### set Lines deco position
@@ -646,7 +754,7 @@ class Viewer_Panel(Drag_zoom_panel):
         return l2_py
     
     def update_picture(self, simul_clock):
-        for v in self.vessels + self.qcs + self.scs + self.ycs:
+        for v in self.vessels + self.scs + self.qcs + self.ycs:
             if isinstance(v, Vessel):
                 v.update(simul_clock)
             elif not v.evt_end:
@@ -687,7 +795,10 @@ class Viewer_Panel(Drag_zoom_panel):
         for x in self.vessels + self.qcs + self.ycs + self.scs:
 #            print x, x.px, x.py
             gc.Translate(x.px, x.py)
-            x.draw(gc, self.id_show)
+            if isinstance(x, QC):
+                x.draw(gc, self.id_show, self.Parent.is_gauge_show, self.Parent.is_al_loading_show, self.Parent.is_al_discharging_show)
+            else:
+                x.draw(gc, self.id_show)
             gc.SetTransform(old_tr)
         
 if __name__ == '__main__':

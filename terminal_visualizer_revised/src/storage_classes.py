@@ -31,21 +31,26 @@ class QB(Storage):
             gc.SetFont(wx.Font(5, wx.SWISS, wx.NORMAL, wx.NORMAL))
             gc.DrawText(str(self.name + '-' + str(self.id)), -container_hs, -container_hs)
 class TP(Storage):
-    num_of_stacks = 4
+    num_of_stacks = 8
     sx, sy = container_vs * 1.2, container_hs * 1.2
     bay_pos_info = sy / 2
     stack_pos_info = {}
-    for x in xrange(num_of_stacks): stack_pos_info[x + 1] = sx / 2 + container_vs * x * 2
+    for x in xrange(num_of_stacks):
+        if x < 4:
+            stack_pos_info[x + 1] = sx / 2 + container_vs * x * 2
+        else:
+            stack_pos_info[x + 1] = sx / 2 + container_vs * (x - 4) * 2
     def __init__(self, id, px, py):
         Storage.__init__(self)
         self.name, self.id = 'TP', id
         self.px, self.py = px, py
         mg = 2
         self.bg_ps = [(-mg, -mg),
-                      (container_vs * TP.num_of_stacks + TP.sx * 2.6 + mg, -mg),
-                      (container_vs * TP.num_of_stacks + TP.sx * 2.6 + mg, TP.sy + mg),
-                      (-mg, TP.sy + mg)
+                      (container_vs * TP.num_of_stacks / 2 + TP.sx * 2.6 + mg, -mg),
+                      (container_vs * TP.num_of_stacks / 2 + TP.sx * 2.6 + mg, TP.sy + mg + container_hs * 1.2),
+                      (-mg, TP.sy + mg + container_hs * 1.2)
                       ]
+        
     def draw(self, gc, id_show):
         gc.SetPen(wx.Pen(wx.Colour(210, 209, 208), 0))
         gc.SetBrush(wx.Brush(wx.Colour(210, 209, 208)))
@@ -56,6 +61,11 @@ class TP(Storage):
             gc.DrawLines([(s_px - TP.sx / 2, TP.sy), (s_px + TP.sx / 2, TP.sy)])
             gc.DrawLines([(s_px - TP.sx / 2, 0), (s_px - TP.sx / 2, TP.sy)])
             gc.DrawLines([(s_px + TP.sx / 2, 0), (s_px + TP.sx / 2, TP.sy)])
+            
+            gc.DrawLines([(s_px - TP.sx / 2, container_hs * 1.2), (s_px + TP.sx / 2, container_hs * 1.2)])
+            gc.DrawLines([(s_px - TP.sx / 2, TP.sy + container_hs * 1.2), (s_px + TP.sx / 2, TP.sy + container_hs * 1.2)])
+            gc.DrawLines([(s_px - TP.sx / 2, container_hs * 1.2), (s_px - TP.sx / 2, TP.sy + container_hs * 1.2)])
+            gc.DrawLines([(s_px + TP.sx / 2, container_hs * 1.2), (s_px + TP.sx / 2, TP.sy + container_hs * 1.2)])
 #            gc.DrawRectangle(s_px - TP.sx / 2, 0, TP.sx, TP.sy)
         for c in self.holding_containers.values():
             old_tr = gc.GetTransform()
@@ -100,11 +110,11 @@ class Block(Storage):
         for x in xrange((Block.num_of_bays - 1) // 2 + 1):
             gc.DrawLines([(0, container_hs * x), (container_vs * Block.num_of_stacks , container_hs * x)])
             if id_show:
-                if x * 4 < 10:
+                if x * 4 < 8:
                     px = container_vs * Block.num_of_stacks + container_vs * 1.5
                 else:
                     px = container_vs * Block.num_of_stacks + container_vs * 1.1
-                gc.DrawText(str(x * 4), px , container_hs * x - container_vs * 0.2)
+                gc.DrawText(str(x * 4 + 2), px , container_hs * x + container_hs * 0.4)
         for x in xrange(Block.num_of_stacks + 1):
             gc.DrawLines([(container_vs * x, 0), (container_vs * x , container_hs * (Block.num_of_bays - 1) // 2)])
         for c in self.holding_containers.values():

@@ -62,9 +62,9 @@ class Evt(object):
 
 class Vessel(object):
     Bitts = None
-    LOA = container_hs * 21
+    LOA = container_hs * 25.3
     Beam = container_vs * (13 + 4)
-    num_of_bay, num_of_stack = 55, 13
+    num_of_bay, num_of_stack = 62, 13
     btn_bay = 1.2
     def __init__(self, name, voyage):
         self.name = name
@@ -81,7 +81,7 @@ class Vessel(object):
         self.drawing_bays_px = []
         for bay_id in range(Vessel.num_of_bay, 0, -1):
             if bay_id % 4 == 0: px = False
-            elif bay_id % 4 == 1: px = self.margin_px + container_hs / 4 * 3 + container_hs * Vessel.btn_bay * ((Vessel.num_of_bay - bay_id) // 4)
+            elif bay_id % 4 == 1: px = self.margin_px + container_hs / 4 * 3 + container_hs * Vessel.btn_bay * ((Vessel.num_of_bay - bay_id) // 4 - 1)
             elif bay_id % 4 == 2:
                 px = self.margin_px + container_hs / 2 + container_hs * Vessel.btn_bay * ((Vessel.num_of_bay - bay_id) // 4)
                 self.drawing_bays_px.append(px)
@@ -242,6 +242,7 @@ class Drag_zoom_panel(wx.Panel):
             self.translate_y += dy
             self.prev_x, self.prev_y = evt.m_x, evt.m_y
             self.RefreshGC()
+            self.Update()
     
     def OnLeftUp(self, evt):
         if self.translate_mode:
@@ -282,6 +283,7 @@ class Drag_zoom_panel(wx.Panel):
         gc = wx.GraphicsContext.Create(dc)
         self.Draw(gc)
         self.Refresh(False)
+        #self.Update()
     
     def Draw(self, gc):
         pass
