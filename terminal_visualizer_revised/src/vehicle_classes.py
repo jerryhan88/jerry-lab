@@ -360,12 +360,18 @@ class QC(Vehicles):
             gc.SetPen(wx.Pen(brushclr, 0))
             gc.SetBrush(wx.Brush(brushclr))
             sy = container_hs * num_tl / self.max_productivity
-            gc.DrawRectangle(-container_vs, -QC.sy - container_hs * 0.3 - sy, container_vs * 2, sy)
+            py = -QC.sy - container_hs * 0.3
+            gc.DrawRectangle(-container_vs, py - sy, container_vs * 2, sy)
             bt = 1
             gc.SetPen(wx.Pen('black', 0.2))
-#            gc.DrawRectangle(-container_vs - bt, -QC.sy - container_hs * 1.5 + bt, container_vs * 2 + bt * 2, container_hs * 1.5 + bt)
-            gc.DrawLines([(-container_vs - bt, -QC.sy - container_hs * 1.5 + bt), (-container_vs + container_vs * 2 + bt, -QC.sy - container_hs * 1.5 + bt)])
-#            gc.DrawLines([(-container_vs - bt, -QC.sy - container_hs * 1.5 + bt), (-container_vs + container_vs * 2 + bt, -QC.sy - container_hs * 1.5 + bt)])
+            sx, sy = container_vs * 2 + bt * 2, container_hs * 1.5 + bt * 2
+            px = -sx / 2
+            py = -QC.sy - sy - 5
+            
+            gc.DrawLines([(px, py), (px + sx, py)])
+            gc.DrawLines([(px, py), (px, py + sy)])
+            gc.DrawLines([(px, py + sy), (px + sx, py + sy)])
+            gc.DrawLines([(px + sx, py), (px + sx, py + sy)])
             
         old_tr = gc.GetTransform()
         gc.Translate(self.trolly.px, self.trolly.py)

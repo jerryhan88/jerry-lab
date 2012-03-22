@@ -64,9 +64,6 @@ class Performance_dialog(wx.Dialog):
                 self.Parent.is_al_discharging_show = True
             else:
                 self.Parent.is_al_discharging_show = False    
-            
-#        if cb.Is3State():
-#            self.log.write("\t3StateValue: %s\n" % cb.Get3StateValue())
         
 class Input_dialog(wx.Dialog):
     def __init__(self, parent, name, size=(800, 600), pos=(450, 170)):
@@ -302,22 +299,56 @@ class Input_View_Panel(wx.Panel):
         sdt_edt_txt.append(t)
         px, py = t.GetPosition()
         sx, sy = t.GetSize()
-        t = wx.StaticText(self, -1, str(start_time.second), (px + sx + bt, py))
+        t = wx.StaticText(self, -1, str(start_time.second), (px + sx + bt * 2, py))
         sdt_edt_txt.append(t)
         px, py = t.GetPosition()
         sx, sy = t.GetSize()
-        t = wx.StaticText(self, -1, '-', (px + sx + bt, py))
+        
+        t = wx.StaticText(self, -1, '~', (px + sx + 18, py - 2))
         sdt_edt_txt.append(t)
+        px, py = t.GetPosition()
+        sx, sy = t.GetSize()
         
         y_name2_px = 700
-        sdt_edt_txt.append(wx.StaticText(self, -1, str(end_time.year), (y_name2_px, py), size=(40, -1)))
-        sdt_edt_txt.append(wx.StaticText(self, -1, str(end_time.month), (y_name2_px + 53, py), size=(25, -1)))
-        sdt_edt_txt.append(wx.StaticText(self, -1, str(end_time.day), (y_name2_px + 70, py), size=(25, -1)))
-        sdt_edt_txt.append(wx.StaticText(self, -1, str(end_time.hour), (y_name2_px + 100, py), size=(25, -1)))
-        sdt_edt_txt.append(wx.StaticText(self, -1, ':', (y_name2_px + 120, py)))
-        sdt_edt_txt.append(wx.StaticText(self, -1, str(end_time.minute), (y_name2_px + 131, py)))
-        sdt_edt_txt.append(wx.StaticText(self, -1, ':', (y_name2_px + 159, py)))
-        sdt_edt_txt.append(wx.StaticText(self, -1, str(end_time.second), (y_name2_px + 180, py), size=(25, -1)))
+        t = wx.StaticText(self, -1, str(end_time.year), (px + sx + 27, py + 2))
+        sdt_edt_txt.append(t)
+        px, py = t.GetPosition()
+        sx, sy = t.GetSize()
+        t = wx.StaticText(self, -1, '-', (px + sx + bt + ch_margin, py - ch_margin))
+        sdt_edt_txt.append(t)
+        px, py = t.GetPosition()
+        sx, sy = t.GetSize()
+        t = wx.StaticText(self, -1, str(end_time.month), (px + sx + bt * 2, py + ch_margin))
+        sdt_edt_txt.append(t)
+        px, py = t.GetPosition()
+        sx, sy = t.GetSize()
+        t = wx.StaticText(self, -1, '-', (px + sx + bt + ch_margin, py - ch_margin))
+        sdt_edt_txt.append(t)
+        px, py = t.GetPosition()
+        sx, sy = t.GetSize()
+        t = wx.StaticText(self, -1, str(end_time.day), (px + sx + bt + ch_margin, py + 2))
+        sdt_edt_txt.append(t)
+        px, py = t.GetPosition()
+        sx, sy = t.GetSize()
+        t = wx.StaticText(self, -1, str(end_time.hour), (px + sx + bt * 2, py))
+        sdt_edt_txt.append(t)
+        px, py = t.GetPosition()
+        sx, sy = t.GetSize()
+        t = wx.StaticText(self, -1, ':', (px + sx + 4, py))
+        sdt_edt_txt.append(t)
+        px, py = t.GetPosition()
+        sx, sy = t.GetSize()
+        t = wx.StaticText(self, -1, str(end_time.minute), (px + sx + bt, py))
+        sdt_edt_txt.append(t)
+        px, py = t.GetPosition()
+        sx, sy = t.GetSize()
+        t = wx.StaticText(self, -1, ':', (px + sx + bt * 2, py))
+        sdt_edt_txt.append(t)
+        px, py = t.GetPosition()
+        sx, sy = t.GetSize()
+        t = wx.StaticText(self, -1, str(end_time.second), (px + sx + bt * 2, py))
+        sdt_edt_txt.append(t)
+        
         for x in sdt_edt_txt:
             x.SetFont(wx.Font(13, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD))
         

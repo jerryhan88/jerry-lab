@@ -62,7 +62,7 @@ class Evt(object):
 
 class Vessel(object):
     Bitts = None
-    LOA = container_hs * 25.3
+    LOA = container_hs * 24
     Beam = container_vs * (13 + 4)
     num_of_bay, num_of_stack = 62, 13
     btn_bay = 1.2
@@ -95,8 +95,9 @@ class Vessel(object):
         self.v_d_p = [(0, Vessel.Beam * 0.15),
                       (Vessel.LOA * 0.05, Vessel.Beam * 0.05),
                       (Vessel.LOA * 0.1, 0),
-                      (Vessel.LOA * 0.77, 0),
-                      (Vessel.LOA * 0.77, Vessel.Beam),
+                      (Vessel.LOA * 0.85, 0),
+                      (Vessel.LOA, Vessel.Beam / 2),
+                      (Vessel.LOA * 0.85, Vessel.Beam),
                       (Vessel.LOA * 0.1, Vessel.Beam),
                       (Vessel.LOA * 0.05, Vessel.Beam * 0.95),
                       (0, Vessel.Beam * 0.85),
@@ -159,9 +160,17 @@ class Vessel(object):
             for i, pos in enumerate(self.v_d_p):
                 px, py = pos
                 if i == 4:
-                    cpx1, cpy1 = Vessel.LOA * 0.95, Vessel.Beam * 0.4
-                    cpx2, cpy2 = Vessel.LOA * 0.95, Vessel.Beam * 0.6
+                    cpx1, cpy1 = Vessel.LOA * 0.96, Vessel.Beam * 0.1
+                    cpx2, cpy2 = Vessel.LOA * 0.99, Vessel.Beam * 0.3    
+                    path.AddCurveToPoint(cpx1, cpy1, cpx2, cpy2, px, py)                
+                elif i == 5:
+                    cpx1, cpy1 = Vessel.LOA * 0.99, Vessel.Beam * 0.7
+                    cpx2, cpy2 = Vessel.LOA * 0.96, Vessel.Beam * 0.9 
                     path.AddCurveToPoint(cpx1, cpy1, cpx2, cpy2, px, py)
+#                if i == 4:
+#                    cpx1, cpy1 = Vessel.LOA * 0.95, Vessel.Beam * 0.4
+#                    cpx2, cpy2 = Vessel.LOA * 0.95, Vessel.Beam * 0.6
+#                    path.AddCurveToPoint(cpx1, cpy1, cpx2, cpy2, px, py)
                 else:
                     path.AddLineToPoint(px, py)
             gc.DrawPath(path)
