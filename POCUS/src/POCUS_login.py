@@ -5,8 +5,8 @@ deco_strip_sy = 50
 orange = color_src.orange
 purple = color_src.purple
 white = color_src.white
-#id_and_pw_t_color = wx.Colour(86, 83, 87)
 dark_blue_clr = wx.Colour(219, 238, 244)
+
 class L_frame(wx.Frame):
     def __init__(self, parent, ID, title, pos, size, style=wx.DEFAULT_FRAME_STYLE):
         wx.Frame.__init__(self, parent, ID, title, pos, size, style)
