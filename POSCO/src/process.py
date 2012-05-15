@@ -78,7 +78,7 @@ class Process_info_Viewer(wx.Dialog):
                 self.info_task_viewer_p.SetFont(wx.Font(17, wx.FONTFAMILY_ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD))
                 wx.StaticText(self.info_task_viewer_p, -1, 'Dung Liu Express Co.', pos=(190, 20))
                 wx.StaticText(self.info_task_viewer_p, -1, 'Name : Dung Liu', pos=(190, 70))
-                wx.StaticText(self.info_task_viewer_p, -1, 'Contack : 011-244-1547', pos=(190, 120))
+                wx.StaticText(self.info_task_viewer_p, -1, 'Contact : 011-244-1547', pos=(190, 120))
     #            cops_n.SetFont()
             else:
                 ipad_img = wx.Image('pic/ipad.png', wx.BITMAP_TYPE_PNG)
