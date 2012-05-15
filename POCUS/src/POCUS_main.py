@@ -6,6 +6,7 @@ purple = color_src.purple
 white = color_src.white
 dark_sky = color_src.dark_sky
 red = color_src.red
+blue = color_src.blue
 
 class M_frame(wx.Frame):
     def __init__(self, parent, ID, title, pos, size, style=wx.DEFAULT_FRAME_STYLE):
@@ -15,10 +16,14 @@ class M_frame(wx.Frame):
         
         pro_p_px, pro_p_py = (0, 0)
         pro_p_sx, pro_p_sy = (f_size_x * 3 / 5, f_size_y / 2 - 40)
+        
+        margin = 8
         msg_p_px, msg_p_py = (pro_p_px + pro_p_sx, pro_p_py)
-        msg_p_sx, msg_p_sy = (f_size_x - pro_p_sx, pro_p_sy)
+        msg_p_sx, msg_p_sy = (f_size_x - pro_p_sx - margin, pro_p_sy)
+        
         proce_p_px, proce_p_py = (pro_p_px, pro_p_py + pro_p_sy)
-        proce_p_sx, proce_p_sy = (f_size_x, f_size_y - pro_p_sy)
+        proce_p_sx, proce_p_sy = (f_size_x - margin, f_size_y - pro_p_sy)
+        
         self.project_display(p, pro_p_px, pro_p_py, pro_p_sx, pro_p_sy)
         self.message_display(p, msg_p_px, msg_p_py, msg_p_sx, msg_p_sy)
         self.process_display(p, proce_p_px, proce_p_py, proce_p_sx, proce_p_sy)
@@ -40,9 +45,10 @@ class M_frame(wx.Frame):
         
         self.pjv_p = wx.ScrolledWindow(pro_p, -1, pos=(px, py + t_sy + 2), size=(t_sx, p_sy - (t_sy + b_sy + 15)), style=wx.SUNKEN_BORDER)
         self.pjv_p.SetDoubleBuffered(True)
-        sx, sy = self.pjv_p.GetSize()
+        _, self.pjv_py = self.pjv_p.GetPosition()
+        _, self.pjv_sy = self.pjv_p.GetSize()
         self.pjv_p.SetScrollRate(1, 1)        
-        self.pjv_p.SetScrollbars(100, sy, 13, 1)
+        self.pjv_p.SetScrollbars(100, self.pjv_sy, 13, 1)
         
         inte_imgs = ['interior_pic1', 'interior_pic2']
         self.inte_lo_sc = ['전남, 전체', '부산, 실내']
@@ -65,14 +71,15 @@ class M_frame(wx.Frame):
         x, y = e.GetX(), e.GetY()
         width = self.bit_imgs[0][1]
         btw = 30
-        for i in xrange(len(self.select_item)):
-            self.select_item[i] = 0
-            if (btw + width) * i <= x <= (btw + width) * (i + 1):
-                self.select_item[i] = 1
+        if y < self.pjv_py + self.pjv_sy:
+            for i in xrange(len(self.select_item)):
+                self.select_item[i] = 0
+                if (btw + width) * i <= x <= (btw + width) * (i + 1):
+                    self.select_item[i] = 1
+            self.pjv_p.Refresh()
+            self.pcv_p.Refresh()
 
-        self.pjv_p.Refresh()
     def drawProject(self, _):
-        
         dc = wx.PaintDC(self.pjv_p)
         self.pjv_p.PrepareDC(dc)
         st_sy = self.bit_imgs[0][0].GetHeight()
@@ -94,9 +101,9 @@ class M_frame(wx.Frame):
                 dc.SetPen(wx.Pen(red, 2))
                 margin = 5
                 p_h = 50
-                p1 = (px - margin-1, py - margin)
+                p1 = (px - margin - 1, py - margin)
                 p2 = (px + w + margin, py - margin)
-                p3 = (px - margin-1, py + st_sy + margin + p_h)
+                p3 = (px - margin - 1, py + st_sy + margin + p_h)
                 p4 = (px + w + margin, py + st_sy + margin + p_h)
                 dc.DrawLine(p1[0], p1[1], p2[0], p2[1])
                 dc.DrawLine(p1[0], p1[1], p3[0], p3[1])
@@ -174,11 +181,122 @@ class M_frame(wx.Frame):
         px, py = btns_p.GetPosition()
         sx, sy = btns_p.GetSize()
         
-        pcv_p = wx.ScrolledWindow(proce_p, -1, pos=(px + sx, py), size=(t_p_sx - sx, sy), style=wx.SUNKEN_BORDER)
-        pcv_p.SetDoubleBuffered(True)
-        sx, sy = pcv_p.GetSize()
-        pcv_p.SetScrollbars(100, sy, 13, 1)
-        pcv_p.SetBackgroundColour(white)
+        self.pcv_p = wx.ScrolledWindow(proce_p, -1, pos=(px + sx, py + 7), size=(t_p_sx - sx, sy - 7), style=wx.SUNKEN_BORDER)
+        self.pcv_p.SetDoubleBuffered(True)
+        self.pcv_sx, self.pcv_sy = self.pcv_p.GetSize()
+        self.pcv_p.SetScrollbars(100, self.pcv_sy, 13, 1)
+        self.pcv_p.SetBackgroundColour(white)
+        
+        self.pcv_p.Bind(wx.EVT_PAINT, self.drawProcess)
+        self.pcv_p.Bind(wx.EVT_LEFT_DOWN, self.OnTaskClick)
+        
+        pre_pb_img = wx.Image('pic/process_back.png', wx.BITMAP_TYPE_PNG)
+        w = pre_pb_img.GetWidth()
+        h = pre_pb_img.GetHeight()
+        self.pb_img = wx.BitmapFromImage(pre_pb_img.Scale(w * 0.6, h * 0.833))
+        
+    def drawProcess(self, _):
+        dc = wx.PaintDC(self.pcv_p)
+        self.pcv_p.PrepareDC(dc)
+        dc.DrawBitmap(self.pb_img, 640, 0)
+        h_center_py = self.pcv_sy / 2 - 35
+        d_start_px = 50
+        btw_p_size = 80
+        if self.select_item[1] == 1:
+            self.drawInte1(dc, d_start_px, h_center_py, btw_p_size)
+        
+        dc.EndDrawing()
+        
+    def drawInte1(self, dc, px, py, btw):
+        
+        rec_img = wx.Image('pic/recBtn.png', wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+        circle_img = wx.Image('pic/circleBtn.png', wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+        money_img = wx.Image('pic/moneyBtn.png', wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+        
+        p1_px, p1_py = px, py
+        p2_px, p2_py = p1_px + btw, py
+        
+        p3_px, p3_py = p2_px + btw, py - 50
+        p4_px, p4_py = p3_px, py + 50
+        
+        p5_px, p5_py = p4_px + btw, py - 50 - 30
+        p6_px, p6_py = p5_px, py - 50 + 30
+        p7_px, p7_py = p5_px, py + 50
+        
+        p8_px, p8_py = p7_px + btw, py
+        p9_px, p9_py = p8_px + btw, py
+        p10_px, p10_py = p9_px + btw, py
+        p11_px, p11_py = p10_px + btw, py
+        
+        es = [(p1_px + 50, p1_py + 25, p2_px, p2_py + 25),
+              
+              (p2_px + 50, p2_py + 25, p3_px, p3_py + 25),
+              (p2_px + 50, p2_py + 25, p4_px, p4_py + 25),
+              
+              (p3_px + 50, p3_py + 25, p5_px, p5_py + 25),
+              (p3_px + 50, p3_py + 25, p6_px, p6_py + 25),
+              (p4_px + 50, p4_py + 25, p7_px, p7_py + 25),
+              
+              (p5_px + 50, p5_py + 25, p8_px, p8_py + 25),
+              (p6_px + 50, p6_py + 25, p8_px, p8_py + 25),
+              (p7_px + 50, p7_py + 25, p8_px, p8_py + 25),
+              
+              (p8_px + 50, p8_py + 25, p9_px, p9_py + 25),
+              (p9_px + 50, p9_py + 25, p10_px, p10_py + 25),
+              (p10_px + 50, p10_py + 25, p11_px, p11_py + 25),
+              ]
+        
+        dc.DrawBitmap(circle_img, p1_px, p1_py)
+        dc.DrawBitmap(rec_img, p2_px, p2_py)
+        dc.DrawBitmap(rec_img, p3_px, p3_py)
+        dc.DrawBitmap(rec_img, p4_px, p4_py)
+        
+        dc.DrawBitmap(rec_img, p5_px, p5_py)
+        dc.DrawBitmap(rec_img, p6_px, p6_py)
+        dc.DrawBitmap(rec_img, p7_px, p7_py)
+        
+        dc.DrawBitmap(rec_img, p8_px, p8_py)
+        dc.DrawBitmap(rec_img, p9_px, p9_py)
+        dc.DrawBitmap(money_img, p10_px, p10_py)
+        
+        dc.DrawBitmap(circle_img, p11_px, p11_py)
+        
+        for i, e in enumerate(es):
+            old_pen = dc.GetPen()
+            if i > 6:
+                dc.SetPen(wx.Pen(red, 1))
+            else:
+                dc.SetPen(wx.Pen(blue, 1))
+            
+            sx, sy, ex, ey = e[0], e[1], e[2], e[3]
+            ax = ex - sx;
+            ay = ey - sy;
+            la = math.sqrt(ax * ax + ay * ay);
+            ux = ax / la;
+            uy = ay / la;
+            px = -uy;
+            py = ux;
+            dc.DrawLine(sx, sy, ex, ey)
+            dc.DrawLine(ex, ey, ex - int((ux * 5)) + int(px * 3), ey
+                    - int(uy * 5) + int(py * 3));
+            dc.DrawLine(ex, ey, ex - int(ux * 5) - int(px * 3), ey
+                    - int(uy * 5) - int(py * 3));
+            
+            dc.SetPen(old_pen)
+
+    def OnTaskClick(self, e):
+        pass
+#        x, y = e.GetX(), e.GetY()
+#        width = self.bit_imgs[0][1]
+#        btw = 30
+#        for i in xrange(len(self.select_item)):
+#            self.select_item[i] = 0
+#            if (btw + width) * i <= x <= (btw + width) * (i + 1):
+#                self.select_item[i] = 1
+#        self.pjv_p.Refresh()
+#        self.pcv_p.Refresh()
+        
+        
         
     def make_btns(self, parent, px, py, sx, sy):
         btns_p = wx.Panel(parent, -1, pos=(px, py), size=(sx, sy))
