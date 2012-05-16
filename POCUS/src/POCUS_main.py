@@ -195,73 +195,99 @@ class M_frame(wx.Frame):
         h = pre_pb_img.GetHeight()
         self.pb_img = wx.BitmapFromImage(pre_pb_img.Scale(w * 0.6, h * 0.833))
         
+        self.rec_img = wx.Image('pic/recBtn.png', wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+        self.circle_img = wx.Image('pic/circleBtn.png', wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+        self.money_img = wx.Image('pic/moneyBtn.png', wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+        
+        h_center_py = self.pcv_sy / 2 - 35
+        d_start_px = 50
+        btw = 80
+        
+        self.inte1_pos = []
+        self.inte1_pos.append((d_start_px, h_center_py))
+        
+        self.inte1_pos.append((self.inte1_pos[-1][0] + btw, self.inte1_pos[0][1]))
+        
+        self.inte1_pos.append((self.inte1_pos[-1][0] + btw, self.inte1_pos[0][1] - 50))
+        self.inte1_pos.append((self.inte1_pos[-1][0], self.inte1_pos[0][1] + 50))
+        
+        self.inte1_pos.append((self.inte1_pos[-1][0] + btw, self.inte1_pos[0][1]))
+        
+        self.inte1_pos.append((self.inte1_pos[-1][0] + btw, self.inte1_pos[0][1] - 80))
+        self.inte1_pos.append((self.inte1_pos[-1][0], self.inte1_pos[0][1]))
+        self.inte1_pos.append((self.inte1_pos[-1][0], self.inte1_pos[0][1] + 80))
+        
+        self.inte1_pos.append((self.inte1_pos[-1][0] + btw, self.inte1_pos[0][1]))
+        
+        self.inte1_pos.append((self.inte1_pos[-1][0] + btw, self.inte1_pos[0][1] - 50))
+        self.inte1_pos.append((self.inte1_pos[-1][0], self.inte1_pos[0][1] + 50))
+        
+        self.inte1_pos.append((self.inte1_pos[-1][0] + btw, self.inte1_pos[0][1]))
+        
+        self.inte1_pos.append((self.inte1_pos[-1][0] + btw, self.inte1_pos[0][1]))
+        
+        self.inte1_pos.append((self.inte1_pos[-1][0] + btw, self.inte1_pos[0][1]))
+        
+        
+        self.inte2_pos = []
+        
+        self.inte2_pos.append((d_start_px, h_center_py))
+        self.inte2_pos.append((self.inte2_pos[-1][0] + btw, self.inte2_pos[0][1]))
+        self.inte2_pos.append((self.inte2_pos[-1][0] + btw, self.inte2_pos[0][1] - 50))
+        self.inte2_pos.append((self.inte2_pos[-1][0], self.inte2_pos[0][1] + 50))
+        
+        self.inte2_pos.append((self.inte2_pos[-1][0] + btw, self.inte2_pos[0][1] - 50 - 30))
+        self.inte2_pos.append((self.inte2_pos[-1][0], self.inte2_pos[0][1] - 50 + 30))
+        self.inte2_pos.append((self.inte2_pos[-1][0], self.inte2_pos[0][1] + 50))
+        
+        self.inte2_pos.append((self.inte2_pos[-1][0] + btw, self.inte2_pos[0][1]))
+        self.inte2_pos.append((self.inte2_pos[-1][0] + btw, self.inte2_pos[0][1]))
+        self.inte2_pos.append((self.inte2_pos[-1][0] + btw, self.inte2_pos[0][1]))
+        self.inte2_pos.append((self.inte2_pos[-1][0] + btw, self.inte2_pos[0][1]))
+        
+        self.inte2_pos_es = [(self.inte2_pos[0][0] + 50, self.inte2_pos[0][1] + 25, self.inte2_pos[1][0], self.inte2_pos[1][1] + 25),
+              
+              (self.inte2_pos[1][0] + 50, self.inte2_pos[1][1] + 25, self.inte2_pos[2][0], self.inte2_pos[2][1] + 25),
+              (self.inte2_pos[1][0] + 50, self.inte2_pos[1][1] + 25, self.inte2_pos[3][0], self.inte2_pos[3][1] + 25),
+              
+              (self.inte2_pos[2][0] + 50, self.inte2_pos[2][1] + 25, self.inte2_pos[4][0], self.inte2_pos[4][1] + 25),
+              (self.inte2_pos[2][0] + 50, self.inte2_pos[2][1] + 25, self.inte2_pos[5][0], self.inte2_pos[5][1] + 25),
+              (self.inte2_pos[3][0] + 50, self.inte2_pos[3][1] + 25, self.inte2_pos[6][0], self.inte2_pos[6][1] + 25),
+              
+              (self.inte2_pos[4][0] + 50, self.inte2_pos[4][1] + 25, self.inte2_pos[7][0], self.inte2_pos[7][1] + 25),
+              (self.inte2_pos[5][0] + 50, self.inte2_pos[5][1] + 25, self.inte2_pos[7][0], self.inte2_pos[7][1] + 25),
+              (self.inte2_pos[6][0] + 50, self.inte2_pos[6][1] + 25, self.inte2_pos[7][0], self.inte2_pos[7][1] + 25),
+              
+              (self.inte2_pos[7][0] + 50, self.inte2_pos[7][1] + 25, self.inte2_pos[8][0], self.inte2_pos[8][1] + 25),
+              (self.inte2_pos[8][0] + 50, self.inte2_pos[8][1] + 25, self.inte2_pos[9][0], self.inte2_pos[9][1] + 25),
+              (self.inte2_pos[9][0] + 50, self.inte2_pos[9][1] + 25, self.inte2_pos[10][0], self.inte2_pos[10][1] + 25)
+              ]
+        
     def drawProcess(self, _):
         dc = wx.PaintDC(self.pcv_p)
         self.pcv_p.PrepareDC(dc)
         dc.DrawBitmap(self.pb_img, 640, 0)
-        h_center_py = self.pcv_sy / 2 - 35
-        d_start_px = 50
-        btw_p_size = 80
         if self.select_item[1] == 1:
-            self.drawInte1(dc, d_start_px, h_center_py, btw_p_size)
-        
+            self.drawInte2(dc)
+        elif self.select_item[0] == 1:
+            self.drawInte1(dc)
         dc.EndDrawing()
         
-    def drawInte1(self, dc, px, py, btw):
+    def drawInte1(self, dc):
+        dc.DrawBitmap(self.circle_img, self.inte1_pos[0][0], self.inte1_pos[0][1])
+        for x in xrange(1, 12):
+            dc.DrawBitmap(self.rec_img, self.inte1_pos[x][0], self.inte1_pos[x][1])
+        dc.DrawBitmap(self.money_img, self.inte1_pos[-2][0], self.inte1_pos[-2][1])
+        dc.DrawBitmap(self.circle_img, self.inte1_pos[-1][0], self.inte1_pos[-1][1])
+    
+    def drawInte2(self, dc):
+        dc.DrawBitmap(self.circle_img, self.inte2_pos[0][0], self.inte2_pos[0][1])
+        for x in xrange(1, 9):
+            dc.DrawBitmap(self.rec_img, self.inte2_pos[x][0], self.inte2_pos[x][1])
+        dc.DrawBitmap(self.money_img, self.inte2_pos[9][0], self.inte2_pos[9][1])
+        dc.DrawBitmap(self.circle_img, self.inte2_pos[10][0], self.inte2_pos[10][1])
         
-        rec_img = wx.Image('pic/recBtn.png', wx.BITMAP_TYPE_PNG).ConvertToBitmap()
-        circle_img = wx.Image('pic/circleBtn.png', wx.BITMAP_TYPE_PNG).ConvertToBitmap()
-        money_img = wx.Image('pic/moneyBtn.png', wx.BITMAP_TYPE_PNG).ConvertToBitmap()
-        
-        p1_px, p1_py = px, py
-        p2_px, p2_py = p1_px + btw, py
-        
-        p3_px, p3_py = p2_px + btw, py - 50
-        p4_px, p4_py = p3_px, py + 50
-        
-        p5_px, p5_py = p4_px + btw, py - 50 - 30
-        p6_px, p6_py = p5_px, py - 50 + 30
-        p7_px, p7_py = p5_px, py + 50
-        
-        p8_px, p8_py = p7_px + btw, py
-        p9_px, p9_py = p8_px + btw, py
-        p10_px, p10_py = p9_px + btw, py
-        p11_px, p11_py = p10_px + btw, py
-        
-        es = [(p1_px + 50, p1_py + 25, p2_px, p2_py + 25),
-              
-              (p2_px + 50, p2_py + 25, p3_px, p3_py + 25),
-              (p2_px + 50, p2_py + 25, p4_px, p4_py + 25),
-              
-              (p3_px + 50, p3_py + 25, p5_px, p5_py + 25),
-              (p3_px + 50, p3_py + 25, p6_px, p6_py + 25),
-              (p4_px + 50, p4_py + 25, p7_px, p7_py + 25),
-              
-              (p5_px + 50, p5_py + 25, p8_px, p8_py + 25),
-              (p6_px + 50, p6_py + 25, p8_px, p8_py + 25),
-              (p7_px + 50, p7_py + 25, p8_px, p8_py + 25),
-              
-              (p8_px + 50, p8_py + 25, p9_px, p9_py + 25),
-              (p9_px + 50, p9_py + 25, p10_px, p10_py + 25),
-              (p10_px + 50, p10_py + 25, p11_px, p11_py + 25),
-              ]
-        
-        dc.DrawBitmap(circle_img, p1_px, p1_py)
-        dc.DrawBitmap(rec_img, p2_px, p2_py)
-        dc.DrawBitmap(rec_img, p3_px, p3_py)
-        dc.DrawBitmap(rec_img, p4_px, p4_py)
-        
-        dc.DrawBitmap(rec_img, p5_px, p5_py)
-        dc.DrawBitmap(rec_img, p6_px, p6_py)
-        dc.DrawBitmap(rec_img, p7_px, p7_py)
-        
-        dc.DrawBitmap(rec_img, p8_px, p8_py)
-        dc.DrawBitmap(rec_img, p9_px, p9_py)
-        dc.DrawBitmap(money_img, p10_px, p10_py)
-        
-        dc.DrawBitmap(circle_img, p11_px, p11_py)
-        
-        for i, e in enumerate(es):
+        for i, e in enumerate(self.inte2_pos_es):
             old_pen = dc.GetPen()
             if i > 6:
                 dc.SetPen(wx.Pen(red, 1))
