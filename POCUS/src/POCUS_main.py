@@ -65,7 +65,8 @@ class M_frame(wx.Frame):
             
         self.pjv_p.Bind(wx.EVT_PAINT, self.drawProject)
         self.pjv_p.Bind(wx.EVT_LEFT_DOWN, self.OnProjectClick)
-        self.select_item = [0, 0]
+        self.select_item = [1, 0]
+#        self.select_item = [0, 0]
         
     def OnProjectClick(self, e):
         x, y = e.GetX(), e.GetY()
@@ -181,6 +182,14 @@ class M_frame(wx.Frame):
         px, py = btns_p.GetPosition()
         sx, sy = btns_p.GetSize()
         
+        init_btn = self.ac_btns[0] 
+        self.Bind(wx.EVT_BUTTON, self.pc_init, init_btn)
+        
+        recom_btn = self.ac_btns[1]
+        self.Bind(wx.EVT_BUTTON, self.recommand, recom_btn)
+        self.isReco = False
+        
+        
         self.pcv_p = wx.ScrolledWindow(proce_p, -1, pos=(px + sx, py + 7), size=(t_p_sx - sx, sy - 7), style=wx.SUNKEN_BORDER)
         self.pcv_p.SetDoubleBuffered(True)
         self.pcv_sx, self.pcv_sy = self.pcv_p.GetSize()
@@ -228,6 +237,22 @@ class M_frame(wx.Frame):
         
         self.inte1_pos.append((self.inte1_pos[-1][0] + btw, self.inte1_pos[0][1]))
         
+        inte1_es = [(0, 1),
+              (1, 2), (1, 3),
+              (2, 4), (3, 4),
+              (4, 5), (4, 6), (4, 7),
+              (5, 8), (6, 8), (7, 8),
+              (8, 9), (8, 10),
+              (9, 11), (10, 11),
+              (11, 12),
+              (12, 13),
+              ]
+        self.inte1_pos_es = self.make_edges(inte1_es, self.inte1_pos)
+        
+        self.inte1_names = ['Ã¶°Å', '¸ñ°ø', 'Ã¶°ø', '»þ½Ã', 'Å¸ÀÏ', 'ÆäÀÎÆ®', 'ÇÊ¸§', 'µµ¹è', 'ÁÖ¹æ', '¿å½Ç', '¹Ù´Ú' ]
+        self.inte1_fixed = [1, 2, 6, 10]
+        self.inte1_reco = [3, 4, 5, 7, 8, 9, 11]
+        
         
         self.inte2_pos = []
         
@@ -245,23 +270,22 @@ class M_frame(wx.Frame):
         self.inte2_pos.append((self.inte2_pos[-1][0] + btw, self.inte2_pos[0][1]))
         self.inte2_pos.append((self.inte2_pos[-1][0] + btw, self.inte2_pos[0][1]))
         
-        self.inte2_pos_es = [(self.inte2_pos[0][0] + 50, self.inte2_pos[0][1] + 25, self.inte2_pos[1][0], self.inte2_pos[1][1] + 25),
-              
-              (self.inte2_pos[1][0] + 50, self.inte2_pos[1][1] + 25, self.inte2_pos[2][0], self.inte2_pos[2][1] + 25),
-              (self.inte2_pos[1][0] + 50, self.inte2_pos[1][1] + 25, self.inte2_pos[3][0], self.inte2_pos[3][1] + 25),
-              
-              (self.inte2_pos[2][0] + 50, self.inte2_pos[2][1] + 25, self.inte2_pos[4][0], self.inte2_pos[4][1] + 25),
-              (self.inte2_pos[2][0] + 50, self.inte2_pos[2][1] + 25, self.inte2_pos[5][0], self.inte2_pos[5][1] + 25),
-              (self.inte2_pos[3][0] + 50, self.inte2_pos[3][1] + 25, self.inte2_pos[6][0], self.inte2_pos[6][1] + 25),
-              
-              (self.inte2_pos[4][0] + 50, self.inte2_pos[4][1] + 25, self.inte2_pos[7][0], self.inte2_pos[7][1] + 25),
-              (self.inte2_pos[5][0] + 50, self.inte2_pos[5][1] + 25, self.inte2_pos[7][0], self.inte2_pos[7][1] + 25),
-              (self.inte2_pos[6][0] + 50, self.inte2_pos[6][1] + 25, self.inte2_pos[7][0], self.inte2_pos[7][1] + 25),
-              
-              (self.inte2_pos[7][0] + 50, self.inte2_pos[7][1] + 25, self.inte2_pos[8][0], self.inte2_pos[8][1] + 25),
-              (self.inte2_pos[8][0] + 50, self.inte2_pos[8][1] + 25, self.inte2_pos[9][0], self.inte2_pos[9][1] + 25),
-              (self.inte2_pos[9][0] + 50, self.inte2_pos[9][1] + 25, self.inte2_pos[10][0], self.inte2_pos[10][1] + 25)
-              ]
+        inte2_es = [(0, 1),
+              (1, 2), (1, 3),
+              (2, 4), (2, 5),
+              (3, 6),
+              (4, 7), (5, 7), (6, 7),
+              (7, 8),
+              (8, 9),
+              (9, 10)]
+        
+        self.inte2_pos_es = self.make_edges(inte2_es, self.inte2_pos)        
+       
+    def make_edges(self, es, pos):
+        edges = []
+        for p, n in es:
+            edges.append((pos[p][0] + 50, pos[p][1] + 25, pos[n][0], pos[n][1] + 25))
+        return edges
         
     def drawProcess(self, _):
         dc = wx.PaintDC(self.pcv_p)
@@ -277,19 +301,54 @@ class M_frame(wx.Frame):
         dc.DrawBitmap(self.circle_img, self.inte1_pos[0][0], self.inte1_pos[0][1])
         for x in xrange(1, 12):
             dc.DrawBitmap(self.rec_img, self.inte1_pos[x][0], self.inte1_pos[x][1])
+            if x == 6:
+                px = self.inte1_pos[x][0]
+            else:
+                px = self.inte1_pos[x][0] + 8
+            dc.DrawText(self.inte1_names[x - 1], px, self.inte1_pos[x][1] + 16)
         dc.DrawBitmap(self.money_img, self.inte1_pos[-2][0], self.inte1_pos[-2][1])
         dc.DrawBitmap(self.circle_img, self.inte1_pos[-1][0], self.inte1_pos[-1][1])
-    
+        self.drawEdges(dc, self.inte1_pos_es, -1)
+        
+        old_pen = dc.GetPen()
+        old_brush = dc.GetBrush()
+        old_t_clr = dc.GetTextForeground() 
+        dc.SetPen(wx.Pen(red, 1))
+        dc.SetBrush(wx.Brush(red))
+        dc.SetTextForeground(red)
+        for x in self.inte1_fixed:
+            px = self.inte1_pos[x][0]
+            py = self.inte1_pos[x][1]
+            dc.DrawText('Fixed', px - 7, py - 7)
+            dc.DrawCircle(px + 47, py + 47, 5)
+        dc.SetBrush(old_brush)    
+        dc.SetPen(old_pen)
+        dc.SetTextForeground(old_t_clr)
+        
+        
+        if self.isReco:
+            old_t_clr = dc.GetTextForeground()
+            dc.SetTextForeground(blue)
+            for x in self.inte1_reco:
+                px = self.inte1_pos[x][0]
+                py = self.inte1_pos[x][1]
+                dc.DrawText('Reco', px - 7, py - 7)
+            dc.SetTextForeground(old_t_clr)
+            dc.SetFont(wx.Font(15, wx.FONTFAMILY_ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_LIGHT))
+            dc.DrawText('Lead Time : 24  |  Cost : 80,000,000¿ø', 530, 255)
+        
     def drawInte2(self, dc):
         dc.DrawBitmap(self.circle_img, self.inte2_pos[0][0], self.inte2_pos[0][1])
         for x in xrange(1, 9):
             dc.DrawBitmap(self.rec_img, self.inte2_pos[x][0], self.inte2_pos[x][1])
         dc.DrawBitmap(self.money_img, self.inte2_pos[9][0], self.inte2_pos[9][1])
         dc.DrawBitmap(self.circle_img, self.inte2_pos[10][0], self.inte2_pos[10][1])
-        
-        for i, e in enumerate(self.inte2_pos_es):
+        self.drawEdges(dc, self.inte2_pos_es, 6)
+
+    def drawEdges(self, dc, es_pos, state):
+        for i, e in enumerate(es_pos):
             old_pen = dc.GetPen()
-            if i > 6:
+            if i > state:
                 dc.SetPen(wx.Pen(red, 1))
             else:
                 dc.SetPen(wx.Pen(blue, 1))
@@ -310,19 +369,9 @@ class M_frame(wx.Frame):
             
             dc.SetPen(old_pen)
 
+
     def OnTaskClick(self, e):
         pass
-#        x, y = e.GetX(), e.GetY()
-#        width = self.bit_imgs[0][1]
-#        btw = 30
-#        for i in xrange(len(self.select_item)):
-#            self.select_item[i] = 0
-#            if (btw + width) * i <= x <= (btw + width) * (i + 1):
-#                self.select_item[i] = 1
-#        self.pjv_p.Refresh()
-#        self.pcv_p.Refresh()
-        
-        
         
     def make_btns(self, parent, px, py, sx, sy):
         btns_p = wx.Panel(parent, -1, pos=(px, py), size=(sx, sy))
@@ -330,7 +379,7 @@ class M_frame(wx.Frame):
         wx.StaticBox(btns_p, -1, "", pos=(5, 0), size=(sx - 10, sy - 44))
         btw = 10
         modeling_btns = ['circleBtn', 'recBtn' , 'arrowBtn', 'moneyBtn']
-        mo_btns = []
+        self.mo_btns = []
         for i, name in enumerate(modeling_btns):
             img = wx.Image('pic/' + name + '.png', wx.BITMAP_TYPE_PNG).ConvertToBitmap()
             w = img.GetWidth()
@@ -338,19 +387,19 @@ class M_frame(wx.Frame):
             btn = wx.BitmapButton(btns_p, id=i, bitmap=img, pos=(btw + (i % 2) * (w + btw), btw + (i // 2) * (h + btw) + 2), size=(w, h))
             selected_bitmap = wx.Image('pic/selected_' + name + '.png', wx.BITMAP_TYPE_PNG).ConvertToBitmap()
             btn.SetBitmapSelected(selected_bitmap) 
-            mo_btns.append(btn)
+            self.mo_btns.append(btn)
         
-        px, py = mo_btns[2].GetPosition()
-        sx, sy = mo_btns[2].GetSize()
+        px, py = self.mo_btns[2].GetPosition()
+        sx, sy = self.mo_btns[2].GetSize()
         action_btns = ['Initialize', 'Recommend', 'Confirm']
-        ac_btns = []
+        self.ac_btns = []
         for i, t in enumerate(action_btns):
             btn = wx.Button(btns_p, -1, t, pos=(px, btw + py + sy + i * 45), size=(110, 35))
             btn.SetFont(wx.Font(15, wx.FONTFAMILY_ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_LIGHT))
-            ac_btns.append(btn)
+            self.ac_btns.append(btn)
         
-        px, py = ac_btns[-1].GetPosition()
-        sx, sy = ac_btns[-1].GetSize()
+        px, py = self.ac_btns[-1].GetPosition()
+        sx, sy = self.ac_btns[-1].GetSize()
          
         pre_logo_img = wx.Image('pic/PNU_logo.png', wx.BITMAP_TYPE_PNG)
         w = pre_logo_img.GetWidth()
@@ -358,9 +407,61 @@ class M_frame(wx.Frame):
         logo_img = wx.BitmapFromImage(pre_logo_img)
         wx.StaticBitmap(btns_p, -1, logo_img, pos=(px, py + sy + btw + 7), size=(w, h))
         return btns_p
+    
+    def pc_init(self, _):
+        self.isReco = False
+        self.pcv_p.Refresh()
+    
+    def recommand(self, _):
+        recom_graph = Graph(self)
+        recom_graph.Show(True)
+        
+class Graph(wx.Dialog):
+    def __init__(self, parent):
+        wx.Dialog.__init__(self, parent, -1, 'Recommend', pos=(120, 100) , size=(600, 400))
+        self.Bind(wx.EVT_CLOSE, self.OnCloseWindow)
+        self.Bind(wx.EVT_PAINT, self.drawGraph)
+        self.Bind(wx.EVT_LEFT_DOWN, self.OnClick)
+        
+        sx, sy = self.GetSize()
+        
+        self.ori_px = 50 
+        self.ori_py = sy - 90
+        
+    def OnClick(self, e):
+        self.Parent.isReco = True
+        self.Parent.pcv_p.Refresh()
+#        print self.Parent.isReco 
+        self.Destroy()
+        
+        
+    def drawGraph(self, _):
+        dc = wx.PaintDC(self)
+        self.PrepareDC(dc)
+        
+        
+        x_axi_px, x_axi_py = self.ori_px + 480, self.ori_py
+        arr_es = 10
+        dc.DrawLine(self.ori_px, self.ori_py, x_axi_px, x_axi_py)
+        dc.DrawLine(x_axi_px, x_axi_py, x_axi_px - arr_es, x_axi_py + arr_es / 2)
+        dc.DrawLine(x_axi_px, x_axi_py, x_axi_px - arr_es, x_axi_py - arr_es / 2)
+        
+        y_axi_px, y_axi_py = self.ori_px, self.ori_py - 260
+        dc.DrawLine(self.ori_px, self.ori_py, y_axi_px, y_axi_py)
+        dc.DrawLine(y_axi_px, y_axi_py, y_axi_px + arr_es / 2, y_axi_py + arr_es)
+        dc.DrawLine(y_axi_px, y_axi_py, y_axi_px - arr_es / 2, y_axi_py + arr_es)
+        
+    def OnCloseWindow(self, _):
+        self.Destroy()
+        
         
 if __name__ == '__main__':
-    app = wx.PySimpleApp()
+#    app = wx.PySimpleApp()
+    app = wx.App()
     mv = M_frame(None, -1, 'POCUS', pos=(100, 50), size=(1024, 768))
     mv.Show(True)
+    
+#    recom_graph = Graph(None)
+#    recom_graph.Show(True)
+     
     app.MainLoop()
