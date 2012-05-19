@@ -7,6 +7,7 @@ white = color_src.white
 dark_sky = color_src.dark_sky
 red = color_src.red
 blue = color_src.blue
+sky = color_src.sky
 
 class M_frame(wx.Frame):
     def __init__(self, parent, ID, title, pos, size, style=wx.DEFAULT_FRAME_STYLE):
@@ -29,21 +30,25 @@ class M_frame(wx.Frame):
         self.process_display(p, proce_p_px, proce_p_py, proce_p_sx, proce_p_sy)
         
     def project_display(self, parent, px, py, p_sx, p_sy):
-        pro_p = wx.Panel(parent, -1, pos=(px, py), size=(p_sx, p_sy))
-        wx.StaticBox(pro_p, -1, "", pos=(5, 0), size=(p_sx - 7, p_sy))
-        t_p = self.make_title_p(pro_p, 'pic/project_title.png', 7, 10, p_sx - 12, 60)
-        btn_p = wx.Panel(pro_p, -1, pos=(7, p_sy - 40), size=(p_sx - 9, 40))
+        self.pro_p = wx.Panel(parent, -1, pos=(px, py), size=(p_sx, p_sy))
+        
+        wx.StaticBox(self.pro_p, -1, "", pos=(5, 0), size=(p_sx - 7, p_sy))
+        t_p = self.make_title_p(self.pro_p, 'pic/project_title.png', 7, 10, p_sx - 12, 60)
+        btn_p = wx.Panel(self.pro_p, -1, pos=(7, p_sy - 40), size=(p_sx - 9, 40))
         btn_p.SetBackgroundColour(dark_sky)
-        add_btn = self.make_pro_btn(btn_p, 'pic/+.png', p_sx - 85, 2)
-        remove_btn = self.make_pro_btn(btn_p, 'pic/-.png', p_sx - 50, 2)
+        add_btn = self.make_pro_btn(btn_p, 'pic/+.png', 'pic/+_.png', p_sx - 85, 2)
+        remove_btn = self.make_pro_btn(btn_p, 'pic/-.png', 'pic/-_.png', p_sx - 50, 2)
+        
         add_btn.Bind(wx.EVT_BUTTON, self.project_add)
         remove_btn.Bind(wx.EVT_BUTTON, self.project_remove)
+        
+        self.new_pro_added = False
         
         px, py = t_p.GetPosition()
         t_sx, t_sy = t_p.GetSize()
         _, b_sy = btn_p.GetSize()
         
-        self.pjv_p = wx.ScrolledWindow(pro_p, -1, pos=(px, py + t_sy + 2), size=(t_sx, p_sy - (t_sy + b_sy + 15)), style=wx.SUNKEN_BORDER)
+        self.pjv_p = wx.ScrolledWindow(self.pro_p, -1, pos=(px, py + t_sy + 2), size=(t_sx, p_sy - (t_sy + b_sy + 15)), style=wx.SUNKEN_BORDER)
         self.pjv_p.SetDoubleBuffered(True)
         _, self.pjv_py = self.pjv_p.GetPosition()
         _, self.pjv_sy = self.pjv_p.GetSize()
@@ -51,8 +56,8 @@ class M_frame(wx.Frame):
         self.pjv_p.SetScrollbars(100, self.pjv_sy, 13, 1)
         
         inte_imgs = ['interior_pic1', 'interior_pic2']
-        self.inte_lo_sc = ['전남, 전체', '부산, 실내']
-        self.dates = ['2012.05.12', '2012.06.08']
+        self.inte_lo_sc = ['전남, 전체', '부산, 실내', 'Freight Forwarder']
+        self.dates = ['2012.05.12', '2012.06.08', '2012.06.08']
         
         self.bit_imgs = []
         diminish_size = 1
@@ -65,7 +70,8 @@ class M_frame(wx.Frame):
             
         self.pjv_p.Bind(wx.EVT_PAINT, self.drawProject)
         self.pjv_p.Bind(wx.EVT_LEFT_DOWN, self.OnProjectClick)
-        self.select_item = [1, 0]
+#        self.select_item = [1, 0, 0]
+        self.select_item = [0, 0, 1]
 #        self.select_item = [0, 0]
         
     def OnProjectClick(self, e):
@@ -85,6 +91,7 @@ class M_frame(wx.Frame):
         self.pjv_p.PrepareDC(dc)
         st_sy = self.bit_imgs[0][0].GetHeight()
         btw = 30
+        
         for i, b in enumerate(self.bit_imgs):    
             w = b[1]
             h = b[2]
@@ -93,7 +100,10 @@ class M_frame(wx.Frame):
             dc.DrawBitmap(self.bit_imgs[i][0], px , py)
             t_btw = 15
             c_px = px + 30
-            dc.DrawText(self.inte_lo_sc[i], c_px, btw + st_sy + t_btw)
+            if i != 2:
+                dc.DrawText(self.inte_lo_sc[i], c_px, btw + st_sy + t_btw)
+            else:
+                dc.DrawText(self.inte_lo_sc[i], c_px - 20, btw + st_sy + t_btw)
             dc.DrawText(self.dates[i], c_px, btw + st_sy + t_btw * 2.5)
             
             if self.select_item[i] == 1:
@@ -114,16 +124,24 @@ class M_frame(wx.Frame):
             
         dc.EndDrawing()
         
-    def make_pro_btn(self, parent, img, px, py):
+    def make_pro_btn(self, parent, img, selected_img, px, py):
         pre_img = wx.Image(img, wx.BITMAP_TYPE_PNG)
         w = pre_img.GetWidth()
         h = pre_img.GetHeight()
         img = pre_img.Scale(w / 4, h / 4).ConvertToBitmap()
         btn = wx.BitmapButton(parent, id= -1, bitmap=img, pos=(px, py), size=(30, 30))
+        
+        s_pre_img = wx.Image(selected_img, wx.BITMAP_TYPE_PNG)
+        w = s_pre_img.GetWidth()
+        h = s_pre_img.GetHeight()
+        s_img = s_pre_img.Scale(w / 4, h / 4).ConvertToBitmap()
+        btn.SetBitmapSelected(s_img)
+        
         return btn
     
     def project_add(self, evt):
-        pass
+        project_v = Project(self)
+        project_v.Show(True)
     
     def project_remove(self, evt):
         pass
@@ -175,6 +193,7 @@ class M_frame(wx.Frame):
         proce_p = wx.Panel(parent, -1, pos=(px, py), size=(p_sx, p_sy))
         wx.StaticBox(proce_p, -1, "", pos=(5, 0), size=(p_sx - 18, p_sy - 40))
         t_p = self.make_title_p(proce_p, 'pic/process_title.png', 7, 10, p_sx - 24, 60)
+        
         px, py = t_p.GetPosition()
         t_p_sx, sy = t_p.GetSize()
         
@@ -189,6 +208,18 @@ class M_frame(wx.Frame):
         self.Bind(wx.EVT_BUTTON, self.recommand, recom_btn)
         self.isReco = False
         
+        circleBtn = self.mo_btns[0] 
+        recBtn = self.mo_btns[1] 
+        arrowBtn = self.mo_btns[2] 
+        moneyBtn = self.mo_btns[3]
+        
+        self.Bind(wx.EVT_BUTTON, self.circleBtn, circleBtn)
+        self.Bind(wx.EVT_BUTTON, self.recBtn, recBtn)
+        self.Bind(wx.EVT_BUTTON, self.moneyBtn, moneyBtn)
+#        self.Bind(wx.EVT_BUTTON, self.arrowBtn, arrowBtn)
+        
+        self.prev_process = None
+        self.next_process = None
         
         self.pcv_p = wx.ScrolledWindow(proce_p, -1, pos=(px + sx, py + 7), size=(t_p_sx - sx, sy - 7), style=wx.SUNKEN_BORDER)
         self.pcv_p.SetDoubleBuffered(True)
@@ -208,34 +239,34 @@ class M_frame(wx.Frame):
         self.circle_img = wx.Image('pic/circleBtn.png', wx.BITMAP_TYPE_PNG).ConvertToBitmap()
         self.money_img = wx.Image('pic/moneyBtn.png', wx.BITMAP_TYPE_PNG).ConvertToBitmap()
         
-        h_center_py = self.pcv_sy / 2 - 35
-        d_start_px = 50
-        btw = 80
+        self.h_center_py = self.pcv_sy / 2 - 35
+        self.d_start_px = 50
+        self.p_btw = 80
         
         self.inte1_pos = []
-        self.inte1_pos.append((d_start_px, h_center_py))
+        self.inte1_pos.append((self.d_start_px, self.h_center_py))
         
-        self.inte1_pos.append((self.inte1_pos[-1][0] + btw, self.inte1_pos[0][1]))
+        self.inte1_pos.append((self.inte1_pos[-1][0] + self.p_btw, self.inte1_pos[0][1]))
         
-        self.inte1_pos.append((self.inte1_pos[-1][0] + btw, self.inte1_pos[0][1] - 50))
+        self.inte1_pos.append((self.inte1_pos[-1][0] + self.p_btw, self.inte1_pos[0][1] - 50))
         self.inte1_pos.append((self.inte1_pos[-1][0], self.inte1_pos[0][1] + 50))
         
-        self.inte1_pos.append((self.inte1_pos[-1][0] + btw, self.inte1_pos[0][1]))
+        self.inte1_pos.append((self.inte1_pos[-1][0] + self.p_btw, self.inte1_pos[0][1]))
         
-        self.inte1_pos.append((self.inte1_pos[-1][0] + btw, self.inte1_pos[0][1] - 80))
+        self.inte1_pos.append((self.inte1_pos[-1][0] + self.p_btw, self.inte1_pos[0][1] - 80))
         self.inte1_pos.append((self.inte1_pos[-1][0], self.inte1_pos[0][1]))
         self.inte1_pos.append((self.inte1_pos[-1][0], self.inte1_pos[0][1] + 80))
         
-        self.inte1_pos.append((self.inte1_pos[-1][0] + btw, self.inte1_pos[0][1]))
+        self.inte1_pos.append((self.inte1_pos[-1][0] + self.p_btw, self.inte1_pos[0][1]))
         
-        self.inte1_pos.append((self.inte1_pos[-1][0] + btw, self.inte1_pos[0][1] - 50))
+        self.inte1_pos.append((self.inte1_pos[-1][0] + self.p_btw, self.inte1_pos[0][1] - 50))
         self.inte1_pos.append((self.inte1_pos[-1][0], self.inte1_pos[0][1] + 50))
         
-        self.inte1_pos.append((self.inte1_pos[-1][0] + btw, self.inte1_pos[0][1]))
+        self.inte1_pos.append((self.inte1_pos[-1][0] + self.p_btw, self.inte1_pos[0][1]))
         
-        self.inte1_pos.append((self.inte1_pos[-1][0] + btw, self.inte1_pos[0][1]))
+        self.inte1_pos.append((self.inte1_pos[-1][0] + self.p_btw, self.inte1_pos[0][1]))
         
-        self.inte1_pos.append((self.inte1_pos[-1][0] + btw, self.inte1_pos[0][1]))
+        self.inte1_pos.append((self.inte1_pos[-1][0] + self.p_btw, self.inte1_pos[0][1]))
         
         inte1_es = [(0, 1),
               (1, 2), (1, 3),
@@ -252,23 +283,23 @@ class M_frame(wx.Frame):
         self.inte1_names = ['철거', '목공', '철공', '샤시', '타일', '페인트', '필름', '도배', '주방', '욕실', '바닥' ]
         self.inte1_fixed = [1, 2, 6, 10]
         self.inte1_reco = [3, 4, 5, 7, 8, 9, 11]
-        
+        self.chassis_selected = False
         
         self.inte2_pos = []
         
-        self.inte2_pos.append((d_start_px, h_center_py))
-        self.inte2_pos.append((self.inte2_pos[-1][0] + btw, self.inte2_pos[0][1]))
-        self.inte2_pos.append((self.inte2_pos[-1][0] + btw, self.inte2_pos[0][1] - 50))
+        self.inte2_pos.append((self.d_start_px, self.h_center_py))
+        self.inte2_pos.append((self.inte2_pos[-1][0] + self.p_btw, self.inte2_pos[0][1]))
+        self.inte2_pos.append((self.inte2_pos[-1][0] + self.p_btw, self.inte2_pos[0][1] - 50))
         self.inte2_pos.append((self.inte2_pos[-1][0], self.inte2_pos[0][1] + 50))
         
-        self.inte2_pos.append((self.inte2_pos[-1][0] + btw, self.inte2_pos[0][1] - 50 - 30))
+        self.inte2_pos.append((self.inte2_pos[-1][0] + self.p_btw, self.inte2_pos[0][1] - 50 - 30))
         self.inte2_pos.append((self.inte2_pos[-1][0], self.inte2_pos[0][1] - 50 + 30))
         self.inte2_pos.append((self.inte2_pos[-1][0], self.inte2_pos[0][1] + 50))
         
-        self.inte2_pos.append((self.inte2_pos[-1][0] + btw, self.inte2_pos[0][1]))
-        self.inte2_pos.append((self.inte2_pos[-1][0] + btw, self.inte2_pos[0][1]))
-        self.inte2_pos.append((self.inte2_pos[-1][0] + btw, self.inte2_pos[0][1]))
-        self.inte2_pos.append((self.inte2_pos[-1][0] + btw, self.inte2_pos[0][1]))
+        self.inte2_pos.append((self.inte2_pos[-1][0] + self.p_btw, self.inte2_pos[0][1]))
+        self.inte2_pos.append((self.inte2_pos[-1][0] + self.p_btw, self.inte2_pos[0][1]))
+        self.inte2_pos.append((self.inte2_pos[-1][0] + self.p_btw, self.inte2_pos[0][1]))
+        self.inte2_pos.append((self.inte2_pos[-1][0] + self.p_btw, self.inte2_pos[0][1]))
         
         inte2_es = [(0, 1),
               (1, 2), (1, 3),
@@ -279,7 +310,9 @@ class M_frame(wx.Frame):
               (8, 9),
               (9, 10)]
         
-        self.inte2_pos_es = self.make_edges(inte2_es, self.inte2_pos)        
+        self.inte2_pos_es = self.make_edges(inte2_es, self.inte2_pos)
+        
+        self.tasks_in_pro = []
        
     def make_edges(self, es, pos):
         edges = []
@@ -295,7 +328,31 @@ class M_frame(wx.Frame):
             self.drawInte2(dc)
         elif self.select_item[0] == 1:
             self.drawInte1(dc)
+        else:
+            self.drawNewProcess(dc)
         dc.EndDrawing()
+        
+    def drawNewProcess(self, dc):
+        for p in self.tasks_in_pro:
+            if p.type == 0:
+                dc.DrawBitmap(self.circle_img, p.px, p.py)
+            elif p.type == 1:
+                dc.DrawBitmap(self.rec_img, p.px, p.py)
+            elif p.type == 2:
+                dc.DrawBitmap(self.money_img, p.px, p.py)
+                
+        if self.prev_process:
+            old_pen = dc.GetPen()
+            dc.SetPen(wx.Pen(wx.BLUE, 3))
+            p1 = (self.prev_process.px - 3, self.prev_process.py - 3)
+            p2 = (self.prev_process.px - 3 + 56, self.prev_process.py - 3)
+            p3 = (self.prev_process.px - 3, self.prev_process.py - 3 + 56)
+            p4 = (self.prev_process.px - 3 + 56, self.prev_process.py - 3 + 56)
+            dc.DrawLine(p1[0], p1[1], p2[0], p2[1])
+            dc.DrawLine(p1[0], p1[1], p3[0], p3[1])
+            dc.DrawLine(p2[0], p2[1], p4[0], p4[1])
+            dc.DrawLine(p3[0], p3[1], p4[0], p4[1])
+            dc.SetPen(old_pen)
         
     def drawInte1(self, dc):
         dc.DrawBitmap(self.circle_img, self.inte1_pos[0][0], self.inte1_pos[0][1])
@@ -325,7 +382,14 @@ class M_frame(wx.Frame):
         dc.SetPen(old_pen)
         dc.SetTextForeground(old_t_clr)
         
-        
+        if self.chassis_selected:
+            old_t_clr = dc.GetTextForeground()
+            dc.SetTextForeground(red)
+            px = self.inte1_pos[4][0]
+            py = self.inte1_pos[4][1]
+            dc.DrawText('Fixed', px - 7, py - 7)
+            dc.SetTextForeground(old_t_clr)
+            
         if self.isReco:
             old_t_clr = dc.GetTextForeground()
             dc.SetTextForeground(blue)
@@ -362,16 +426,25 @@ class M_frame(wx.Frame):
             px = -uy;
             py = ux;
             dc.DrawLine(sx, sy, ex, ey)
-            dc.DrawLine(ex, ey, ex - int((ux * 5)) + int(px * 3), ey
-                    - int(uy * 5) + int(py * 3));
-            dc.DrawLine(ex, ey, ex - int(ux * 5) - int(px * 3), ey
-                    - int(uy * 5) - int(py * 3));
-            
+            dc.DrawLine(ex, ey, ex - int((ux * 5)) + int(px * 3), ey - int(uy * 5) + int(py * 3));
+            dc.DrawLine(ex, ey, ex - int(ux * 5) - int(px * 3), ey - int(uy * 5) - int(py * 3));
             dc.SetPen(old_pen)
 
-
     def OnTaskClick(self, e):
-        pass
+        if self.select_item[0] == 1 :
+            participant_v = Participant(self)
+            participant_v.Show(True)
+            
+        dx, dy = self.pcv_p.GetViewStart()
+        x, y = e.GetX() + dx * 100, e.GetY() + dy * 100
+        for i, p in enumerate(self.tasks_in_pro):
+            if p.px <= x <= p.px + self.p_btw and p.py <= y <= p.py + 50:
+                if not self.prev_process:
+                    self.prev_process = self.tasks_in_pro[i]
+                else:
+                    self.next_process = self.tasks_in_pro[i]
+        self.pcv_p.Refresh()
+        
         
     def make_btns(self, parent, px, py, sx, sy):
         btns_p = wx.Panel(parent, -1, pos=(px, py), size=(sx, sy))
@@ -415,6 +488,96 @@ class M_frame(wx.Frame):
     def recommand(self, _):
         recom_graph = Graph(self)
         recom_graph.Show(True)
+
+    def circleBtn(self, _):
+        if not self.tasks_in_pro:
+            px, py = (self.d_start_px, self.h_center_py)
+        else:
+            last_process = self.tasks_in_pro[-1]
+            px, py = (last_process.px + self.p_btw, last_process.py)
+        p = Process(0, px, py)
+        self.tasks_in_pro.append(p)
+        self.pcv_p.Refresh()
+        
+    def recBtn(self, evt):
+        last_process = self.tasks_in_pro[-1]
+        px, py = (last_process.px + self.p_btw, last_process.py)
+        p = Process(1, px, py)
+        self.tasks_in_pro.append(p)
+        self.pcv_p.Refresh()
+    
+    def moneyBtn(self, evt):
+        last_process = self.tasks_in_pro[-1]
+        px, py = (last_process.px + self.p_btw, last_process.py)
+        p = Process(2, px, py)
+        self.tasks_in_pro.append(p)
+        self.pcv_p.Refresh()
+
+class Participant(wx.Dialog):
+    def __init__(self, parent):
+        wx.Dialog.__init__(self, parent, -1, 'Find Participant', pos=(120, 100) , size=(360, 680))
+        self.r_box = wx.StaticBox(self, -1, "", pos=(7, 0), size=(341, 640))
+        px, py = self.r_box.GetPosition()
+        sx, _ = self.r_box.GetSize()
+        sp_p = wx.Panel(self, -1, pos=(px + 2, py + 11), size=(sx - 7, 60))
+        sx, sy = sp_p.GetSize()
+        btw = 2
+        sp_sx = (sx - btw) / 2 
+        s_p = wx.Panel(sp_p, -1, pos=(0, 0), size=(sp_sx, sy))
+        s_p.SetBackgroundColour(blue)
+        px, py = s_p.GetPosition()
+        sx, _ = s_p.GetSize()
+        p_p = wx.Panel(sp_p, -1, pos=(px + sx + btw, py), size=(sp_sx, sy))
+        p_p.SetBackgroundColour(purple)
+        
+        px, py = sp_p.GetPosition()
+        sx, sy = sp_p.GetSize()
+        f_p = wx.Panel(self, -1, pos=(px, py + sy + btw), size=(sx, 45))
+        f_p.SetBackgroundColour(sky)
+        f_par = wx.TextCtrl(f_p, -1, '샤시', pos=(25, 6), size=(sx - 100, 34))
+        f_par.SetFont(wx.Font(17, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+        
+        px, py = f_par.GetPosition()
+        sx, sy = f_par.GetSize()
+        f_img = wx.Image('pic/find.png', wx.BITMAP_TYPE_PNG)
+        f_btn = wx.BitmapButton(f_p, -1, bitmap=wx.BitmapFromImage(f_img), pos=(px + sx + btw, py - 5))
+        
+        px, py = f_p.GetPosition()
+        sx, sy = f_p.GetSize()
+        
+        self.parti_v = wx.ScrolledWindow(self, -1, pos=(px, py + sy), size=(sx, 480))
+        self.parti_v.SetDoubleBuffered(True)
+        self.parti_v.SetBackgroundColour(sky)
+        self.parti_v.SetScrollRate(1, 1)        
+        self.parti_v.SetScrollbars(sx, 100, 1, 13)
+        
+        self.parti_v.Bind(wx.EVT_PAINT, self.drawParticipant)
+        self.parti_v.Bind(wx.EVT_LEFT_DOWN, self.OnClick)
+        
+        parti_name = ['chassis1', 'chassis2', 'chassis3', 'chassis4']
+        self.parti_imgs = []
+        sx, _ = self.parti_v.GetSize()
+        for ad in parti_name:
+            img = wx.Image('pic/' + ad + '.png', wx.BITMAP_TYPE_PNG)
+            w = img.GetWidth()
+            h = img.GetHeight()
+            diminish_size = sx / w
+            self.parti_imgs.append(img.Scale(w * diminish_size, h * diminish_size).ConvertToBitmap())
+            
+    def drawParticipant(self, _):
+        dc = wx.PaintDC(self.parti_v)
+        self.parti_v.PrepareDC(dc)
+        
+        h = self.parti_imgs[0].GetHeight()
+        margin = 10
+        for i, img in enumerate(self.parti_imgs):
+            dc.DrawBitmap(img, 0, (h + margin) * i)
+    
+    def OnClick(self, e):
+        self.Parent.chassis_selected = True
+        self.Parent.inte1_reco.pop(1)
+        self.Parent.pcv_p.Refresh()
+        self.Destroy()    
         
 class Graph(wx.Dialog):
     def __init__(self, parent):
@@ -423,7 +586,7 @@ class Graph(wx.Dialog):
         self.Bind(wx.EVT_PAINT, self.drawGraph)
         self.Bind(wx.EVT_LEFT_DOWN, self.OnClick)
         
-        sx, sy = self.GetSize()
+        _, sy = self.GetSize()
         
         self.ori_px = 50 
         self.ori_py = sy - 90
@@ -431,15 +594,11 @@ class Graph(wx.Dialog):
     def OnClick(self, e):
         self.Parent.isReco = True
         self.Parent.pcv_p.Refresh()
-#        print self.Parent.isReco 
         self.Destroy()
-        
         
     def drawGraph(self, _):
         dc = wx.PaintDC(self)
         self.PrepareDC(dc)
-        
-        
         x_axi_px, x_axi_py = self.ori_px + 480, self.ori_py
         arr_es = 10
         dc.DrawLine(self.ori_px, self.ori_py, x_axi_px, x_axi_py)
@@ -453,15 +612,46 @@ class Graph(wx.Dialog):
         
     def OnCloseWindow(self, _):
         self.Destroy()
+
+class Project(wx.Dialog):
+    def __init__(self, parent):
+        wx.Dialog.__init__(self, parent, -1, 'Project', pos=(120, 100) , size=(600, 400))
+        self.Bind(wx.EVT_LEFT_DOWN, self.OnClick)
+    
+    def OnClick(self, e):
+        self.Parent.new_pro_added = True
+        diminish_size = 1
+        pre_img = wx.Image('pic/freight_for.png', wx.BITMAP_TYPE_PNG)
+        w = pre_img.GetWidth()
+        h = pre_img.GetHeight()
+        img = pre_img.Scale(w * diminish_size, h * diminish_size).ConvertToBitmap()
         
+        self.Parent.bit_imgs.append((img, img.GetWidth(), img.GetHeight()))
+        self.Parent.pro_p.Refresh()
+        self.Destroy()
+        
+class Process:
+    def __init__(self, type, px, py):
+        # p_type
+        # 0 = circle, 1 = rec, 2 = money  
+        self.type = type
+        self.px = px
+        self.py = py
+        self.prev = None
+        self.next = None
         
 if __name__ == '__main__':
-#    app = wx.PySimpleApp()
-    app = wx.App()
+    app = wx.PySimpleApp()
     mv = M_frame(None, -1, 'POCUS', pos=(100, 50), size=(1024, 768))
     mv.Show(True)
     
 #    recom_graph = Graph(None)
 #    recom_graph.Show(True)
-     
+
+#    participant_v = Participant(None)
+#    participant_v.Show(True)
+
+#    project_v = Project(None)
+#    project_v.Show(True)
+         
     app.MainLoop()
