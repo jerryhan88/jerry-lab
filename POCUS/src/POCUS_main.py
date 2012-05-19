@@ -577,7 +577,8 @@ class Participant(wx.Dialog):
         self.Parent.chassis_selected = True
         self.Parent.inte1_reco.pop(1)
         self.Parent.pcv_p.Refresh()
-        self.Destroy()    
+        self.SetSize((600, 680))
+#        self.Destroy()    
         
 class Graph(wx.Dialog):
     def __init__(self, parent):
