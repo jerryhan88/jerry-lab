@@ -563,7 +563,12 @@ class Participant(wx.Dialog):
             h = img.GetHeight()
             diminish_size = sx / w
             self.parti_imgs.append(img.Scale(w * diminish_size, h * diminish_size).ConvertToBitmap())
-            
+        
+        px, py = self.parti_v.GetPosition()
+        sx, sy = self.parti_v.GetSize()
+        partner_select_btn = wx.Button(self, -1, "Select", pos=(px + 250, py + sy + btw), size=(70, 35))
+        partner_select_btn.SetFont(wx.Font(15, wx.FONTFAMILY_ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+        
     def drawParticipant(self, _):
         dc = wx.PaintDC(self.parti_v)
         self.parti_v.PrepareDC(dc)
@@ -574,10 +579,68 @@ class Participant(wx.Dialog):
             dc.DrawBitmap(img, 0, (h + margin) * i)
     
     def OnClick(self, e):
-        self.Parent.chassis_selected = True
-        self.Parent.inte1_reco.pop(1)
-        self.Parent.pcv_p.Refresh()
-        self.SetSize((600, 680))
+#        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        btw = 2
+        self.SetSize((900, 680))
+        px, py = self.r_box.GetPosition()
+        sx, _ = self.r_box.GetSize()
+        self.info_task_box = wx.StaticBox(self, -1, "", pos=(px + sx + 5, py), size=(535, 280))
+        
+        px, py = self.info_task_box.GetPosition()
+        sx, _ = self.info_task_box.GetSize()
+        ia_p = wx.Panel(self, -1, pos=(px + 2, py + 11), size=(sx - 7, 60))
+        
+        sx, sy = ia_p.GetSize()
+        sp_sx = (sx - btw) / 2 
+        i_p = wx.Panel(ia_p, -1, pos=(0, 0), size=(sp_sx, sy))
+        i_p.SetBackgroundColour(blue)
+        px, py = i_p.GetPosition()
+        sx, _ = i_p.GetSize()
+        t_p = wx.Panel(ia_p, -1, pos=(px + sx + btw, py), size=(sp_sx, sy))
+        t_p.SetBackgroundColour(purple)
+        
+        
+        px, py = ia_p.GetPosition()
+        sx, sy = ia_p.GetSize()
+        
+        self.info_task_viewer_p = wx.Panel(self, -1, pos=(px, py + sy + btw), size=(sx, 200))
+        self.info_task_viewer_p.SetBackgroundColour(red)
+        
+        px, py = self.info_task_box.GetPosition()
+        sx, sy = self.info_task_box.GetSize()
+        
+        self.detail_info_box = wx.StaticBox(self, -1, "", pos=(px, py + sy - 1), size=(sx, 362))
+        px, py = self.detail_info_box.GetPosition()
+        sx, _ = self.detail_info_box.GetSize()
+        d_p = wx.Panel(self, -1, pos=(px + 2, py + 11), size=(sx - 7, 60))
+        d_p.SetBackgroundColour(blue)
+        
+        px, py = d_p.GetPosition()
+        sx, sy = d_p.GetSize()
+        
+        self.detail_process_viewer = wx.ScrolledWindow(self, -1, pos=(px, py + sy + btw), size=(sx, 280))
+        self.detail_process_viewer.SetDoubleBuffered(True)
+        self.detail_process_viewer.SetBackgroundColour("white")
+        self.detail_process_viewer.SetScrollbars(sx, 10, 1, 130)
+        btw_line_size = 30
+        last_py = 15
+        t_px = 40
+        t_font = wx.Font(17, wx.FONTFAMILY_ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
+        sub_px = 60
+        self.detail_process_viewer.SetFont(wx.Font(12, wx.FONTFAMILY_ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+        sr = wx.StaticText(self.detail_process_viewer, -1, '1.Scale/Reputation', pos=(t_px, last_py))
+        sr.SetFont(t_font)
+        last_py += btw_line_size 
+        wx.StaticBitmap(self.detail_process_viewer, -1, wx.BitmapFromImage(wx.Image('pic/factory.png', wx.BITMAP_TYPE_PNG).Scale(200 * 1.5, 150 * 1.5)),
+                     pos=(sub_px, last_py), size=(200 * 1.5, 150 * 1.5))
+        self.Refresh()
+#        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        
+#        self.Parent.chassis_selected = True
+#        self.Parent.inte1_reco.pop(1)
+#        self.Parent.pcv_p.Refresh()
+        pass
+        
 #        self.Destroy()    
         
 class Graph(wx.Dialog):
@@ -643,14 +706,14 @@ class Process:
         
 if __name__ == '__main__':
     app = wx.PySimpleApp()
-    mv = M_frame(None, -1, 'POCUS', pos=(100, 50), size=(1024, 768))
-    mv.Show(True)
+#    mv = M_frame(None, -1, 'POCUS', pos=(100, 50), size=(1024, 768))
+#    mv.Show(True)
     
 #    recom_graph = Graph(None)
 #    recom_graph.Show(True)
 
-#    participant_v = Participant(None)
-#    participant_v.Show(True)
+    participant_v = Participant(None)
+    participant_v.Show(True)
 
 #    project_v = Project(None)
 #    project_v.Show(True)
