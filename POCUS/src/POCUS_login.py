@@ -1,5 +1,6 @@
 #-*- coding: cp949 -*-
 from __future__ import division
+from POCUS_main import M_frame
 import wx, color_src
 deco_strip_sy = 50
 orange = color_src.orange
@@ -12,11 +13,11 @@ class L_frame(wx.Frame):
         wx.Frame.__init__(self, parent, ID, title, pos, size, style)
         f_size_x, f_size_y = self.GetSize()
         base = wx.Panel(self, -1)
-        b_img1 = wx.Image('pic/login_back1.png', wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+        b_img1 = wx.Image('pic/login/login_back1.png', wx.BITMAP_TYPE_PNG).ConvertToBitmap()
         bg1 = wx.StaticBitmap(base, -1, b_img1)
         px, py = bg1.GetPosition()
         sx, sy = bg1.GetSize()
-        b_img2 = wx.Image('pic/login_back2.png', wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+        b_img2 = wx.Image('pic/login/login_back2.png', wx.BITMAP_TYPE_PNG).ConvertToBitmap()
         bg2 = wx.StaticBitmap(base, -1, b_img2, pos=(px, py + sy))
 
         px, py = bg2.GetPosition()
@@ -49,13 +50,13 @@ class L_frame(wx.Frame):
         px, py = pw_p.GetPosition()
         sx, sy = pw_p.GetSize()
         
-        loginBtn = wx.Image('pic/loginBtn.png', wx.BITMAP_TYPE_PNG)
+        loginBtn = wx.Image('pic/login/loginBtn.png', wx.BITMAP_TYPE_PNG)
         l_btn = wx.BitmapButton(id_pw_p, -1, bitmap=wx.BitmapFromImage(loginBtn), pos=(px + sx - 130, py + sy + 20), style=wx.NO_BORDER)
         base.Bind(wx.EVT_BUTTON, self.log_in, l_btn)
         
         px, py = bg2.GetPosition()
         sx, sy = bg2.GetSize()
-        pre_b_img3 = wx.Image('pic/login_back3.png', wx.BITMAP_TYPE_PNG)
+        pre_b_img3 = wx.Image('pic/login/login_back3.png', wx.BITMAP_TYPE_PNG)
         w = pre_b_img3.GetWidth()
         h = pre_b_img3.GetHeight()
         b_img3 = wx.BitmapFromImage(pre_b_img3.Scale(w, h * 0.55))
@@ -66,8 +67,8 @@ class L_frame(wx.Frame):
         c_t.SetPosition((f_size_x - c_t_sx - 10, 718))
         
     def log_in(self, evt):
-#        mf = M_frame(None, -1, 'POSCO', pos=(0, 0), size=(1024, 768))
-#        mf.Show(True)
+        mf = M_frame(None, -1, 'POSCO', pos=(0, 0), size=(1024, 768))
+        mf.Show(True)
         self.Close()
 
 if __name__ == '__main__':
