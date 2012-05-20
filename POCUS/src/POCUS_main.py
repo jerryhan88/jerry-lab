@@ -742,7 +742,7 @@ class Graph(wx.Dialog):
         w = pre_img.GetWidth()
         h = pre_img.GetHeight()
         xs, ys = sx / w, sy / h
-        t_img = wx.BitmapFromImage(pre_img.Scale(w * xs , h * sx))
+        t_img = wx.BitmapFromImage(pre_img.Scale(w * xs , h * xs))
         wx.StaticBitmap(self, -1, t_img)
         
     def OnClick(self, e):
