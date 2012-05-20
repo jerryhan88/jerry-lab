@@ -8,6 +8,8 @@ dark_sky = color_src.dark_sky
 red = color_src.red
 blue = color_src.blue
 sky = color_src.sky
+light_orange = color_src.light_orange
+dark_orange = color_src.dark_orange
 
 class M_frame(wx.Frame):
     def __init__(self, parent, ID, title, pos, size, style=wx.DEFAULT_FRAME_STYLE):
@@ -179,7 +181,7 @@ class M_frame(wx.Frame):
         self.notice_view = wx.TextCtrl(msg_p, -1, "", pos=(px + 2, py + sy + 2),
                            size=(sx, p_sy - sy - 50), style=wx.TE_MULTILINE | wx.TE_PROCESS_ENTER)
         self.notice_view.SetEditable(False)
-        self.notice_view.SetBackgroundColour(wx.Colour(248, 238, 211))
+        self.notice_view.SetBackgroundColour(light_orange)
         self.notice_view.write('---------------------------------------------------------------------------------------');
         self.notice_view.write('2011-11-27  19:6:53                                                             ');
         self.notice_view.write('---------------------------------------------------------------------------------------');
@@ -727,7 +729,7 @@ class Graph(wx.Dialog):
     def __init__(self, parent):
         wx.Dialog.__init__(self, parent, -1, 'Recommend', pos=(120, 100) , size=(600, 400))
         self.Bind(wx.EVT_CLOSE, self.OnCloseWindow)
-        self.Bind(wx.EVT_PAINT, self.drawGraph)
+#        self.Bind(wx.EVT_PAINT, self.drawGraph)
         self.Bind(wx.EVT_LEFT_DOWN, self.OnClick)
         
         _, sy = self.GetSize()
@@ -735,24 +737,33 @@ class Graph(wx.Dialog):
         self.ori_px = 50 
         self.ori_py = sy - 90
         
+        pre_img = wx.Image('pic/graph1.png', wx.BITMAP_TYPE_PNG)
+        sx, sy = self.GetSize()
+        w = pre_img.GetWidth()
+        h = pre_img.GetHeight()
+        xs, ys = sx / w, sy / h
+        t_img = wx.BitmapFromImage(pre_img.Scale(w * xs , h * sx))
+        wx.StaticBitmap(self, -1, t_img)
+        
     def OnClick(self, e):
-        self.Parent.isReco = True
-        self.Parent.pcv_p.Refresh()
-        self.Destroy()
+#        self.Parent.isReco = True
+#        self.Parent.pcv_p.Refresh()
+#        self.Destroy()
+        pass
         
-    def drawGraph(self, _):
-        dc = wx.PaintDC(self)
-        self.PrepareDC(dc)
-        x_axi_px, x_axi_py = self.ori_px + 480, self.ori_py
-        arr_es = 10
-        dc.DrawLine(self.ori_px, self.ori_py, x_axi_px, x_axi_py)
-        dc.DrawLine(x_axi_px, x_axi_py, x_axi_px - arr_es, x_axi_py + arr_es / 2)
-        dc.DrawLine(x_axi_px, x_axi_py, x_axi_px - arr_es, x_axi_py - arr_es / 2)
-        
-        y_axi_px, y_axi_py = self.ori_px, self.ori_py - 260
-        dc.DrawLine(self.ori_px, self.ori_py, y_axi_px, y_axi_py)
-        dc.DrawLine(y_axi_px, y_axi_py, y_axi_px + arr_es / 2, y_axi_py + arr_es)
-        dc.DrawLine(y_axi_px, y_axi_py, y_axi_px - arr_es / 2, y_axi_py + arr_es)
+#    def drawGraph(self, _):
+#        dc = wx.PaintDC(self)
+#        self.PrepareDC(dc)
+#        x_axi_px, x_axi_py = self.ori_px + 480, self.ori_py
+#        arr_es = 10
+#        dc.DrawLine(self.ori_px, self.ori_py, x_axi_px, x_axi_py)
+#        dc.DrawLine(x_axi_px, x_axi_py, x_axi_px - arr_es, x_axi_py + arr_es / 2)
+#        dc.DrawLine(x_axi_px, x_axi_py, x_axi_px - arr_es, x_axi_py - arr_es / 2)
+#        
+#        y_axi_px, y_axi_py = self.ori_px, self.ori_py - 260
+#        dc.DrawLine(self.ori_px, self.ori_py, y_axi_px, y_axi_py)
+#        dc.DrawLine(y_axi_px, y_axi_py, y_axi_px + arr_es / 2, y_axi_py + arr_es)
+#        dc.DrawLine(y_axi_px, y_axi_py, y_axi_px - arr_es / 2, y_axi_py + arr_es)
         
     def OnCloseWindow(self, _):
         self.Destroy()
@@ -760,9 +771,130 @@ class Graph(wx.Dialog):
 class Project(wx.Dialog):
     def __init__(self, parent):
         wx.Dialog.__init__(self, parent, -1, 'Project', pos=(120, 100) , size=(600, 400))
-        self.Bind(wx.EVT_LEFT_DOWN, self.OnClick)
+        
+        f_sx, self.f_sy = self.GetSize()
+        self.box = wx.StaticBox(self, -1, "", pos=(7, 0), size=(f_sx - 20, self.f_sy - 35))
+        px, py = self.box.GetPosition()
+        sx, _ = self.box.GetSize()
+        self.cp_p = wx.Panel(self, -1, pos=(px + 2, py + 11), size=(sx - 7, 60))
+        sx, sy = self.cp_p.GetSize()
+        btw = 2
+        sp_sx = (sx - btw) / 2 
+        self.c_p = wx.Panel(self.cp_p, -1, pos=(0, 0), size=(sp_sx, sy))
+        self.c_p.SetBackgroundColour(light_orange)
+        self.c_p.Bind(wx.EVT_LEFT_DOWN, self.OnCreClick)
+        wx.StaticText(self.c_p, -1, 'Create')
+        
+        px, py = self.c_p.GetPosition()
+        sx, _ = self.c_p.GetSize()
+        self.p_p = wx.Panel(self.cp_p, -1, pos=(px + sx + btw, py), size=(sp_sx, sy))
+        wx.StaticText(self.p_p, -1, 'participate')
+        self.p_p.SetBackgroundColour(dark_orange)
+        self.p_p.Bind(wx.EVT_LEFT_DOWN, self.OnPartiClick)
+        
+        self.makeCre_p(self.cp_p, self.f_sy)
+
+    def makeParti_p(self, cp_p, f_sy):
+        px, py = cp_p.GetPosition()
+        sx, sy = cp_p.GetSize()
+        self.par_p = wx.Panel(self, -1, pos=(px, py + sy), size=(sx, f_sy - 110))
+        self.par_p.SetBackgroundColour(light_orange)
+        
+        t_p = wx.Panel(self.par_p, -1, pos=(0, 25), size=(sx, 40))
+        t_p.SetBackgroundColour(orange)
+        
+        wx.StaticText(t_p, -1, '날짜     | 제목      |      설명         |   데드라인  |   발주자', pos=(75, 5))
+        
+        btw = 10
+        px, py = t_p.GetPosition()
+        sx, sy = t_p.GetSize()
+        ct1_p = wx.Panel(self.par_p, -1, pos=(px, py + sy + btw), size=(sx, 30))
+        wx.StaticText(ct1_p, -1, '12.08.11     | 부산, 주방인테리어      |    경력자 우대, 010-0000-0000  | 12.09.25  |  한국인테리어', pos=(50, 5))
+        ct1_p.SetBackgroundColour(orange)
+        
+        px, py = ct1_p.GetPosition()
+        sx, sy = ct1_p.GetSize()
+        ct2_p = wx.Panel(self.par_p, -1, pos=(px, py + sy + btw), size=(sx, 30))
+        wx.StaticText(ct2_p, -1, '12.04.12     | 인천, 프랜차이즈 유통      |   1톤 트럭 이상 보유자  | 12.09.01  |  금상 프랜차이즈', pos=(50, 5))
+        ct2_p.SetBackgroundColour(orange)
+        
+        sst = wx.StaticText(self.par_p, -1, 'search', pos=(50, 205))
+        px, py = sst.GetPosition()
+        sx, sy = sst.GetSize()
+        
+        tc = wx.TextCtrl(self.par_p, -1, '    ', pos=(px + sx + 10 , py), size=(130, 20))
+        px, py = tc.GetPosition()
+        sx, sy = tc.GetSize()
+        
+        ch = wx.Choice(self.par_p, -1, choices=['제목', '작성자', '글번호'], pos=(px + sx + 10, py), size=(60, 20))
+        ch.SetSelection(0)
+        
+    def OnPartiClick(self, e):
+        self.ct_p.Show(False)
+#        self.c_p.SetWindowStyle(wx.SUNKEN_BORDER)
+#        self.p_p.SetWindowStyle(0)
+#        self.p_p.Refresh()
+        self.c_p.SetBackgroundColour(dark_orange)
+        self.p_p.SetBackgroundColour(light_orange)
+        self.makeParti_p(self.cp_p, self.f_sy)
+        self.Refresh()
+
+    def OnCreClick(self, e):
+        self.par_p.Show(False)
+        self.ct_p.Show(True)
+        self.c_p.SetBackgroundColour(light_orange)
+        self.p_p.SetBackgroundColour(dark_orange)
+        self.Refresh()
     
-    def OnClick(self, e):
+    def makeCre_p(self, cp_p, f_sy):
+        px, py = cp_p.GetPosition()
+        sx, sy = cp_p.GetSize()
+        self.ct_p = wx.Panel(self, -1, pos=(px, py + sy), size=(sx, f_sy - 110))
+        self.ct_p.SetBackgroundColour(light_orange)
+        
+        contents = ['Title', 'Location', 'Dead line']
+        
+        btw = 15
+        for i, c in enumerate(contents):
+            px, py = 30, 30 + i * (30 + btw)
+            wx.StaticText(self.ct_p, -1, c, pos=(px, py))
+            tc = wx.TextCtrl(self.ct_p, -1, 'None', pos=(px + 60, py - 2), size=(200, 20))
+        
+        d_st = wx.StaticText(self.ct_p, -1, 'Description', pos=(30 + 300, 15))
+        px, py = d_st.GetPosition()
+        sx, sy = d_st.GetSize()
+        tc = wx.TextCtrl(self.ct_p, -1, 'None', pos=(px, py + sy), size=(200, 80))
+        
+        px, py = tc.GetPosition()
+        sx, sy = tc.GetPosition()
+        
+        diminish_size = 0.8
+        pre_img = wx.Image('pic/freight_for.png', wx.BITMAP_TYPE_PNG)
+        w = pre_img.GetWidth()
+        h = pre_img.GetHeight()
+        img = pre_img.Scale(w * diminish_size, h * diminish_size).ConvertToBitmap()
+        f_bit_img = wx.StaticBitmap(self.ct_p, -1, img, pos=(px + 50, py + sy + 80))
+        
+        px, py = f_bit_img.GetPosition()
+        sx, sy = f_bit_img.GetSize()
+        
+        ad_tc = wx.TextCtrl(self.ct_p, -1, 'C:/Users/HeadFirst/Documents', pos=(px - 50, py + sy + 8), size=(130, 20))
+        
+        px, py = ad_tc.GetPosition()
+        sx, sy = ad_tc.GetSize()
+        
+        btn = wx.Button(self.ct_p, -1, '찾아보기...', pos=(px + sx, py), size=(100, 30))
+        btn.SetFont(wx.Font(15, wx.FONTFAMILY_ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_LIGHT))        
+        
+        ok_btn = wx.Button(self.ct_p, -1, 'OK', pos=(30, 200), size=(100, 30))
+        ok_btn.SetFont(wx.Font(15, wx.FONTFAMILY_ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_LIGHT))
+        
+        canc_btn = wx.Button(self.ct_p, -1, 'Cancel', pos=(150, 200), size=(100, 30))
+        canc_btn.SetFont(wx.Font(15, wx.FONTFAMILY_ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_LIGHT))
+        
+        self.ct_p.Bind(wx.EVT_BUTTON, self.ok_btn, ok_btn)
+        
+    def ok_btn(self, _):
         self.Parent.new_pro_added = True
         diminish_size = 1
         pre_img = wx.Image('pic/freight_for.png', wx.BITMAP_TYPE_PNG)
@@ -773,7 +905,7 @@ class Project(wx.Dialog):
         self.Parent.bit_imgs.append((img, img.GetWidth(), img.GetHeight()))
         self.Parent.pro_p.Refresh()
         self.Destroy()
-        
+
 class Process:
     def __init__(self, type, px, py):
         # p_type
@@ -795,11 +927,11 @@ class Edge:
             
 if __name__ == '__main__':
     app = wx.PySimpleApp()
-    mv = M_frame(None, -1, 'POCUS', pos=(100, 50), size=(1024, 768))
-    mv.Show(True)
+#    mv = M_frame(None, -1, 'POCUS', pos=(100, 50), size=(1024, 768))
+#    mv.Show(True)
     
-#    recom_graph = Graph(None)
-#    recom_graph.Show(True)
+    recom_graph = Graph(None)
+    recom_graph.Show(True)
 
 #    participant_v = Participant(None)
 #    participant_v.Show(True)
