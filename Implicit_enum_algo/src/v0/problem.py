@@ -14,26 +14,26 @@ def make_graph(ns):
     init_op = []
     end_op = []
     for i, op in enumerate(ops):
-        if cur_item_num != op.item:
-            cur_item_num = op.item
+        if cur_item_num != op.item_num:
+            cur_item_num = op.item_num
             init_op.append(op)
         else:
-            ops[i - 1].next_by_item.append(op.num)
-            op.prev_by_item.append(ops[i - 1].num)
-            if  i + 1 != len(ops) and ops[i + 1].item != cur_item_num:
+            ops[i - 1].set_next_by_item(op)
+            op.set_prev_by_item(ops[i - 1])
+            if  i + 1 != len(ops) and ops[i + 1].item_num != cur_item_num:
                 end_op.append(op)
             if i + 1 == len(ops):
                 end_op.append(op)
 
-    ns[0].next_by_item = [x.num for x in init_op]
+    ns[0].set_next_by_item(init_op[:])
     
     for op in init_op:
-        op.prev_by_item.append(ns[0].num)
+        op.set_prev_by_item(ns[0])
     
     for op in end_op:
-        op.next_by_item.append(ns[-1].num)
+        op.set_next_by_item(ns[-1])
     
-    ns[-1].prev_by_item = [x.num for x in end_op] 
+    ns[-1].set_prev_by_item(end_op[:])
 
 def display_graph(ns, ms):
     print 'operation'
@@ -105,7 +105,7 @@ def ex2():
     return ns, ms
 
 if __name__ == '__main__':
-#    ns, ms = ex1()
-    ns, ms = ex2()
+    ns, ms = ex1()
+#    ns, ms = ex2()
     display_graph(ns, ms)
 
