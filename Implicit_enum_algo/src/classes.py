@@ -45,5 +45,6 @@ class Machine(object):
     
     def duplicate(self):
         d_m = Machine(self.num)
+        d_m.assigned_item = list(self.assigned_item)
         d_m.seq = list(self.seq)
         return d_m
