@@ -6,9 +6,8 @@ Created on 2012. 7. 6.
 
 from random import randrange, seed
 
-def gen_problem(num_jobs, p_min, p_max, s_min, s_max, check_trianglur_ineq, seed_num=100):
+def gen_problem(num_machine, num_jobs, p_min, p_max, s_min, s_max, check_trianglur_ineq, seed_num=100):
     seed(seed_num)
-    
     p_j = [randrange(p_min, p_max + 1) for _ in xrange(num_jobs)]
     s_jk = []
     temp_p = [randrange(s_max - s_min)for _ in xrange(num_jobs)]
@@ -30,7 +29,8 @@ def gen_problem(num_jobs, p_min, p_max, s_min, s_max, check_trianglur_ineq, seed
                         if i != j and i != k:
                             assert s_jk[j][i] + s_jk[i][k] >= s_jk[j][k], 'This problem don\'t satisfy triangular inequality'   
     
-    return p_j, s_jk 
+    problem_display(p_j, s_jk)
+    return num_machine, p_j, s_jk 
 
 def problem_display(p_j, s_jk):
     print 'Processing time'
@@ -41,8 +41,7 @@ def problem_display(p_j, s_jk):
         print '    ', j
 
 def ex1():
-    return gen_problem(10, 2, 20, 5, 15, True)
+    return gen_problem(3, 4, 2, 20, 5, 15, True)
 
 if __name__ == '__main__':
-    p_j, s_jk = gen_problem(10, 2, 20, 5, 15, True) 
-    problem_display(p_j, s_jk)
+    p_j, s_jk = gen_problem(3, 10, 2, 20, 5, 15, True) 
