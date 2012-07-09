@@ -32,40 +32,35 @@ def run(num_machine, p_j, s_jk):
     print '    ', min_Cmax, opt_schedule 
     
     # make list L from Opt schedule
-    L = [seq[0] for seq in opt_schedule]
-    expected_completion_time = []
-    for seq in opt_schedule:
-        if len(seq) != 1:
-            expected_completion_time.append(p_j[seq[0]] + s_jk[seq[0]][seq[1]] + p_j[seq[1]])
-        else:
-            expected_completion_time.append(sys.maxint)
-    tj_in_seq = [1] * num_machine
-    
-    print L
-    print expected_completion_time
-    min_c_t = min(expected_completion_time)
+    L = []
+    expected_possible_assign_time = [0]*num_machine
+    tj_in_seq = [0]*num_machine
+    min_a_t = min(expected_possible_assign_time)
     while True:
         tj = None
-        for i, ECT in enumerate(expected_completion_time):
-            if min_c_t == ECT and min_c_t != sys.maxint:
+        for i, EPAT in enumerate(expected_possible_assign_time):
+            if min_a_t == EPAT and min_a_t != sys.maxint:
                 tj = opt_schedule[i][tj_in_seq[i]]
                 L.append(tj)
                 tj_in_seq[i] += 1
                 if tj_in_seq[i] != len(opt_schedule[i]):
-                        next_j = opt_schedule[i][tj_in_seq[i]]
-                        expected_completion_time[i] += s_jk[tj][next_j] + p_j[next_j]
+                    if tj_in_seq[i] ==1:
+                        expected_possible_assign_time[i] += p_j[tj]
+                    else:
+                        prev_j = opt_schedule[i][tj_in_seq[i]-2]
+                        expected_possible_assign_time[i] += s_jk[prev_j][tj] + p_j[tj]
                 else:
-                    expected_completion_time[i] = sys.maxint
-                min_c_t = min(expected_completion_time)
+                    expected_possible_assign_time[i] = sys.maxint
+                min_a_t = min(expected_possible_assign_time)
                 break
         else:
             break
     print 'List of opt schedule'
-    print '    ', L
-        
+    print '    ', L    
+    
     # Schedule construction by list
     machines = [[] for _ in xrange(num_machine)]
-    c_t = [0] * num_machine
+    c_t = [0]*num_machine
     for j in L:
         f_i = sys.maxint
         target_m = None
@@ -112,11 +107,9 @@ def run(num_machine, p_j, s_jk):
 
 if __name__ == '__main__':
 #    run(*problem.ex1())
-#    run(*problem.ex3())
     for seed_num in xrange(100):
         print 'seed number'
         print '    ', seed_num
-
-        run(*problem.gen_problem(3, 5, 2, 20, 5, 15, True, seed_num))
-##        run(*problem.gen_problem(3, 4, 2, 20, 5, 15, True, seed_num))
+#        run(*problem.gen_problem(3, 4, 2, 20, 5, 15, True, seed_num))
+        run(*problem.gen_problem(3, 7, 2, 20, 5, 15, True, seed_num))
     

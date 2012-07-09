@@ -42,10 +42,6 @@ def problem_display(p_j, s_jk):
 
 def ex1():
     return gen_problem(3, 4, 2, 20, 5, 15, True)
-def ex2():
-    return gen_problem(3, 5, 2, 20, 5, 15, True, 61)
-def ex3():
-    return gen_problem(3, 5, 2, 20, 5, 15, True, 6)
 
 if __name__ == '__main__':
     p_j, s_jk = gen_problem(3, 10, 2, 20, 5, 15, True) 
