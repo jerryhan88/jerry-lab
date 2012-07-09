@@ -6,13 +6,15 @@ Created on 2012. 7. 6.
 
 import problem, sys
 from enum_all_schedule import all_parallel_machine_schedules
-from itertools import permutations
 
 def run(num_machine, p_j, s_jk):
     # find opt solution among all schedules
     min_Cmax = sys.maxint
     opt_schedule = None
     for S in all_parallel_machine_schedules(len(p_j), num_machine):
+#        num_job_in_seq = [len(x)for x in S]
+#        if min(num_job_in_seq) == 0:
+#            continue
         Cmax = 0
         for j_seq in S:
             completion_t = 0
@@ -29,6 +31,41 @@ def run(num_machine, p_j, s_jk):
     print 'Opt schedule and value of min(Cmax)'
     print '    ', min_Cmax, opt_schedule
     
+    
+    
+    
+    
+     
+    '''
+    # make list L from Opt schedule
+    L = []
+    expected_possible_assign_time = [0]*num_machine
+    tj_in_seq = [0]*num_machine
+    min_a_t = min(expected_possible_assign_time)
+    while True:
+        tj = None
+        for i, EPAT in enumerate(expected_possible_assign_time):
+            if min_a_t == EPAT and min_a_t != sys.maxint:
+                tj = opt_schedule[i][tj_in_seq[i]]
+                L.append(tj)
+                tj_in_seq[i] += 1
+                if tj_in_seq[i] != len(opt_schedule[i]):
+                    if tj_in_seq[i] ==1:
+                        expected_possible_assign_time[i] += p_j[tj]
+                    else:
+                        prev_j = opt_schedule[i][tj_in_seq[i]-2]
+                        expected_possible_assign_time[i] += s_jk[prev_j][tj] + p_j[tj]
+                else:
+                    expected_possible_assign_time[i] = sys.maxint
+                min_a_t = min(expected_possible_assign_time)
+                break
+        else:
+            break
+    print 'List of opt schedule'
+    print '    ', L    
+    '''
+    
+    from itertools import permutations
     # List permutation
     Ls = [l for l in permutations(range(len(p_j)))]
     
