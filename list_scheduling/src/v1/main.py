@@ -6,66 +6,45 @@ Created on 2012. 7. 6.
 
 import problem, sys
 from enum_all_schedule import all_parallel_machine_schedules
-
-def run(num_machine, p_j, s_jk):
+from subprocess import call, CREATE_NEW_CONSOLE
+from itertools import permutations
+from time import time
+def calc_min_Cmax_by_cplex(p_j, num_machine, s_jk):
+    start_t = time()
+    num_jobs = len(p_j)
     # find opt solution among all schedules
-    min_Cmax = sys.maxint
-    opt_schedule = None
-    for S in all_parallel_machine_schedules(len(p_j), num_machine):
-#        num_job_in_seq = [len(x)for x in S]
-#        if min(num_job_in_seq) == 0:
-#            continue
-        Cmax = 0
-        for j_seq in S:
-            completion_t = 0
-            for i, j in enumerate(j_seq):
-                if i == 0:
-                    completion_t += p_j[j]
-                else:
-                    completion_t += s_jk[j_seq[i - 1]][j] + p_j[j]
-            if completion_t > Cmax:
-                Cmax = completion_t
-        if Cmax < min_Cmax:
-            min_Cmax = Cmax
-            opt_schedule = list(S)
+    min_Cmax = None
+    MOD_FILE, DAT_FILE, SOL_FILE = 'list_scheduling.mod', 'list_scheduling.dat', 'list_scheduling.sol'
+    Nbj = num_jobs
+    Nbm = num_machine
+    
+    #setup time
+    S = [list(x) for x in s_jk]
+    for x in xrange(num_jobs):
+        S[x][x] = sys.maxint 
+    str_S = '['
+    for start_j in S:
+        str_S = str_S + str(start_j) + ','
+    str_S = str_S[:-1] + ']'
+    
+    with open(DAT_FILE, 'w') as f:
+        f.write('Nbj = %d;\n' % Nbj)
+        f.write('Nbm = %d;\n' % Nbm)
+        f.write('p = %s;\n' % str(p_j))
+        f.write('s = %s;\n' % str_S)
+    
+    rv = call(['oplrun', MOD_FILE, DAT_FILE], creationflags=CREATE_NEW_CONSOLE)
+    assert rv == 0, 'opl execution ended with errors: %d' % rv
+    with open(SOL_FILE, 'r') as f:
+        min_Cmax = eval(f.readline())
+    min_Cmax = int(min_Cmax + 0.00001)
+    end_t = time()
     print 'Opt schedule and value of min(Cmax)'
-    print '    ', min_Cmax, opt_schedule
+    print '    ', min_Cmax , 'calculating time : ', end_t - start_t  
     
-    
-    
-    
-    
-     
-    '''
-    # make list L from Opt schedule
-    L = []
-    expected_possible_assign_time = [0]*num_machine
-    tj_in_seq = [0]*num_machine
-    min_a_t = min(expected_possible_assign_time)
-    while True:
-        tj = None
-        for i, EPAT in enumerate(expected_possible_assign_time):
-            if min_a_t == EPAT and min_a_t != sys.maxint:
-                tj = opt_schedule[i][tj_in_seq[i]]
-                L.append(tj)
-                tj_in_seq[i] += 1
-                if tj_in_seq[i] != len(opt_schedule[i]):
-                    if tj_in_seq[i] ==1:
-                        expected_possible_assign_time[i] += p_j[tj]
-                    else:
-                        prev_j = opt_schedule[i][tj_in_seq[i]-2]
-                        expected_possible_assign_time[i] += s_jk[prev_j][tj] + p_j[tj]
-                else:
-                    expected_possible_assign_time[i] = sys.maxint
-                min_a_t = min(expected_possible_assign_time)
-                break
-        else:
-            break
-    print 'List of opt schedule'
-    print '    ', L    
-    '''
-    
-    from itertools import permutations
+    return min_Cmax
+
+def calc_min_Cmax_among_lists(p_j, num_machine, s_jk):
     # List permutation
     Ls = [l for l in permutations(range(len(p_j)))]
     
@@ -108,26 +87,29 @@ def run(num_machine, p_j, s_jk):
                 
     print 'result of list scheduling'
     print '    min Cmax : ', min_Cmax_in_ls
+    return min_Cmax_in_ls
     
-    
-    if min_Cmax_in_ls != min_Cmax:
+def run(num_machine, p_j, s_jk):
+    if calc_min_Cmax_by_cplex(p_j, num_machine, s_jk) != calc_min_Cmax_among_lists(p_j, num_machine, s_jk):
         print '                                incorrect!!'
         assert False
-    ''' 
-    else:
-        for i, seq in enumerate(opt_schedule):
-            for j, x in enumerate(seq):
-                if machines[i][j] != x:
-                    assert False
-        print '                                correct!!'
-    '''
     print '                                correct!!'
 
 if __name__ == '__main__':
 #    run(*problem.ex1())
-    for seed_num in xrange(100):
+    for seed_num in xrange(1000):
         print 'seed number'
         print '    ', seed_num
+        print 'machine 3, job 5'
+        run(*problem.gen_problem(3, 5, 70, 130, 20, 80, True, seed_num))
+        print 'machine 3, job 8'
+        run(*problem.gen_problem(3, 8, 70, 130, 20, 80, True, seed_num))
+        print 'machine 4, job 8'
+        run(*problem.gen_problem(4, 8, 70, 130, 20, 80, True, seed_num))
+        print 'machine 5, job 10'
+        run(*problem.gen_problem(5, 10, 70, 130, 20, 80, True, seed_num))
+        
 #        run(*problem.gen_problem(3, 4, 2, 20, 5, 15, True, seed_num))
-        run(*problem.gen_problem(3, 7, 30, 100, 5, 15, True, seed_num))
+#        run(*problem.gen_problem(3, 7, 70, 130, 20, 80, True, seed_num))
+#        run(*problem.gen_problem(3, 4, 70, 130, 20, 80, True, seed_num))
     

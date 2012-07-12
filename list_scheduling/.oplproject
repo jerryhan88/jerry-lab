@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="ASCII"?>
+<project>
+	<version>1.0</version>
+	<configs>
+		<config name="Configuration1" default="true" category="opl">
+			<ref type="model" name="src/v1/list_scheduling.mod">
+			</ref>
+			<ref type="data" name="src/v1/list_scheduling.dat">
+			</ref>
+		</config>
+	</configs>
+	
+</project>
