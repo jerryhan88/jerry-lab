@@ -1,11 +1,4 @@
-'''
-Created on 2012. 7. 6.
-
-@author: JerryHan
-'''
-
 import problem, sys
-from enum_all_schedule import all_parallel_machine_schedules
 from subprocess import call, CREATE_NEW_CONSOLE
 from itertools import permutations
 from time import time
@@ -40,7 +33,7 @@ def calc_min_Cmax_by_cplex(p_j, num_machine, s_jk):
     min_Cmax = int(min_Cmax + 0.00001)
     end_t = time()
     print 'Opt schedule and value of min(Cmax)'
-    print '    ', min_Cmax , 'calculating time : ', end_t - start_t  
+    print '    ', min_Cmax, 'calculating time : ', end_t - start_t  
     
     return min_Cmax
 
@@ -95,9 +88,11 @@ def run(num_machine, p_j, s_jk):
         assert False
     print '                                correct!!'
 
-if __name__ == '__main__':
-#    run(*problem.ex1())
-    for seed_num in xrange(1000):
+def test_one():
+    run(*problem.gen_problem(3, 7, 70, 130, 20, 80, True, 0))
+
+def test_random_many():
+    for seed_num in xrange(100):
         print 'seed number'
         print '    ', seed_num
         print 'machine 3, job 5'
@@ -109,7 +104,8 @@ if __name__ == '__main__':
         print 'machine 5, job 10'
         run(*problem.gen_problem(5, 10, 70, 130, 20, 80, True, seed_num))
         
-#        run(*problem.gen_problem(3, 4, 2, 20, 5, 15, True, seed_num))
-#        run(*problem.gen_problem(3, 7, 70, 130, 20, 80, True, seed_num))
-#        run(*problem.gen_problem(3, 4, 70, 130, 20, 80, True, seed_num))
-    
+
+if __name__ == '__main__':
+#    run(*problem.ex1())
+    test_one()
+    #test_random_many()

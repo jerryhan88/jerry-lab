@@ -2,8 +2,14 @@
 <project>
 	<version>1.0</version>
 	<configs>
-		<config name="Configuration1" default="true" category="opl">
+		<config name="list_scheduling" default="true" category="opl">
 			<ref type="model" name="src/v1/list_scheduling.mod">
+			</ref>
+			<ref type="data" name="src/v1/list_scheduling.dat">
+			</ref>
+		</config>
+		<config name="list_scheduling1" default="false" category="opl">
+			<ref type="model" name="src/v1/list_scheduling1.mod">
 			</ref>
 			<ref type="data" name="src/v1/list_scheduling.dat">
 			</ref>

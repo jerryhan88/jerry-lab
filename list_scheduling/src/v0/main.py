@@ -120,8 +120,10 @@ def run(num_machine, p_j, s_jk):
     print '    ', L    
     '''
 
-if __name__ == '__main__':
-#    run(*problem.ex1())
+def test_one():
+    run(*problem.gen_problem(3, 6, 70, 130, 20, 80, True, 0))
+
+def test_random_many():
     for seed_num in xrange(100):
         print 'seed number'
         print '    ', seed_num
@@ -133,4 +135,9 @@ if __name__ == '__main__':
         run(*problem.gen_problem(4, 8, 70, 130, 20, 80, True, seed_num))
         print 'machine 5, job 10'
         run(*problem.gen_problem(5, 10, 70, 130, 20, 80, True, seed_num))
-    
+        
+
+if __name__ == '__main__':
+#    run(*problem.ex1())
+    test_one()
+    #test_random_many()
