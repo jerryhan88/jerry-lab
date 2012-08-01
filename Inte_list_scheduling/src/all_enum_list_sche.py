@@ -43,8 +43,19 @@ def enum(pb):
     while PQ:
         _ni += 1
         tn0 = PQ.pop()
+        C0, PC0, PJ0, YS0, TS0 = tn0.C, tn0.PC, tn0.PJ, tn0.YS, tn0.TS
+        print C0
         
-    assert False
+        # check complete schedule
+        if not C0:
+            _nsolution += 1
+            yield QS, YS0, TS0
+            continue
+        _branched = False
+        for i in xrange(len(C0) - 1, -1, -1):
+            j = C0[i]
+            
+        assert False
     
     
 def root_tree_node(J, QS, YA, nt):
@@ -90,8 +101,8 @@ def test():
     t0 = clock()
     S0 = set(problem.to_tuple_with_id(*s) for s in all_perm.enum(pb))
     print '|S0| = %d, cpu time = %.1f' % (len(S0), clock() - t0)
-    # all enum.
     
+    # all enum.
     print 'Enum:',
     t0 = clock()
     S1 = [problem.to_tuple_with_id(*s) for s in enum(pb)]
