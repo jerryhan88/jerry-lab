@@ -47,6 +47,28 @@ def enum(pb):
         _ni += 1
         tn0 = PQ.pop()
         C0, JS0, PJ0, L0, num_LC0, YS0, TS0 = tn0.C, tn0.JS, tn0.PJ, tn0.L, tn0.num_LC, tn0.YS, tn0.TS
+#        '''
+        _s = (((0, 1, 2), (3,)), ((1, 3), (0, 2)), ((), (), (), (0, 3, 1, 2)))
+        if 1:
+            if problem.is_partial_schedule(problem.to_tuple_with_id(QS, YS0, TS0), _s):
+                print '%d: %d..%d %s' % (_ni, tn0.ptn.id if tn0.ptn else -1, tn0.id, problem.to_tuple_with_id(QS, YS0, TS0))
+                print '    C: %s, JS: %s, L: %s, num_LC: %d' % (str(C0), str(JS0), str(L0), num_LC0)
+        else:
+            if problem.to_tuple_with_id(QS, YS0, TS0) == _s:
+            #if problem.to_tuple_with_id(QS, YS0, TS0) in X:
+                TN, tn = [], tn0
+                while tn:
+                    TN.insert(0, tn)
+                    tn = tn.ptn
+                for tn in TN:
+                    print problem.to_tuple_with_id(QS, tn.YS, tn.TS)
+                print
+        if _ni == 10:
+            _a = 1
+            
+        if (L0 and L0[0].id == 0) and (len(L0) > 1 and L0[1].id == 3):
+            print 11
+#        '''
         _branched = False
         if num_LC0 < len(L0):
             for tr in find_available_yt(JS0, TS0):
@@ -73,7 +95,7 @@ def enum(pb):
                     continue
                 
                 # plan yc
-                YS= list(YS0)
+                YS = list(YS0)
                 YS[j.yc] = list(YS0[j.yc])
                 YS[j.yc].append(j)
                 
@@ -107,7 +129,7 @@ def enum(pb):
                     # specify truck op is planned
                     
                     # check YT's YC restraint
-                    if YS0[j.yc] and JS0[YS0[j.yc][-1].id] == 2:
+                    if YS0[j.yc] and JS0[YS0[j.yc][-1].id] == 1:
                         continue
                     JS[j.id] = 2
                     qc_is_released = True
