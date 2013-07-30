@@ -14,7 +14,9 @@ def opl_run(mod, dat):
     
     calc_time = time() - st
     
-    tf = open('test.txt', 'w')
+    result_file_name = mod + '_' + dat + '.txt'
+    
+    tf = open(result_file_name, 'w')
     with open(SOL_FILE, 'r') as sf:
         obj_func_v = eval(sf.readline())
         tf.write('obj_func_v = %d, calc_time = %f\n' % (obj_func_v, calc_time))
@@ -23,4 +25,4 @@ def opl_run(mod, dat):
     tf.close()
 
 if __name__ == '__main__':
-    opl_run('v8.mod', 'ex6.dat')
+    opl_run('including_ct9.mod', 'Indonesia_real_data.dat')

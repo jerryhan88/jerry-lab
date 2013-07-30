@@ -93,5 +93,30 @@ execute {
 	  }
 	  fp.writeln("]")
 	}
+	
+	fp.writeln("About x value")
+	for (i = 1 ; i <= n ; i++) {
+	  fp.write("(")
+	  for (t = 1 ; t <= T ; t++){
+	    fp.write(x[t][i])
+	    if (t!=T) {
+	        fp.write(",")
+	    }
+      }	    
+	  fp.writeln(")")
+    }
+    
+    fp.writeln("About z value")
+	for (i = 2 ; i <= n ; i++) {
+	  fp.write("(")
+	  for (t = 1 ; t <= T ; t++){
+	    fp.write(z[t][i])
+	    if (t!=T) {
+	        fp.write(",")
+	    }
+      }	    
+	  fp.writeln(")")
+    }
+	
 	fp.close()
 }
