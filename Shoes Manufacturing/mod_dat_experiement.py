@@ -25,6 +25,7 @@ def opl_run(mod, dat):
     
 
 if __name__ == '__main__':
-    opl_run('v8.mod', 'ex6.dat')
+    opl_run('Models collection/v8.mod', 'Data collection/ex6.dat')
+    
     
     

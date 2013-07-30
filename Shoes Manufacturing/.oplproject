@@ -1,24 +1,6 @@
 <?xml version="1.0" encoding="ASCII"?><project>
 	<version>1.0</version>
 	<configs>
-		<config default="false" name="v8" category="opl">
-			<ref type="model" name="v8.mod">
-			</ref>
-			<ref type="data" name="ex6.dat">
-			</ref>
-		</config>
-		<config default="false" name="v8_semi_real" category="opl">
-			<ref type="model" name="v8.mod">
-			</ref>
-			<ref type="data" name="reduced_real_data_v8.dat">
-			</ref>
-		</config>
-		<config default="true" name="v8_real" category="opl">
-			<ref type="model" name="v8.mod">
-			</ref>
-			<ref type="data" name="Indonesia_real_data_v8.dat">
-			</ref>
-		</config>
 	</configs>
 	
 </project>
