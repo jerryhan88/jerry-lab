@@ -3,8 +3,8 @@ from subprocess import call, CREATE_NEW_CONSOLE
 from time import time, localtime
 
 def opl_run(mod, dat):
-    MOD_FILE = mod 
-    DAT_FILE = dat
+    MOD_FILE = 'Models collection/' + mod 
+    DAT_FILE = 'Data collection/' + dat
     SOL_FILE = 'Shoes Manufacturing.sol'
     
     st = time()    
@@ -21,11 +21,6 @@ def opl_run(mod, dat):
         for line in sf:
             tf.write(str(line))
     tf.close()
-    
-    
 
 if __name__ == '__main__':
-    opl_run('Models collection/v8.mod', 'Data collection/ex6.dat')
-    
-    
-    
+    opl_run('v8.mod', 'ex6.dat')
