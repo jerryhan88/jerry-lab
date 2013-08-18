@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="ASCII"?><project>
 	<version>1.0</version>
 	<configs>
-		<config default="false" name="v9_reduced" category="opl">
+		<config default="true" name="ex3_v10" category="opl">
+			<ref type="model" name="Models collection/v10.mod">
+			</ref>
+			<ref type="data" name="Data collection/ex3.dat">
+			</ref>
+		</config>
+		<config default="false" name="test" category="opl">
 			<ref type="model" name="Models collection/v9.mod">
 			</ref>
 			<ref type="data" name="Data collection/reduced_real_data_v9.dat">
-			</ref>
-		</config>
-		<config default="true" name="v9_real" category="opl">
-			<ref type="model" name="Models collection/v9.mod">
-			</ref>
-			<ref type="data" name="Data collection/Indonesia_real_data_v9.dat">
 			</ref>
 		</config>
 	</configs>
