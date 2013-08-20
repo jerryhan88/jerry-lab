@@ -85,7 +85,8 @@ def opl_run(ex, mod):
     DAT_FILE = 'Data collection/%s.dat' % (ex)
     MOD_FILE = 'Models collection/%s.mod' % (mod)
     SOL_FILE = 'Shoes Manufacturing.sol' 
-    n, m, T, D, beta, C, B, f_l, d_l, Q_l, d_max_j, b_j, w_j, C0_ij, alpha_jk = eval(ex + '()')
+    n, m, T, D, beta, C, B, f_l, d_l, Q_l, b_j, w_j, C0_ij, alpha_jk = eval(ex + '()')
+#     n, m, T, D, beta, C, B, f_l, d_l, Q_l, d_max_j, b_j, w_j, C0_ij, alpha_jk = eval(ex + '()')
     
     print('%s, start time: %d.%d.%d' % (ex, localtime()[3], localtime()[4], localtime()[5]))
     with open(DAT_FILE, 'w') as f:
@@ -100,7 +101,7 @@ def opl_run(ex, mod):
         f.write('f_l = %s;\n' % str(f_l))
         f.write('d_l = %s;\n' % str(d_l))
         f.write('Q_l = %s;\n' % str(Q_l))
-        f.write('d_max_j = %s;\n' % str(d_max_j))
+#         f.write('d_max_j = %s;\n' % str(d_max_j))
         
         f.write('b_j = %s;\n' % str(b_j))
         f.write('w_j = %s;\n' % str(w_j))
@@ -135,8 +136,8 @@ def examples_test(examples):
         opl_run(ex)  
 
 if __name__ == '__main__':
-#     opl_run('ex3', 'v10')
-    opl_run('ex3_2', 'v10_2')
+    opl_run('ex3', 'v10_1')
+#     opl_run('ex3_2', 'v10_2')
 #     ex3_2()
 #     test_by_datFiles(['Shoes Manufacturing.dat', 'Indonesia_real_data.dat'], 'including_ct9.mod') 
 #     examples_test(['real_data'])
