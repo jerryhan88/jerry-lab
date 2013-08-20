@@ -13,7 +13,7 @@ float Q_l[1..D] = ...;
 float b_j[1..m] = ...;
 float w_j[1..m] = ...;
 
-float lamda_ij[1..n][1..m] = ...;
+float C0_ij[1..n][1..m] = ...;
 float alpha_jk[1..m][1..m] = ...;
 
 float M = C;
@@ -32,30 +32,26 @@ subject to {
     eq2:
       sum( j in 1..m) x[t][i][j] <= 1;
   
-  forall( t in 1..T, i in 1..n )
+  forall( t in 1..T, i in 1..n, j in 1..m )
     eq3:
-    sum( j in 1..m ) z[t][i][j] == 1;
+      y[t][i][j] <= C * x[t][i][j];
   
-  forall( i in 1..n, j in 1..m)
+  forall( l in 1..D )
     eq4:
-      z[1][i][j] == x[1][i][j];
+      sum( t in 1..d_l[l] ,i in 1..n ) y[t][i][f_l[l]] >= Q_l[l];
   
   forall( t in 1..T, i in 1..n, j,k in 1..m)
     eq5:
     y[t][i][k] <= 
-    alpha_jk[j][k] * (lamda_ij[i][j] + beta * sum(s in 1..(t-1)) x[s][i][j]) + beta 
+    alpha_jk[j][k] * (C0_ij[i][j] + beta * sum(s in 1..(t-1)) x[s][i][j]) + beta 
     + M * (2 - x[t][i][k] - z[t][i][j]);
   
-  forall( t in 1..T, i in 1..n, j in 1..m )
+  forall( t in 1..T, i in 1..n )
     eq6:
-      y[t][i][j] <= C * x[t][i][j];
-  
-  forall( l in 1..D )
-    eq7:
-      sum( t in 1..d_l[l] ,i in 1..n ) y[t][i][f_l[l]] >= Q_l[l];
+    sum( j in 1..m ) z[t][i][j] == 1;
   
   forall( t in 1..T )
-    eq8:
+    eq7:
       sum( i in 1..n ,j in 1..m ) b_j[j]*x[t][i][j] <= B;
   };
   

@@ -25,7 +25,7 @@ def ex3():
     b_j = [12, 10, 13, 20];
     w_j = [18, 15, 20, 25];
     
-    lamda_ij = [
+    C0_ij = [
                 [35, 21, 28, 32],
                 [24, 40, 28, 30],
                 [36, 24, 34, 40]
@@ -37,13 +37,55 @@ def ex3():
                 [0.9, 0.6, 0.85, 1]
                 ];
                 
-    return n, m, T, D, beta, C, B, f_l, d_l, Q_l, b_j, w_j, lamda_ij, alpha_jk
+    return n, m, T, D, beta, C, B, f_l, d_l, Q_l, b_j, w_j, C0_ij, alpha_jk
+
+def ex3_2():
+    
+    n = 3;
+    m = 4;
+    T = 5;
+    D = 6;
+    beta = 7;
+    C = 50;
+    B = 35;
+    
+    f_l = [1, 2, 3, 4, 1, 2];
+    d_l = [3, 3, 3, 5, 5, 5];
+    q_l = [40, 40, 80, 85, 110, 110]
+    aq_l = [0]*m
+    Q_l = []
+    d_max_j = [0]*m
+    
+    for i, x in enumerate(f_l):
+        ti = x -1
+        aq_l[ti] = aq_l[ti]+ q_l[i]
+        Q_l.append(aq_l[ti])
+        
+        if d_max_j[ti] < d_l[i]:
+            d_max_j[ti] =  d_l[i]
+    
+    b_j = [12, 10, 13, 20];
+    w_j = [18, 15, 20, 25];
+    
+    C0_ij = [
+                [35, 21, 28, 32],
+                [24, 40, 28, 30],
+                [36, 24, 34, 40]
+            ];
+    alpha_jk = [
+                [1, 0.6, 0.8, 0.9],
+                [0.6, 1, 0.65, 0.6],
+                [0.8, 0.65, 1, 0.85],
+                [0.9, 0.6, 0.85, 1]
+                ];
+                
+    return n, m, T, D, beta, C, B, f_l, d_l, Q_l, d_max_j, b_j, w_j, C0_ij, alpha_jk
 
 def opl_run(ex, mod):
     DAT_FILE = 'Data collection/%s.dat' % (ex)
-    MOD_FILE = 'Models collection/%s.mod' + mod
+    MOD_FILE = 'Models collection/%s.mod' % (mod)
     SOL_FILE = 'Shoes Manufacturing.sol' 
-    n, m, T, D, beta, C, B, f_l, d_l, Q_l, b_j, w_j, lamda_ij, alpha_jk = eval(ex + '()')
+    n, m, T, D, beta, C, B, f_l, d_l, Q_l, d_max_j, b_j, w_j, C0_ij, alpha_jk = eval(ex + '()')
     
     print('%s, start time: %d.%d.%d' % (ex, localtime()[3], localtime()[4], localtime()[5]))
     with open(DAT_FILE, 'w') as f:
@@ -58,14 +100,18 @@ def opl_run(ex, mod):
         f.write('f_l = %s;\n' % str(f_l))
         f.write('d_l = %s;\n' % str(d_l))
         f.write('Q_l = %s;\n' % str(Q_l))
+        f.write('d_max_j = %s;\n' % str(d_max_j))
+        
         f.write('b_j = %s;\n' % str(b_j))
         f.write('w_j = %s;\n' % str(w_j))
         
-        f.write('lamda_ij = %s;\n' % str(lamda_ij))
+        f.write('C0_ij = %s;\n' % str(C0_ij))
         f.write('alpha_jk = %s;\n' % str(alpha_jk))
-        
+    f.close()    
+    
     st = time()    
-    rv = call(['oplrun', MOD_FILE, DAT_FILE], creationflags=CREATE_NEW_CONSOLE)
+#     rv = call(['oplrun', MOD_FILE, DAT_FILE], creationflags=CREATE_NEW_CONSOLE)
+    rv = call(['oplrun', MOD_FILE, DAT_FILE])
     if rv == 1:
         print('opl execution ended with errors')
         print('%s, option(%d,%d,%d), end time: %d.%d.%d' % (ex, localtime()[3], localtime()[4], localtime()[5])) 
@@ -89,7 +135,9 @@ def examples_test(examples):
         opl_run(ex)  
 
 if __name__ == '__main__':
-    opl_run('ex3', 'v10')
+#     opl_run('ex3', 'v10')
+    opl_run('ex3_2', 'v10_2')
+#     ex3_2()
 #     test_by_datFiles(['Shoes Manufacturing.dat', 'Indonesia_real_data.dat'], 'including_ct9.mod') 
 #     examples_test(['real_data'])
 #     examples_test(['ex3', 'ex4', 'real_data'])
