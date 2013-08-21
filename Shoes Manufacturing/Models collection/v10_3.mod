@@ -7,13 +7,20 @@ float C = ...;
 float B = ...;
 int f_l[1..D] = ...;
 int d_l[1..D] = ...;
-float Q_l[1..D] = ...;
 int d_max_j[1..m] = ...;
+float Q_l[1..D] = ...;
 float b_j[1..m] = ...;
 float w_j[1..m] = ...;
 
 float C0_ij[1..n][1..m] = ...;
 float alpha_jk[1..m][1..m] = ...;
+
+tuple cPair {
+	int i;
+	int j;
+};
+
+{cPair} P = ...;
 
 float M = C;
 
@@ -39,7 +46,7 @@ subject to {
     eq4:
       sum( t in 1..d_l[l] ,i in 1..n ) y[t][i][f_l[l]] >= Q_l[l];
   
-  forall( t in 1..T, i in 1..n, j,k in 1..m)
+  forall( t in 1..T, i in 1..n, <j,k> in P)
     eq5:
     y[t][i][k] <= 
     alpha_jk[j][k] * (C0_ij[i][j] + beta * sum(s in 1..(t-1)) x[s][i][j]) + beta 
@@ -53,9 +60,10 @@ subject to {
     eq7:
       sum( i in 1..n ,j in 1..m ) b_j[j]*x[t][i][j] <= B;
       
-  forall( j in 1..m )
-    eq8:
-      sum( i in 1..n ,t in d_max_j[j]+1..T ) x[t][i][j] == 0;      
+//  forall( j in 1..m )
+//    eq8:
+//      sum( i in 1..n ,t in d_max_j[j]..T ) x[t][i][j] == 0;      
+      
   };
   
 execute {
