@@ -13,7 +13,7 @@
 			<ref type="data" name="Data collection/reduced_real_data_v9.dat">
 			</ref>
 		</config>
-		<config default="true" name="v10_2_2_ex3" category="opl">
+		<config default="false" name="v10_2_2_ex3" category="opl">
 			<ref type="model" name="Models collection/v10_2_2.mod">
 			</ref>
 			<ref type="data" name="Data collection/ex3_2_2.dat">
@@ -23,6 +23,12 @@
 			<ref type="model" name="Models collection/v10_2_1.mod">
 			</ref>
 			<ref type="data" name="Data collection/ex3_2_1.dat">
+			</ref>
+		</config>
+		<config default="true" name="v10_3_2_ex3" category="opl">
+			<ref type="model" name="Models collection/v10_3_2.mod">
+			</ref>
+			<ref type="data" name="Data collection/ex3_3_2.dat">
 			</ref>
 		</config>
 	</configs>
