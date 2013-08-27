@@ -31,10 +31,16 @@
 			<ref type="data" name="Data collection/ex3_3_2.dat">
 			</ref>
 		</config>
-		<config default="true" name="v10_4" category="opl">
+		<config default="false" name="v10_4" category="opl">
 			<ref type="model" name="Models collection/v10_4.mod">
 			</ref>
 			<ref type="data" name="Data collection/ex3_4.dat">
+			</ref>
+		</config>
+		<config default="true" name="v10_5" category="opl">
+			<ref type="model" name="Models collection/v10_5.mod">
+			</ref>
+			<ref type="data" name="Data collection/ex3_5.dat">
 			</ref>
 		</config>
 	</configs>
