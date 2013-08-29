@@ -11,7 +11,7 @@ int dmax_j[j in 1..m] = // Last due date among type j¡¯s orders
 	max(r in 1..R : fr[r] == j ) dr[r];
 {int} Jt[t in 1..T] =	// Set of types which need to be considered in period t 
 	{j | j in (1..m) : t <= dmax_j[j]};
-{int} lambda_i[1..n] = ...;
+{int} A_i[1..n] = ...;
 						// Set of types line i can produce
 float l_j[1..m] = ...;	// # of labors needed for producing type j on a period
 float w_j[1..m] = ...;	// Material costs of producing a unit of type j
@@ -25,109 +25,98 @@ float C = ...;			// Line capacity
 float L = ...;			// Maximum available labors on a period
 float M = C;			// Large number
 
-tuple dv_dom {
+// (P2)
+float max_jk[j in 1..m] = // find maximum learning effect about type j 
+	max(k in 1..m) alpha_jk[j][k]*C;
+{int}P_i[i in 1..n] = 	// Set of types whose learning effect is considered firstly
+	{j | j in (1..m) : C0_ij[i][j] >= max_jk[j]};
+
+// (P3)
+int maxQ_j[j in 1..m] = // find maximum accumulated demand amount for each type
+	max(r in 1..R: j == fr[r] && dmax_j[j] == dr[r]) Qr[r];
+float minC_j[j in 1..m] = // find minimum line's initial capacity for each type
+	min(i in 1..n) C0_ij[i][j];
+float H_j[j in 1..m] =	// # of type j¡¯s maximum assignment
+	ceil(maxQ_j[j] / minC_j[j]);
+						
+tuple dom {
 	int t;
 	int i;
 	int j;
 };
 
-{dv_dom} dvd = {<t, i, j> | t in 1..T, i in 1..n, j in Jt[t] inter lambda_i[i] };
+{dom} xyd = {<t, i, j> | t in 1..T, i in 1..n, j in Jt[t] inter A_i[i] };
+{dom} zd = {<t, i, k> | t in 1..T, i in 1..n, k in A_i[i] };
 
-dvar float+ x[dvd];
-dvar int y[dvd] in 0..1;
-dvar int z[1..T][1..n][1..m] in 0..1;
+dvar float+ x[xyd];
+dvar int y[xyd] in 0..1;
+dvar int z[zd] in 0..1;
 
 minimize
-  sum(t in 1..T, i in 1..n, j in Jt[t] inter lambda_i[i] ) w_j[j] * C * y[<t, i, j>]; 
+  sum(t in 1..T, i in 1..n, j in Jt[t] inter A_i[i] ) w_j[j] * C * y[<t, i, j>]; 
     
 subject to {
   
   forall( t in 1..T, i in 1..n )
     eq2:
-      sum( j in Jt[t] inter lambda_i[i] ) y[<t, i, j>] <= 1;
+      sum( j in Jt[t] inter A_i[i] ) y[<t, i, j>] <= 1;
 
-  forall( t in 1..T, i in 1..n, j in 1..m : j in Jt[t] inter lambda_i[i] )
+  forall( t in 1..T, i in 1..n, j in 1..m : j in Jt[t] inter A_i[i] )
     eq3:
       x[<t, i, j>] <= C * y[<t, i, j>];
                     
   forall( r in 1..R )
     eq4:
-      sum( t in 1..dr[r] ,i in 1..n : fr[r] in lambda_i[i] ) x[<t, i, fr[r]>] >= Qr[r];
+      sum( t in 1..dr[r] ,i in 1..n : fr[r] in A_i[i] ) x[<t, i, fr[r]>] >= Qr[r];
 
-  forall( t in 1..T, i in 1..n, j in 1..m, k in 1..m : j in Jt[t] inter lambda_i[i] && k in lambda_i[i])
+  forall( t in 1..T, i in 1..n, j in 1..m, k in 1..m : j in Jt[t] inter A_i[i] && k in A_i[i])
     eq5:
       x[<t, i, j>] <= alpha_jk[j][k] * 
       (C0_ij[i][j] + beta * sum(s in 1..(t-1 <= dmax_j[k] ? t-1 : dmax_j[k])) y[<s, i, k>] )
-      + beta + M * (2 - z[t][i][k] - y[<t, i, j>] );
+      + beta + M * (2 - z[<t, i, k>] - y[<t, i, j>] );
 
-/*
   forall( t in 1..T, i in 1..n )
     eq6:
-      sum( k in 1..m ) z[t][i][k] == 1;
+      sum( k in A_i[i] ) z[<t, i, k>] == 1;
 
   forall( t in 1..T )
     eq7:
-	  sum( i in 1..n , j in Jt[t] inter lambda_i[i] ) l_j[j] * y[<t, i, j>] <= L;
-	    
-  forall( t in 1..T, j in Jt[t] )
+	  sum( i in 1..n , j in Jt[t] inter A_i[i] ) l_j[j] * y[<t, i, j>] <= L;
+
+  forall( t in 1..T, j in 1..n : j in Jt[t] )
     eq8:
-      sum( i in 1..n ) y[<t, i, j>] <= b_j[j];
-  */    
+      sum( i in 1..n : j in A_i[i] ) y[<t, i, j>] <= b_j[j];
+
+//(P2)  
+  forall( t in 1..T, i in 1..n, j in 1..m, k in 1..m : j in Jt[t] inter A_i[i] inter P_i[i])
+    eq5_1:
+      x[<t, i, j>] <= alpha_jk[j][j] * 
+      (C0_ij[i][j] + beta * sum(s in 1..(t-1)) y[<s, i, j>] )
+      + beta + M * (1 - y[<t, i, j>] );
+      
+  forall( t in 1..T, i in 1..n, j in 1..m, k in 1..m : j in Jt[t] inter A_i[i] diff P_i[i] && k in A_i[i])
+    eq5_2:
+      x[<t, i, j>] <= alpha_jk[j][k] * 
+      (C0_ij[i][j] + beta * sum(s in 1..(t-1 <= dmax_j[k] ? t-1 : dmax_j[k])) y[<s, i, k>] )
+      + beta + M * (2 - z[<t, i, k>] - y[<t, i, j>] );
+
+//(P3)      
+  forall( j in 1..m )
+    eq9:
+      sum( t in 1..dmax_j[j], i in 1..n : j in A_i[i] ) y[<t, i, j>] <=  H_j[j];
+      
   };
-//  
-//execute {
-//	var fp = new IloOplOutputFile("Shoes Manufacturing.sol")
-//	fp.writeln(cplex.getObjValue())
-//	
-//	for (i in dvd)
-//	  fp.write("x" + i + " = " + x[i] + "\n")
-//	for (i in dvd)
-//	  fp.write("y" + i + " = " + y[i] + "\n")
-//	
-//	for (i = 1 ; i <= n ; i++) {
-//	  for (j = 1 ; j <= m ; j++){
-//	    for (t = 1 ; t <= T ; t++){
-//	      fp.write("z <" + i + " " + j + " " + t + ">" + " = " + z[i][j][t] + "\n")
-//        }	      
-//      }	    
-// 	}	  
-//	fp.close()
-//}
-
-
-
-
-//////////////
-//dvar int a[1..m] in 0..1;
-//minimize sum(t in 1..T, i in 1..n, j in 1..m ) z[t][i][j] + sum (r in 1..R) Qr[r]
-// + sum (j in 1..m) dmax_j[j] + sum(x in Jt[1])a[x] 
-// + sum(t in 1..T, i in 1..n, j in Jt[t] inter lambda_i[i]) x[<t,i,j>];
-//////////////
-
-//
-//tuple cPair {
-//	int i;
-//	int j;
-//	int k;
-//};
-//
-
-//
-//tuple cz {
-//	int i;
-//	int j;
-//	int t;
-//};
-//
-//
-//{cPair} P = ...;
-
-//
-//float M = C;
-//
-//dvar float+ x[dvd];
-//dvar int y[dvd] in 0..1;
-//dvar int z[1..n][1..m][1..T] in 0..1;
-//
-
- 
+  
+execute {
+	var fp = new IloOplOutputFile("Shoes Manufacturing.sol")
+	fp.writeln(cplex.getObjValue())
+	
+	for (i in xyd)
+	  fp.write("x" + i + " = " + x[i] + "\n")
+	for (i in xyd)
+	  fp.write("y" + i + " = " + y[i] + "\n")
+	for (i in zd)
+	  fp.write("z" + i + " = " + z[i] + "\n")
+		  
+	fp.close()
+}
