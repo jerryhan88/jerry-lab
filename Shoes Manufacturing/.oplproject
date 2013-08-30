@@ -1,42 +1,6 @@
 <?xml version="1.0" encoding="ASCII"?><project>
 	<version>1.0</version>
 	<configs>
-		<config default="false" name="ex3_v10" category="opl">
-			<ref type="data" name="Data collection/ex3.dat">
-			</ref>
-			<ref type="model" name="Models collection/v10_1.mod">
-			</ref>
-		</config>
-		<config default="false" name="test" category="opl">
-			<ref type="model" name="Models collection/v9.mod">
-			</ref>
-			<ref type="data" name="Data collection/reduced_real_data_v9.dat">
-			</ref>
-		</config>
-		<config default="false" name="v10_2_2_ex3" category="opl">
-			<ref type="model" name="Models collection/v10_2_2.mod">
-			</ref>
-			<ref type="data" name="Data collection/ex3_2_2.dat">
-			</ref>
-		</config>
-		<config default="false" name="v10_2_1_ex3" category="opl">
-			<ref type="model" name="Models collection/v10_2_1.mod">
-			</ref>
-			<ref type="data" name="Data collection/ex3_2_1.dat">
-			</ref>
-		</config>
-		<config default="false" name="v10_3_2_ex3" category="opl">
-			<ref type="model" name="Models collection/v10_3_2.mod">
-			</ref>
-			<ref type="data" name="Data collection/ex3_3_2.dat">
-			</ref>
-		</config>
-		<config default="false" name="v10_4" category="opl">
-			<ref type="model" name="Models collection/v10_4.mod">
-			</ref>
-			<ref type="data" name="Data collection/ex3_4.dat">
-			</ref>
-		</config>
 		<config default="true" name="v10_5" category="opl">
 			<ref type="model" name="Models collection/v10_5.mod">
 			</ref>
