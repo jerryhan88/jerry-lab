@@ -54,6 +54,89 @@ def ex6():
     
     return n, m, T, R, fr, dr, qr, A_i, l_j, w_j, u_j, alpha_jk, C0_ij, beta, C, L
 
+def ex7():
+    n = 3;
+    m = 4;
+    T = 10;
+    R = 8;
+    fr = [  1,      1,      1,      2,      2,      3,      3,      4];
+    dr = [  3,      6,      9,      5,      10,     5,      10,     10];
+    qr = [  70,     70,     70,     150,    150,    150,    150,    200];
+    A_i = [[1, 2, 4], 
+           [2, 3], 
+           [1, 4]];
+    l_j = [ 10,     10,     15,     20]
+    w_j = [ 18,     15,     20,     25]
+    u_j = [ 2,      2,      1,      3]
+    alpha_jk = [[   1,      0.2,    0.4,    0.6],
+                [   0.2,    1,      0.3,    0.6],
+                [   0.4,    0.3,    1,      0.2],
+                [   0.6,    0.6,    0.2,    1]]
+    C0_ij = [[  30,     25,     30,     30],
+            [   25,     40,     25,     30],
+            [   30,     20,     35,     40]]
+    beta = 5
+    C = 50
+    L = 60
+    
+    return n, m, T, R, fr, dr, qr, A_i, l_j, w_j, u_j, alpha_jk, C0_ij, beta, C, L
+
+def ex8():
+    n = 4
+    m = 4
+    T = 10
+    R = 8
+    fr = [  1,      1,      1,      2,      2,      3,      3,      4];
+    dr = [  3,      6,      9,      5,      10,     5,      10,     10];
+    qr = [  100,    100,    100,     150,    150,    150,    150,    200];
+    A_i = [[1, 2, 4], 
+           [2, 3],
+           [1, 4], 
+           [2, 3, 4]]
+    l_j = [ 20,     10,     15,     10]
+    w_j = [ 18,     15,     20,     25]
+    u_j = [ 2,      2,      1,      3]
+    alpha_jk = [[   1,      0.8,    0.4,    0.9],
+                [   0.8,    1,      0.5,    0.6],
+                [   0.4,    0.5,    1,      0.2],
+                [   0.9,    0.6,    0.2,    1]]
+    C0_ij = [[  30,     25,     30,     35],
+            [   25,     40,     25,     30],
+            [   30,     20,     35,     40],
+            [   20,     30,     20,     20]]
+    beta = 5
+    C = 50
+    L = 60
+    
+    return n, m, T, R, fr, dr, qr, A_i, l_j, w_j, u_j, alpha_jk, C0_ij, beta, C, L
+
+def ex9():
+    n = 3;
+    m = 4;
+    T = 10;
+    R = 8;
+    fr = [  1,      1,      1,      2,      2,      3,      3,      4];
+    dr = [  3,      6,      9,      5,      10,     5,      10,     10];
+    qr = [  110,    110,    110,    220,    220,    150,    150,    200];
+    A_i = [[1, 2, 4], 
+           [2, 3], 
+           [1, 4]];
+    l_j = [ 10,     10,     15,     20]
+    w_j = [ 18,     15,     20,     25]
+    u_j = [ 2,      2,      1,      3]
+    alpha_jk = [[   1,      0.2,    0.4,    0.6],
+                [   0.2,    1,      0.3,    0.6],
+                [   0.4,    0.3,    1,      0.2],
+                [   0.6,    0.6,    0.2,    1]]
+    C0_ij = [[  30,     25,     30,     30],
+            [   25,     40,     25,     30],
+            [   30,     20,     35,     40]]
+    beta = 5
+    C = 50
+    L = 60
+    
+    return n, m, T, R, fr, dr, qr, A_i, l_j, w_j, u_j, alpha_jk, C0_ij, beta, C, L
+
 def run(ex, p2, p3):
     
     n, m, T, R, fr, dr, qr, A_i, l_j, w_j, u_j, alpha_jk, C0_ij, beta, C, L = eval(ex + '()')
@@ -191,13 +274,13 @@ def run(ex, p2, p3):
         print ''
     
     tf.write('\n')
-    tf.write('        ',)
+    tf.write('         ',)
     for t in range(1, T + 1):
-        tf.write('    %d' % t)
+        tf.write('      %d' % t)
     tf.write('\n')
      
     for i in range(n):
-        tf.write('Line %d: ' % (i + 1))
+        tf.write('Line %d:   ' % (i + 1))
         for t in range(T):
             vj = 0
             vv = 0
@@ -205,14 +288,14 @@ def run(ex, p2, p3):
                 if x[t][i][j] > vv:
                     vj = j + 1
                     vv = x[t][i][j]
-            tf.write('(%d,%d)' % (vj, int(round(vv))))
+            tf.write(' (%d,%d)' % (vj, int(round(vv))))
                  
         tf.write('\n')
     
     tf.write('\n')
     tf.write('        ')
     for t in range(1, T + 1):
-        tf.write('    %d' % t)
+        tf.write('        %d' % t)
     tf.write('\n')
      
     for i in range(n):
@@ -224,13 +307,12 @@ def run(ex, p2, p3):
                 if z[t][i][j] > vv:
                     vj = j + 1
                     vv = z[t][i][j]
-            tf.write('(%d,%d)' % (vj, int(round(vv))))
+            tf.write('    (%d,%d)' % (vj, int(round(vv))))
         tf.write('\n')
     tf.close()
 
 if __name__ == '__main__':
 #     run('ex3_5', 0, 0)
-    run('ex6', 0, 0)
-    run('ex6', 1, 0)
-    run('ex6', 0, 1)
-    run('ex6', 1, 1)
+    for p2, p3 in [(0,0),(1,0),(0,1),(1,1)]:
+        run('ex8', p2, p3)
+    
