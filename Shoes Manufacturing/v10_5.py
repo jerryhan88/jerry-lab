@@ -27,6 +27,33 @@ def ex3_5():
     
     return n, m, T, R, fr, dr, qr, A_i, l_j, w_j, u_j, alpha_jk, C0_ij, beta, C, L 
 
+def ex6():
+    n = 3;
+    m = 4;
+    T = 15;
+    R = 15;
+    fr = [  1,      1,      1,      1,      1,      2,      2,      2,      2,      3,      3,      3,      4,      4];
+    dr = [  3,      6,      9,      12,     15,     3,      6,      9,      12,     4,      8,      12,     8,      15];
+    qr = [  60,     60,     60,     60,     60,     50,     50,     50,     50,     80,     80,     80,     70,     70];
+    A_i = [[1, 2, 4], 
+           [2, 3], 
+           [1, 4]];
+    l_j = [ 12,     10,     13,     20]
+    w_j = [ 18,     15,     20,     25]
+    u_j = [ 2,      2,      1,      3]
+    alpha_jk = [[   1,      0.2,    0.4,    0.6],
+                [   0.2,    1,      0.6,    0.6],
+                [   0.4,    0.6,    1,      0.5],
+                [   0.6,    0.6,    0.5,    1]]
+    C0_ij = [[  30,     25,     30,     30],
+            [   25,     40,     30,     30],
+            [   35,     20,     35,     40]]
+    beta = 5
+    C = 50
+    L = 60
+    
+    return n, m, T, R, fr, dr, qr, A_i, l_j, w_j, u_j, alpha_jk, C0_ij, beta, C, L
+
 def run(ex, p2, p3):
     
     n, m, T, R, fr, dr, qr, A_i, l_j, w_j, u_j, alpha_jk, C0_ij, beta, C, L = eval(ex + '()')
@@ -44,7 +71,6 @@ def run(ex, p2, p3):
         f.write('fr = %s;\n' % str(fr))
         f.write('dr = %s;\n' % str(dr))
         f.write('qr = %s;\n' % str(qr))
-        
         st_A_i = '['
         for a_i in A_i:
             st_A_i = st_A_i + '{'
@@ -105,13 +131,15 @@ def run(ex, p2, p3):
                 t_temp.append(0)
             j_temp.append(t_temp)
         z.append(j_temp)
-     
-    tf = open('result.txt', 'w')
+    rst_t_n = '%s p2(%d) p3(%d).txt' %(ex, p2, p3) 
+    tf = open(rst_t_n, 'w')
     with open(SOL_FILE, 'r') as sf:
         obj_func_v = eval(sf.readline())
         tf.write('obj_func_v = %d, calc_time = %f\n' % (obj_func_v, calc_time))
         for line in sf:
-            t, i, j, v = int(line[3]) - 1, int(line[5]) - 1, int(line[7]) - 1, float(line[12:-1])
+            dv, s_v = line.split('=')
+            s_t, s_i, s_j = dv[dv.index('<')+1:dv.index('>')].split(' ')  
+            t, i, j, v = int(s_t) - 1, int(s_i) - 1, int(s_j) - 1, float(s_v)
             if v == 0:
                 continue
             else:
@@ -120,8 +148,10 @@ def run(ex, p2, p3):
                 elif line[0] == 'y':
                     y[t][i][j] = v
                 elif line[0] == 'z':
+                    print t, i, j 
+                    print line
+                    print z
                     z[t][i][j] = v
-     
     print ''
     print '        ',
     for t in range(1, T + 1):
@@ -137,6 +167,25 @@ def run(ex, p2, p3):
                 if x[t][i][j] > vv:
                     vj = j + 1
                     vv = x[t][i][j]
+            print '(%d,%d)' % (vj, int(round(vv))),
+                 
+        print ''
+    
+    print ''
+    print '        ',
+    for t in range(1, T + 1):
+        print '    %d' % t,
+    print ''
+     
+    for i in range(n):
+        print 'Line %d: ' % (i + 1),
+        for t in range(T):
+            vj = 0
+            vv = 0
+            for j in range(m):
+                if z[t][i][j] > vv:
+                    vj = j + 1
+                    vv = z[t][i][j]
             print '(%d,%d)' % (vj, int(round(vv))),
                  
         print ''
@@ -160,8 +209,28 @@ def run(ex, p2, p3):
                  
         tf.write('\n')
     
+    tf.write('\n')
+    tf.write('        ')
+    for t in range(1, T + 1):
+        tf.write('    %d' % t)
+    tf.write('\n')
      
+    for i in range(n):
+        tf.write('Line %d: ' % (i + 1))
+        for t in range(T):
+            vj = 0
+            vv = 0
+            for j in range(m):
+                if z[t][i][j] > vv:
+                    vj = j + 1
+                    vv = z[t][i][j]
+            tf.write('(%d,%d)' % (vj, int(round(vv))))
+        tf.write('\n')
     tf.close()
 
 if __name__ == '__main__':
-    run('ex3_5', 1, 1)
+#     run('ex3_5', 0, 0)
+    run('ex6', 0, 0)
+    run('ex6', 1, 0)
+    run('ex6', 0, 1)
+    run('ex6', 1, 1)

@@ -1,0 +1,1 @@
+obj_func_v = 18050, calc_time = 0.189000

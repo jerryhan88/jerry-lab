@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="ASCII"?><project>
 	<version>1.0</version>
 	<configs>
-		<config default="true" name="v10_5" category="opl">
+		<config default="false" name="v10_5" category="opl">
 			<ref type="model" name="Models collection/v10_5.mod">
 			</ref>
 			<ref type="data" name="Data collection/ex3_5.dat">
+			</ref>
+		</config>
+		<config default="true" name="ex6" category="opl">
+			<ref type="model" name="Models collection/v10_5.mod">
+			</ref>
+			<ref type="data" name="Data collection/ex6.dat">
 			</ref>
 		</config>
 	</configs>

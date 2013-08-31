@@ -22,7 +22,6 @@ float M = C;			// Large number
 int p2 = ...;
 int p3 = ...;
 
-
 int Qr[r in 1..R] = 	// Quantities of accumulated orders
 	sum( _r in 1..R : fr[r] == fr[_r] && dr[_r] <=dr [r]) qr[_r];
 int dmax_j[j in 1..m] = // Last due date among type j¡¯s orders
@@ -71,13 +70,15 @@ subject to {
   forall( r in 1..R )
     eq4:
       sum( t in 1..dr[r] ,i in 1..n : fr[r] in A_i[i] ) x[<t, i, fr[r]>] >= Qr[r];
-
+  
+  if ( p2 == 0 ) {	
   forall( t in 1..T, i in 1..n, j in 1..m, k in 1..m : j in Jt[t] inter A_i[i] && k in A_i[i])
     eq5:
       x[<t, i, j>] <= alpha_jk[j][k] * 
-      (C0_ij[i][j] + beta * sum(s in 1..(t-1 <= dmax_j[k] ? t-1 : dmax_j[k])) y[<s, i, k>] )
+      (C0_ij[i][k] + beta * sum(s in 1..(t-1 <= dmax_j[k] ? t-1 : dmax_j[k])) y[<s, i, k>] )
       + beta + M * (2 - z[<t, i, k>] - y[<t, i, j>] );
-
+  }  
+  
   forall( t in 1..T, i in 1..n )
     eq6:
       sum( k in A_i[i] ) z[<t, i, k>] == 1;
@@ -89,6 +90,7 @@ subject to {
   forall( t in 1..T, j in 1..n : j in Jt[t] )
     eq8:
       sum( i in 1..n : j in A_i[i] ) y[<t, i, j>] <= u_j[j];
+      
   if ( p2 == 1 ) {
   //(P2)  
   forall( t in 1..T, i in 1..n, j in 1..m, k in 1..m : j in Jt[t] inter A_i[i] inter P_i[i])
@@ -100,7 +102,7 @@ subject to {
   forall( t in 1..T, i in 1..n, j in 1..m, k in 1..m : j in Jt[t] inter A_i[i] diff P_i[i] && k in A_i[i])
     eq5_2:
       x[<t, i, j>] <= alpha_jk[j][k] * 
-      (C0_ij[i][j] + beta * sum(s in 1..(t-1 <= dmax_j[k] ? t-1 : dmax_j[k])) y[<s, i, k>] )
+      (C0_ij[i][k] + beta * sum(s in 1..(t-1 <= dmax_j[k] ? t-1 : dmax_j[k])) y[<s, i, k>] )
       + beta + M * (2 - z[<t, i, k>] - y[<t, i, j>] );
   }
 
