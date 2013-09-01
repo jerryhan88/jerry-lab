@@ -341,7 +341,8 @@ def run(ex, p2, p3):
 if __name__ == '__main__':
 #     run('ex3_5', 0, 0)
     for p2, p3 in [(0,0),(1,0),(0,1),(1,1)]:
-        run('ex7', p2, p3)
-        run('ex9', p2, p3)
-        run('ex10', p2, p3)
+#         run('ex7', p2, p3)
+        run('ex8', p2, p3)
+#         run('ex9', p2, p3)
+#         run('ex10', p2, p3)
 
