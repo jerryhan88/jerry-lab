@@ -121,7 +121,7 @@ def ex9():
     A_i = [[1, 2, 4], 
            [2, 3], 
            [1, 4]];
-    l_j = [ 10,     10,     15,     20]
+    l_j = [ 10,     15,     15,     20]
     w_j = [ 18,     15,     20,     25]
     u_j = [ 2,      2,      1,      3]
     alpha_jk = [[   1,      0.2,    0.4,    0.6],
@@ -146,11 +146,11 @@ def ex10():
     dr = [  3,      6,      9,      5,      10,     5,      10,     10];
     qr = [  70,     70,     70,     150,    150,    150,    150,    200];
     A_i = [[1, 2, 4], 
-           [2, 3], 
+           [2, 3, 4], 
            [1, 4]];
     l_j = [ 10,     10,     15,     20]
     w_j = [ 18,     15,     20,     25]
-    u_j = [ 2,      2,      1,      3]
+    u_j = [ 2,      1,      1,      2]
     alpha_jk = [[   1,      0.2,    0.4,    0.6],
                 [   0.2,    1,      0.3,    0.6],
                 [   0.4,    0.3,    1,      0.2],
@@ -169,7 +169,7 @@ def run(ex, p2, p3):
     n, m, T, R, fr, dr, qr, A_i, l_j, w_j, u_j, alpha_jk, C0_ij, beta, C, L = eval(ex + '()')
     
     DAT_FILE = 'Data collection/%s.dat' % (ex)
-    MOD_FILE = 'Models collection/%s.mod' % ('v10_5')
+    MOD_FILE = 'Models collection/%s.mod' % ('v10_6')
     SOL_FILE = 'Models collection/Shoes Manufacturing.sol' 
 #     ''' 
     print('start time: %d.%d.%d' % (localtime()[3], localtime()[4], localtime()[5]))
@@ -189,7 +189,7 @@ def run(ex, p2, p3):
                     st_A_i = st_A_i + '%d' % (j)
                 else:
                     st_A_i = st_A_i + '%d,' % (j) 
-            st_A_i = st_A_i + '}'
+            st_A_i = st_A_i + '},'
         st_A_i = st_A_i +']'        
         f.write('A_i = %s;\n' % st_A_i)
         f.write('l_j = %s;\n' % str(l_j))
@@ -341,5 +341,7 @@ def run(ex, p2, p3):
 if __name__ == '__main__':
 #     run('ex3_5', 0, 0)
     for p2, p3 in [(0,0),(1,0),(0,1),(1,1)]:
+        run('ex7', p2, p3)
         run('ex9', p2, p3)
-    
+        run('ex10', p2, p3)
+
