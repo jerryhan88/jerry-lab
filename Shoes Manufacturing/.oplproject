@@ -7,10 +7,28 @@
 			<ref type="data" name="Data collection/ex3_5.dat">
 			</ref>
 		</config>
-		<config default="true" name="ex6" category="opl">
+		<config default="false" name="ex6" category="opl">
 			<ref type="model" name="Models collection/v10_5.mod">
 			</ref>
 			<ref type="data" name="Data collection/ex6.dat">
+			</ref>
+		</config>
+		<config default="false" name="ex9" category="opl">
+			<ref type="model" name="Models collection/v10_5.mod">
+			</ref>
+			<ref type="data" name="Data collection/ex9.dat">
+			</ref>
+		</config>
+		<config default="false" name="ex7" category="opl">
+			<ref type="model" name="Models collection/v10_5.mod">
+			</ref>
+			<ref type="data" name="Data collection/ex7.dat">
+			</ref>
+		</config>
+		<config default="true" name="ex8" category="opl">
+			<ref type="data" name="Data collection/ex8.dat">
+			</ref>
+			<ref type="model" name="Models collection/v10_5.mod">
 			</ref>
 		</config>
 	</configs>
