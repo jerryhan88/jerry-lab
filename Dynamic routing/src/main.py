@@ -1,6 +1,7 @@
 from __future__ import division
 from time import time
 from input_gen import N
+from classes import Node, Edge, Customer, PRT
 import wx
 
 milsec = 100
@@ -19,7 +20,7 @@ class MainFrame(wx.Frame):
         
         f_sx, f_sy = self.GetSize()
         
-        ip_sx, ip_sy = f_sx / 7, f_sy
+        ip_sx, ip_sy = f_sx * 0.16, f_sy
         ip = InputPanel(self, (0, 0), (ip_sx, ip_sy))
         ip_px, ip_py = ip.GetPosition()
         
@@ -34,10 +35,9 @@ class MainFrame(wx.Frame):
         self.Show(True)
         
     def OnTimer(self, evt):
-        self.simul_clock += milsec / 1000   
-        self.vp.Refresh()
+        self.vp.update(self.simul_clock)
         self.cp.update(self.simul_clock)
-# 
+        self.simul_clock += milsec / 1000 
     def OnCloseWindow(self, event):
         self.Destroy()
 
@@ -46,15 +46,58 @@ class ViewPanel(wx.Panel):
         wx.Panel.__init__(self, parent, -1, pos, size)
         self.SetBackgroundColour(wx.WHITE)
         self.Bind(wx.EVT_PAINT, self.OnPaint)
+        
+        sx, sy = self.GetSize()
+        self.n_radius = 25
+        self.Nodes = [Node(x) for x in range(N)]
+        self.Nodes[0].px, self.Nodes[0].py = sx * 0.2, sy * 0.3
+        self.Nodes[1].px, self.Nodes[1].py = sx * 0.6, sy * 0.2
+        self.Nodes[2].px, self.Nodes[2].py = sx * 0.1, sy * 0.5
+        self.Nodes[3].px, self.Nodes[3].py = sx * 0.4, sy * 0.6
+        self.Nodes[4].px, self.Nodes[4].py = sx * 0.6, sy * 0.45
+        self.Nodes[5].px, self.Nodes[5].py = sx * 0.85, sy * 0.35
+        self.Nodes[6].px, self.Nodes[6].py = sx * 0.3, sy * 0.85
+        self.Nodes[7].px, self.Nodes[7].py = sx * 0.8, sy * 0.65
+        
+        self.Edges = []
+        self.Edges.append(Edge(self.Nodes[0], self.Nodes[3]))
+        self.Edges.append(Edge(self.Nodes[1], self.Nodes[4]))
+        self.Edges.append(Edge(self.Nodes[2], self.Nodes[3]))
+        self.Edges.append(Edge(self.Nodes[3], self.Nodes[4]))
+        self.Edges.append(Edge(self.Nodes[3], self.Nodes[6]))
+        self.Edges.append(Edge(self.Nodes[4], self.Nodes[5]))
+        self.Edges.append(Edge(self.Nodes[4], self.Nodes[7]))
+        
+        self.on_requests = []
+        self.c_radius = 10
+    
+    def update(self, simul_clock):
+        self.Refresh()
+        if REQUEST and REQUEST[0][0] <= simul_clock:
+            t, c, sn, dn = REQUEST.pop(0)
+            self.on_requests.append(Customer(t, c, self.Nodes[sn], self.Nodes[dn]))
+#         self.simul_st.SetLabel(str(round(simul_clock, 2)))
+        
     
     def OnPaint(self, evt):
         dc = wx.PaintDC(self)
         self.PrepareDC(dc)
-        r, g, b = (255, 0, 0)
+        
+        for e in self.Edges:
+            dc.DrawLine(e._from.px, e._from.py, e._to.px, e._to.py)
+            dc.DrawText('%d' % int(round(e.distance, 1)), (e._from.px + e._to.px) / 2, (e._from.py + e._to.py) / 2)
+        
+        for n in self.Nodes:
+            dc.DrawCircle(n.px, n.py, self.n_radius)
+            dc.DrawText('N%d' % n.id, n.px - 7, n.py - 7)
+            
+        r, g, b = (200, 200, 200)
         brushclr = wx.Colour(r, g, b, 100)
         dc.SetBrush(wx.Brush(brushclr))
         
-        dc.DrawCircle(100, 100, 30)
+        for r in self.on_requests:
+            dc.DrawCircle(r.px, r.py, self.c_radius)
+            dc.DrawText(r.id, r.px - 7, r.py - 7)
         
         dc.EndDrawing()
 
@@ -75,8 +118,8 @@ class InputPanel(wx.Panel):
                 c, t_s, sd = line.split(',')
                 t = str(round(float(t_s), 1))
                 sn, dn = sd.split('-')
-                self.request_view.write('----------------------------\n');
-                self.request_view.write('%s sec, %s: %s -> %s ' % (t, c, sn, dn));
+                self.request_view.write('---------------------------------\n');
+                self.request_view.write('%s sec, %s: N%s -> N%s ' % (t, c, sn, dn));
                 self.request_view.write('\n');
                 REQUEST.append((round(float(t_s), 1), c, int(sn), int(dn)))
 
