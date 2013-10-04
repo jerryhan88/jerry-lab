@@ -1,7 +1,8 @@
 from __future__ import division
+from time import time
 from input_gen import N
 from classes import Node, Edge, Customer, PRT
-import wx, math
+import wx
 
 milsec = 100
 REQUEST = []
@@ -10,9 +11,12 @@ class MainFrame(wx.Frame):
     def __init__(self):
         wx.Frame.__init__(self, None, -1, 'Dynamic routing experiment', size=(1024, 768), pos=(243, 80))
         
-        self.simul_clock = 0
         self.timer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
+        
         self.timer.Start(milsec)
+        self.st_t = time()
+        self.simul_clock = 0
         
         f_sx, f_sy = self.GetSize()
         
@@ -21,32 +25,30 @@ class MainFrame(wx.Frame):
         ip_px, ip_py = ip.GetPosition()
         
         op_sx, op_sy = f_sx / 4, f_sy
-        OutputPanel(self, (f_sx - op_sx, 0), (op_sx, op_sy))
+        op = OutputPanel(self, (f_sx - op_sx, 0), (op_sx, op_sy))
         
         vp_sx, vp_sy = f_sx - ip_sx - op_sx, f_sy * 0.9  
+        
         self.vp = ViewPanel(self, (ip_px + ip_sx, ip_py), (vp_sx, vp_sy))
         self.cp = ControlPanel(self, (ip_px + ip_sx, ip_py + vp_sy), (vp_sx, f_sy - vp_sy))
         
         self.Show(True)
         
-        self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
-        self.Bind(wx.EVT_CLOSE, self.OnClose)
-        
     def OnTimer(self, evt):
-        self.simul_clock += milsec / 1000
         self.vp.update(self.simul_clock)
         self.cp.update(self.simul_clock)
-        
-    def OnClose(self, event):
+        self.simul_clock += milsec / 1000 
+    def OnCloseWindow(self, event):
         self.Destroy()
 
 class ViewPanel(wx.Panel):
     def __init__(self, parent, pos, size):
-        wx.Panel.__init__(self, parent, -1, pos, size, style=wx.SUNKEN_BORDER)
+        wx.Panel.__init__(self, parent, -1, pos, size)
         self.SetBackgroundColour(wx.WHITE)
         self.Bind(wx.EVT_PAINT, self.OnPaint)
         
         sx, sy = self.GetSize()
+        self.n_radius = 25
         self.Nodes = [Node(x) for x in range(N)]
         self.Nodes[0].px, self.Nodes[0].py = sx * 0.2, sy * 0.3
         self.Nodes[1].px, self.Nodes[1].py = sx * 0.6, sy * 0.2
@@ -56,7 +58,6 @@ class ViewPanel(wx.Panel):
         self.Nodes[5].px, self.Nodes[5].py = sx * 0.85, sy * 0.35
         self.Nodes[6].px, self.Nodes[6].py = sx * 0.3, sy * 0.85
         self.Nodes[7].px, self.Nodes[7].py = sx * 0.8, sy * 0.65
-        self.n_radius = 40
         
         self.Edges = []
         self.Edges.append(Edge(self.Nodes[0], self.Nodes[3]))
@@ -68,96 +69,50 @@ class ViewPanel(wx.Panel):
         self.Edges.append(Edge(self.Nodes[4], self.Nodes[7]))
         
         self.on_requests = []
-        self.c_radius = 20
+        self.c_radius = 10
         
         self.PRTs = []
         self.PRTs.append(PRT(0, self.Nodes[4].px, self.Nodes[4].py))
         self.PRTs.append(PRT(1, self.Nodes[0].px, self.Nodes[0].py))
         self.PRTs.append(PRT(2, self.Nodes[6].px, self.Nodes[6].py))
-        self.PRT_size = 30
-        
-        self.InitBuffer()
+        self.PRT_size = 20
     
     def update(self, simul_clock):
-#         self.Refresh()
+        self.Refresh()
         if REQUEST and REQUEST[0][0] <= simul_clock:
             t, c, sn, dn = REQUEST.pop(0)
             self.on_requests.append(Customer(t, c, self.Nodes[sn], self.Nodes[dn]))
-        self.RefreshGC()
-    
-    def InitBuffer(self):
-        sz = self.GetClientSize()
-        sz.width = max(1, sz.width)
-        sz.height = max(1, sz.height)
-        self._buffer = wx.EmptyBitmap(sz.width, sz.height, 32)
-        dc = wx.MemoryDC(self._buffer)
-        dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
-        dc.Clear()
-        gc = wx.GraphicsContext.Create(dc)
-        self.Draw(gc)
-    
-    def RefreshGC(self):
-        dc = wx.MemoryDC(self._buffer)
-        dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
-        dc.Clear()
-        gc = wx.GraphicsContext.Create(dc)
-        self.Draw(gc)
-        self.Refresh(False)
     
     def OnPaint(self, evt):
-        dc = wx.BufferedPaintDC(self, self._buffer)
+        dc = wx.PaintDC(self)
+        self.PrepareDC(dc)
         
-    def Draw(self, gc):   
-#         dc = wx.PaintDC(self)
-#         self.PrepareDC(dc)
-#         
-        bg_clr = wx.Colour(0, 0, 0)
-#         gc.SetBrush(wx.Brush(bg_clr))
-        gc.SetPen(wx.Pen(bg_clr, 1))
-        gc.SetFont(wx.Font(10, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+        dc.SetFont(wx.Font(10, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
         for e in self.Edges:
-            ax = e._to.px - e._from.px;
-            ay = e._to.py - e._from.py;
-
-            la = math.sqrt(ax * ax + ay * ay);
-            ux = ax / la;
-            uy = ay / la;
-            
-            sx = e._from.px + ux * self.n_radius / 2
-            sy = e._from.py + uy * self.n_radius / 2
-            ex = e._to.px - ux * self.n_radius / 2
-            ey = e._to.py - uy * self.n_radius / 2
-            
-            gc.DrawLines([(sx, sy), (ex, ey)])
-            gc.DrawText('%d' % int(round(e.distance, 1)), (e._from.px + e._to.px) / 2, (e._from.py + e._to.py) / 2)
-         
-        for n in self.Nodes:
-            gc.DrawEllipse(n.px - self.n_radius / 2, n.py - self.n_radius / 2, self.n_radius, self.n_radius)
-            gc.DrawText('N%d' % n.id, n.px - 7, n.py - 7)
-             
-#         old_font = gc.GetFont()
+            dc.DrawLine(e._from.px, e._from.py, e._to.px, e._to.py)
+            dc.DrawText('%d' % int(round(e.distance, 1)), (e._from.px + e._to.px) / 2, (e._from.py + e._to.py) / 2)
         
-        gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+        for n in self.Nodes:
+            dc.DrawCircle(n.px, n.py, self.n_radius)
+            dc.DrawText('N%d' % n.id, n.px - 7, n.py - 7)
+            
+        old_font = dc.GetFont()
+        dc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
         for v in self.PRTs:
-            gc.DrawRectangle(v.px - self.PRT_size / 2, v.py - self.PRT_size / 2, self.PRT_size, self.PRT_size)
-            gc.DrawText('PRT%d' % v.id, v.px - self.PRT_size / 2, v.py - self.PRT_size / 2)    
-#              
-#         r, g, b = (200, 200, 200)
-#         brushclr = wx.Colour(r, g, b, 100)
-#         gc.SetBrush(wx.Brush(brushclr))
-#       
-        bg_clr = wx.Colour(200, 200, 200)
-        gc.SetBrush(wx.Brush(bg_clr))
-        gc.SetPen(wx.Pen(bg_clr, 0.5))
-   
+            dc.DrawRectangle(v.px - self.PRT_size / 2, v.py - self.PRT_size / 2, self.PRT_size, self.PRT_size)
+            dc.DrawText('PRT%d' % v.id, v.px - self.PRT_size / 2, v.py - self.PRT_size / 2)    
+            
+        r, g, b = (200, 200, 200)
+        brushclr = wx.Colour(r, g, b, 100)
+        dc.SetBrush(wx.Brush(brushclr))
+        
         for r in self.on_requests:
-            gc.DrawEllipse(r.px - self.c_radius / 2, r.py - self.c_radius / 2, self.c_radius, self.c_radius)
-#             gc.DrawCircle(r.px, r.py, self.c_radius)
-            gc.DrawText(r.id, r.px - 7, r.py - 7)
-          
-#         gc.SetFont(old_font)
-         
-#         dc.EndDrawing()
+            dc.DrawCircle(r.px, r.py, self.c_radius)
+            dc.DrawText(r.id, r.px - 7, r.py - 7)
+        
+        dc.SetFont(old_font)
+        
+        dc.EndDrawing()
 
 class InputPanel(wx.Panel):
     def __init__(self, parent, pos, size):

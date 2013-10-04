@@ -19,5 +19,6 @@ class Customer():
         self.px, self.py = self.sn.px, self.sn.py        
         
 class PRT():
-    def __init__(self, re_time, _id, sn, dn):
-        pass
+    def __init__(self, _id, init_px, init_py):
+        self.id = _id
+        self.px, self.py = init_px, init_py
