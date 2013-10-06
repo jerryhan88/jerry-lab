@@ -14,7 +14,7 @@ float alpha_jk[1..m][1..m] = ...;
 float C0_ij[1..n][1..m] = ...;
 						// Initial capable amount of type j which line i can produce
 float beta = ...;		// Ramp-up quantity
-float C = ...;			// Line capacity
+float C = ...;			// Line capacity1
 float L = ...;			// Maximum available labors on a period
 float M = C;			// Large number
 
