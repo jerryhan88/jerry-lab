@@ -71,12 +71,20 @@ class ViewPanel(wx.Panel):
         self.c_radius = 20
         
         self.PRTs = []
-        self.PRTs.append(PRT(0, self.Nodes[4].px, self.Nodes[4].py))
+        self.PRTs.append(PRT(0))
+        self.PRTs[-1].set_position(self.Nodes[4].px, self.Nodes[4].py)
+        
         self.PRTs.append(PRT(1, self.Nodes[0].px, self.Nodes[0].py))
+        self.PRTs[-1].set_position(self.Nodes[0].px, self.Nodes[0].py)
+        
         self.PRTs.append(PRT(2, self.Nodes[6].px, self.Nodes[6].py))
+        self.PRTs[-1].set_position(self.Nodes[6].px, self.Nodes[6].py)
+        
         self.PRT_size = 30
         
         self.InitBuffer()
+    
+   
     
     def update(self, simul_clock):
 #         self.Refresh()
