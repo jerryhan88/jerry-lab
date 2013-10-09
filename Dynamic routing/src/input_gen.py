@@ -1,15 +1,15 @@
 from __future__ import division
 from random import randrange, random
 
-R = 10
+R = 30
 N = 8
 
-RT = 30 
+RT = 300
 
 def run():
     requests = []
     for _ in range(R):
-        t = round(random() * 30, 1)
+        t = round(random() * RT, 1)
         sn = randrange(N)
         dn = randrange(N)
         while sn == dn:
