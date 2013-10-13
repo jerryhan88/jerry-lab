@@ -138,6 +138,18 @@ class PRT():
         return best_v
     
     @classmethod
+    def create_PRTbyNode_matrix(cls, nodes):
+        PRTbyNode_matrix = []
+        for i in nodes:
+            from_i = []
+            for j in nodes:
+                _ , path_e = cls.find_SP(i, j, nodes)
+                distance = sum([e.distance for e in path_e])
+                from_i.append(distance)
+            PRTbyNode_matrix.append(from_i)
+        return PRTbyNode_matrix
+    
+    @classmethod
     def find_NearestNode(self, v, Nodes):
         candi_nodes = [n for n in Nodes if any(c for c in n.cus_queue if c.marked == False)]
         if not candi_nodes:

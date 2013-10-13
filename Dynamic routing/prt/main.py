@@ -1,6 +1,8 @@
 from __future__ import division
 from classes import Node, Edge, Customer, PRT
 import wx
+from munkres import Munkres, print_matrix
+
 REQUEST = []
 TIMER_INTERVAL = 100
 CLOCK_INCREMENT = 100
@@ -20,10 +22,10 @@ class MainFrame(wx.Frame):
         ip_px, ip_py = ip.GetPosition()
         
         op_sx, op_sy = f_sx / 4, f_sy
-        OutputPanel(self, (f_sx - op_sx, 0), (op_sx, op_sy))
+        self.op = OutputPanel(self, (f_sx - op_sx, 0), (op_sx, op_sy))
          
         vp_sx, vp_sy = f_sx - ip_sx - op_sx, f_sy * 0.89  
-        self.vp = ViewPanel(self, (ip_px + ip_sx, ip_py), (vp_sx, vp_sy))
+        self.vp = ViewPanel(self, (ip_px + ip_sx, ip_py), (vp_sx, vp_sy), self.op)
         self.cp = ControlPanel(self, (ip_px + ip_sx, ip_py + vp_sy), (vp_sx, f_sy - vp_sy))
          
         self.Show(True)
@@ -40,13 +42,17 @@ class MainFrame(wx.Frame):
         self.Destroy()
 
 class ViewPanel(wx.Panel):
-    def __init__(self, parent, pos, size):
+    def __init__(self, parent, pos, size, output_panel):
         wx.Panel.__init__(self, parent, -1, pos, size, style=wx.SUNKEN_BORDER)
+        
+        self.log_view = output_panel.log_view
+        
         self.SetBackgroundColour(wx.WHITE)
         self.Bind(wx.EVT_PAINT, self.OnPaint)
         self.Nodes = []
         self.Edges = []
         self.PRTs = []
+        self.NodeByNodeDistance_matrix = None
         
         sx, sy = self.GetSize()
         self.Nodes.append(Node(sx * 0.2, sy * 0.3))
@@ -58,22 +64,25 @@ class ViewPanel(wx.Panel):
         self.Nodes.append(Node(sx * 0.3, sy * 0.85))
         self.Nodes.append(Node(sx * 0.8, sy * 0.65))
         
-        self.Edges.append(Edge(self.Nodes[0], self.Nodes[3]))
-        self.Edges.append(Edge(self.Nodes[0], self.Nodes[2]))
-        self.Edges.append(Edge(self.Nodes[0], self.Nodes[4]))
-        self.Edges.append(Edge(self.Nodes[1], self.Nodes[4]))
-        self.Edges.append(Edge(self.Nodes[1], self.Nodes[5]))
-        self.Edges.append(Edge(self.Nodes[2], self.Nodes[3]))
-        self.Edges.append(Edge(self.Nodes[3], self.Nodes[4]))
-        self.Edges.append(Edge(self.Nodes[3], self.Nodes[6]))
-        self.Edges.append(Edge(self.Nodes[4], self.Nodes[5]))
-        self.Edges.append(Edge(self.Nodes[4], self.Nodes[7]))
-        self.Edges.append(Edge(self.Nodes[5], self.Nodes[7]))
-        self.Edges.append(Edge(self.Nodes[6], self.Nodes[7]))
+        for i, j in [(0, 3), (0, 2), (0, 4), (1, 4), (1, 5), (2, 3), (3, 4), (3, 6), (4, 5), (4, 7), (5, 7), (6, 7)]:
+            self.Edges.append(Edge(self.Nodes[i], self.Nodes[j]))
         
         for e in self.Edges[:]:
             e.gen_biDir(self.Edges)
 
+        self.NodeByNodeDistance_matrix = PRT.create_PRTbyNode_matrix(self.Nodes)
+        
+        for n in range(len(self.Nodes)):
+            self.NodeByNodeDistance_matrix[n][n] = 1e400
+        
+        m = Munkres()
+        indexes = m.compute(self.NodeByNodeDistance_matrix)
+        total = 0
+        for row, column in indexes:
+            value = self.NodeByNodeDistance_matrix[row][column]
+            total += value
+            print '(%d, %d) -> %d' % (row, column, value)
+        
         self.PRTs.append(PRT())
         self.PRTs[-1].init_position(self.Nodes[4])
         self.PRTs.append(PRT())
@@ -87,16 +96,8 @@ class ViewPanel(wx.Panel):
         while REQUEST and REQUEST[0][0] <= simul_clock:
             t, c, sn, dn = REQUEST.pop(0)
             self.Nodes[sn].cus_queue.append(Customer(t, c, self.Nodes[sn], self.Nodes[dn]))
-#            Next time NN implement            
-#             v = PRT.find_NN(self.PRTs, self.Nodes)
-#             if v.state == 0 and v.arrived_n != self.Nodes[sn]:
-#                 v.path_n, v.path_e = PRT.find_SP(v.arrived_n, self.Nodes[sn], self.Nodes)
-#                 v.calc_btw_ns(CLOCK_INCREMENT, simul_clock)
-#                 v.dest_n = self.Nodes[sn]
-#                 path_n, path_e = PRT.find_SP(self.Nodes[sn], self.Nodes[dn], self.Nodes)
-#                 v.path_n += path_n[1:]  
-#                 v.path_e += path_e
-#                 v.state = 2
+            self.log_view.write('-------------------------------------------------------\n');
+            self.log_view.write(' %s sec,    %s: N%s -> N%s \n' % (simul_clock, c, sn, dn));
         
         for v in [x for x in self.PRTs if x.state == 0]:
             target_n = PRT.find_NearestNode(v, self.Nodes)
@@ -203,9 +204,9 @@ class OutputPanel(wx.Panel):
         re_st.SetFont(wx.Font(12, wx.FONTFAMILY_ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_LIGHT))
         sx, sy = re_st.GetSize()
         
-        self.request_view = wx.TextCtrl(self, -1, "", pos=(2, sy + 4), size=(p_sx - 2, p_sy - sy - 40), style=wx.TE_MULTILINE | wx.TE_PROCESS_ENTER)
-        self.request_view.SetEditable(False)
-        self.request_view.SetBackgroundColour(wx.WHITE)
+        self.log_view = wx.TextCtrl(self, -1, "", pos=(2, sy + 4), size=(p_sx - 2, p_sy - sy - 40), style=wx.TE_MULTILINE | wx.TE_PROCESS_ENTER)
+        self.log_view.SetEditable(False)
+        self.log_view.SetBackgroundColour(wx.WHITE)
 
 class ControlPanel(wx.Panel):
     def __init__(self, parent, pos, size):
