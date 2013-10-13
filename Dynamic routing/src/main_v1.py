@@ -15,21 +15,21 @@ class MainFrame(wx.Frame):
         
         f_sx, f_sy = self.GetSize()
         
-        ip_sx, ip_sy = f_sx * 0.2, f_sy
+        ip_sx, ip_sy = f_sx * 0.14, f_sy
         ip = InputPanel(self, (0, 0), (ip_sx, ip_sy))
         ip_px, ip_py = ip.GetPosition()
         
-        op_sx, op_sy = f_sx / 4, f_sy
-        OutputPanel(self, (f_sx - op_sx, 0), (op_sx, op_sy))
-         
-        vp_sx, vp_sy = f_sx - ip_sx - op_sx, f_sy * 0.89  
-        self.vp = ViewPanel(self, (ip_px + ip_sx, ip_py), (vp_sx, vp_sy))
-        self.cp = ControlPanel(self, (ip_px + ip_sx, ip_py + vp_sy), (vp_sx, f_sy - vp_sy))
-         
-        self.Show(True)
-         
-        self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
-        self.Bind(wx.EVT_CLOSE, self.OnClose)
+#         op_sx, op_sy = f_sx / 4, f_sy
+#         OutputPanel(self, (f_sx - op_sx, 0), (op_sx, op_sy))
+#         
+#         vp_sx, vp_sy = f_sx - ip_sx - op_sx, f_sy * 0.89  
+#         self.vp = ViewPanel(self, (ip_px + ip_sx, ip_py), (vp_sx, vp_sy))
+#         self.cp = ControlPanel(self, (ip_px + ip_sx, ip_py + vp_sy), (vp_sx, f_sy - vp_sy))
+#         
+#         self.Show(True)
+#         
+#         self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
+#         self.Bind(wx.EVT_CLOSE, self.OnClose)
         
     def OnTimer(self, evt):
         self.simul_clock += CLOCK_INCREMENT / 1000
@@ -84,32 +84,21 @@ class ViewPanel(wx.Panel):
         self.InitBuffer()
     
     def update(self, simul_clock):
-        while REQUEST and REQUEST[0][0] <= simul_clock:
+        if REQUEST and REQUEST[0][0] <= simul_clock:
             t, c, sn, dn = REQUEST.pop(0)
             self.Nodes[sn].cus_queue.append(Customer(t, c, self.Nodes[sn], self.Nodes[dn]))
 #            Next time NN implement            
-#             v = PRT.find_NN(self.PRTs, self.Nodes)
-#             if v.state == 0 and v.arrived_n != self.Nodes[sn]:
-#                 v.path_n, v.path_e = PRT.find_SP(v.arrived_n, self.Nodes[sn], self.Nodes)
-#                 v.calc_btw_ns(CLOCK_INCREMENT, simul_clock)
-#                 v.dest_n = self.Nodes[sn]
-#                 path_n, path_e = PRT.find_SP(self.Nodes[sn], self.Nodes[dn], self.Nodes)
-#                 v.path_n += path_n[1:]  
-#                 v.path_e += path_e
-#                 v.state = 2
-        
-        for v in [x for x in self.PRTs if x.state == 0]:
-            print 11
-            target_n = PRT.find_NearestNode(v, self.Nodes)
-            print 
-            if v.arrived_n != target_n:
+            v = PRT.find_NN(self.PRTs, self.Nodes)
+            if v.state == 0 and v.arrived_n != self.Nodes[sn]:
                 v.path_n, v.path_e = PRT.find_SP(v.arrived_n, self.Nodes[sn], self.Nodes)
                 v.calc_btw_ns(CLOCK_INCREMENT, simul_clock)
                 v.dest_n = self.Nodes[sn]
-                path_n, path_e = PRT.find_SP(self.Nodes[sn], self.Nodes[dn], self.Nodes)
-                v.path_n += path_n[1:]  
-                v.path_e += path_e
-                v.state = 1
+                v.state = 2
+            
+            path_n, path_e = PRT.find_SP(self.Nodes[sn], self.Nodes[dn], self.Nodes)
+            
+            v.path_n += path_n[1:]  
+            v.path_e += path_e
         
         for v in self.PRTs:
             if v.arrived_n != v.target_n:
@@ -163,29 +152,25 @@ class InputPanel(wx.Panel):
         re_st.SetFont(wx.Font(12, wx.FONTFAMILY_ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_LIGHT))
         sx, sy = re_st.GetSize()
         
+#         self.request_view = wx.TextCtrl(self, -1, "", pos=(2, sy + 4), size=(p_sx - 2, p_sy - sy - 40), style=wx.TE_MULTILINE | wx.TE_PROCESS_ENTER)
+#         self.request_view.SetEditable(False)
+#         self.request_view.SetBackgroundColour(wx.WHITE)
+        
+        
+        
         self.request_view = wx.ListCtrl(self, -1, pos=(2, sy + 4), size=(p_sx - 2, p_sy - sy - 40), style=wx.LC_REPORT | wx.SUNKEN_BORDER)
-        self.request_view.InsertColumn(0, 'Customer')
-        self.request_view.InsertColumn(1, 'Time')
-        self.request_view.InsertColumn(2, 'From')
-        self.request_view.InsertColumn(3, 'To')
         
-        self.request_view.SetColumnWidth(0, p_sx / 3)
-        self.request_view.SetColumnWidth(1, p_sx / 4)
-        self.request_view.SetColumnWidth(2, p_sx / 4.5)
-        self.request_view.SetColumnWidth(3, p_sx / 4.5)
         
-        rowCount = 0
-        with open('Input', 'r') as input:
-            for line in input:
-                c, t_s, sd = line.split(',')
-                t = str(round(float(t_s), 1))
-                sn, dn = sd.split('-')
-                self.request_view.InsertStringItem(rowCount, c)
-                self.request_view.SetStringItem(rowCount, 1, t)
-                self.request_view.SetStringItem(rowCount, 2, sn)
-                self.request_view.SetStringItem(rowCount, 3, dn)
-                rowCount += 1
-                REQUEST.append((round(float(t_s), 1), c, int(sn), int(dn)))
+        
+#         with open('Input', 'r') as input:
+#             for line in input:
+#                 c, t_s, sd = line.split(',')
+#                 t = str(round(float(t_s), 1))
+#                 sn, dn = sd.split('-')
+#                 self.request_view.write('-------------------------\n');
+#                 self.request_view.write('  %s sec,\n' % (t));
+#                 self.request_view.write('     %s: N%s -> N%s ' % (c, sn, dn));
+#                 REQUEST.append((round(float(t_s), 1), c, int(sn), int(dn)))
 
 class OutputPanel(wx.Panel):
     def __init__(self, parent, pos, size):
@@ -209,10 +194,10 @@ class ControlPanel(wx.Panel):
         pa_img, pl_img = wx.Image("pic/pause.bmp", wx.BITMAP_TYPE_BMP), wx.Image("pic/play.bmp", wx.BITMAP_TYPE_BMP) 
         pa_bmp, pl_bmp = pa_img.Scale(26, 26), pl_img.Scale(26, 26)
         
-        self.simul_st = wx.StaticText(self, -1, str(0), (250, 10))
+        self.simul_st = wx.StaticText(self, -1, str(0), (285, 10))
         self.simul_st.SetFont(wx.Font(15, wx.FONTFAMILY_ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_LIGHT))
         
-        px = 430
+        px = 480
         py = 9
         bt = 30
         

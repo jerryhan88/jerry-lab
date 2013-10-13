@@ -90,12 +90,24 @@ class Customer():
         
 class PRT():
     _id = 0
+    PRT_SPEED = 5
     def __init__(self):
         self.id = PRT._id
         PRT._id += 1
         self.px, self.py = None, None
-        self.path = []
+        self.path_n = []
+        self.path_e = []
         self.arrived_n = None
+        self.target_n = None
+        self.dest_n = None
+        self.riding_cus = None
+        
+        self.ETA = 1000.0
+        self.sin_theta = 0.0
+        self.cos_theta = 0.0
+        # PRT state
+        #  0: idle, 1: approaching, 2: transit
+        self.state = 0   
         
     def set_position(self, px, py):
         self.px, self.py = px, py
@@ -106,11 +118,62 @@ class PRT():
         gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
         gc.DrawRectangle(-PRT_SIZE / 2, -PRT_SIZE / 2, PRT_SIZE, PRT_SIZE)
         gc.DrawText('PRT%d' % self.id, -PRT_SIZE / 2, -PRT_SIZE / 2 - 10)
+        
+        if self.riding_cus:
+            self.riding_cus.draw(gc)
+    
+    @classmethod
+    def find_NN(self, PRTs, Nodes):
+        best_v = None
+        for v in PRTs:
+            if v.state == 0:
+                best_v = v
+                break
+        else:
+            return None
+        return best_v
+    
+    @classmethod
+    def find_NearestNode(self, v, Nodes):
+        candi_nodes = [n for n in Nodes if n.cus_queue]
+        target_n = None
+        nearest_distance = 100000
+        for n in candi_nodes:
+            v.path_n, v.path_e = PRT.find_SP(v.arrived_n, n, Nodes)
+            distance = sum([e.distance for e in v.path_e])
+            if distance < nearest_distance:
+                target_n = n
+        else:
+            return v.arrived_n
+        return target_n
             
+    def calc_btw_ns(self, TIMER_MILSEC, simul_clock):
+        self.target_n = self.path_n[1]
+        self.ETA = simul_clock + self.path_e[0].distance / (PRT.PRT_SPEED / (TIMER_MILSEC / 1000))
+        dx = self.target_n.px - self.arrived_n.px
+        dy = self.target_n.py - self.arrived_n.py  
+        self.cos_theta = dx / sqrt(dx * dx + dy * dy)
+        self.sin_theta = dy / sqrt(dx * dx + dy * dy)
+    
+    def update_pos(self, TIMER_MILSEC, simul_clock):
+        if self.ETA <= simul_clock:
+            self.set_position(self.target_n.px, self.target_n.py)
+            self.arrived_n = self.target_n
+            self.path_n.pop(0)
+            self.path_e.pop(0)
+            self.calc_btw_ns(TIMER_MILSEC, simul_clock)
+            if self.arrived_n == self.dest_n:
+                self.riding_cus = self.dest_n.cus_queue.pop(0)
+                self.state = 2
+        else:
+            self.px += PRT.PRT_SPEED * self.cos_theta
+            self.py += PRT.PRT_SPEED * self.sin_theta  
+    
     def init_position(self, n):
         self.arrived_n = n
         self.set_position(n.px, n.py)
-
+    
+    @classmethod
     def find_SP(self, sn, en, Nodes):
     #     init
         for n in Nodes:
@@ -123,29 +186,31 @@ class PRT():
         while todo:
             n = todo.pop(0)
             n.visited = True
-            
             for e in n.edges_outward:
                 consi_n = e._to
                 dist = n.min_d + e.distance
-                
                 if consi_n.min_d >= dist:
                     consi_n.min_d = dist
                 if not consi_n.visited and not [x for x in todo if consi_n.id == x.id]:
                     todo.append(consi_n)
-        
-        self.path.append(en)
+        path_n = []
+        path_e = []
+        path_n.append(en)
         consi_n = en
         while consi_n:
             for e in consi_n.edges_inward:
                 if e._from.min_d + e.distance == consi_n.min_d:
                     consi_n = e._from
+                    path_e.append(e)
                     break 
             else:
                 consi_n = None
                 break
-            self.path.append(consi_n)
-        self.path.reverse()
-        return  self.path   
+            path_n.append(consi_n)
+        path_n.reverse()
+        path_e.reverse()
+
+        return path_n, path_e 
 
 def t_D_algo_run(vehicle, sn, en, Nodes):
 #     init

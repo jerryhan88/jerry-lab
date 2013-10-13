@@ -1,7 +1,12 @@
 from __future__ import division
 from classes import Node, Edge, Customer, PRT
+from math import sqrt
 import wx
-from munkres import Munkres, print_matrix
+from NN_algo import NN_algo
+
+NODE_DIAMETER = 40
+CUSTOMER_RADIUS = NODE_DIAMETER / 3
+PRT_SIZE = 20
 
 REQUEST = []
 TIMER_INTERVAL = 100
@@ -52,7 +57,10 @@ class ViewPanel(wx.Panel):
         self.Nodes = []
         self.Edges = []
         self.PRTs = []
+        self.considered_cus = []
         self.NodeByNodeDistance_matrix = None
+        
+        
         
         sx, sy = self.GetSize()
         self.Nodes.append(Node(sx * 0.2, sy * 0.3))
@@ -69,19 +77,8 @@ class ViewPanel(wx.Panel):
         
         for e in self.Edges[:]:
             e.gen_biDir(self.Edges)
-
-        self.NodeByNodeDistance_matrix = PRT.create_PRTbyNode_matrix(self.Nodes)
         
-        for n in range(len(self.Nodes)):
-            self.NodeByNodeDistance_matrix[n][n] = 1e400
-        
-        m = Munkres()
-        indexes = m.compute(self.NodeByNodeDistance_matrix)
-        total = 0
-        for row, column in indexes:
-            value = self.NodeByNodeDistance_matrix[row][column]
-            total += value
-            print '(%d, %d) -> %d' % (row, column, value)
+        self.nn_algo = NN_algo(self.Nodes)
         
         self.PRTs.append(PRT())
         self.PRTs[-1].init_position(self.Nodes[4])
@@ -95,12 +92,17 @@ class ViewPanel(wx.Panel):
     def update(self, simul_clock):
         while REQUEST and REQUEST[0][0] <= simul_clock:
             t, c, sn, dn = REQUEST.pop(0)
-            self.Nodes[sn].cus_queue.append(Customer(t, c, self.Nodes[sn], self.Nodes[dn]))
+            cus = Customer(t, c, self.Nodes[sn], self.Nodes[dn])
+            self.considered_cus.append(cus)
+            self.Nodes[sn].cus_queue.append(cus)
             self.log_view.write('-------------------------------------------------------\n');
             self.log_view.write(' %s sec,    %s: N%s -> N%s \n' % (simul_clock, c, sn, dn));
         
+#         if self.considered_cus:
+            
+        
         for v in [x for x in self.PRTs if x.state == 0]:
-            target_n = PRT.find_NearestNode(v, self.Nodes)
+            target_n = self.nn_algo.find_NearestNode(v, self.Nodes)
             if target_n != None:
                 for c in target_n.cus_queue:
                     if c.marked == False:
@@ -108,9 +110,9 @@ class ViewPanel(wx.Panel):
                         break
                 if v.arrived_n != target_n:
                     v.dest_n = target_n
-                    v.path_n, v.path_e = PRT.find_SP(v.arrived_n, target_n, self.Nodes)
+                    v.path_n, v.path_e = self.nn_algo.find_SP(v.arrived_n, target_n, self.Nodes)
                     v.state = 1
-                path_n, path_e = PRT.find_SP(target_n, target_n.cus_queue[0].dn, self.Nodes)
+                path_n, path_e = self.nn_algo.find_SP(target_n, target_n.cus_queue[0].dn, self.Nodes)
                 if v.arrived_n == target_n:
                     v.dest_n = target_n.cus_queue[0].dn
                     v.riding_cus = target_n.cus_queue.pop(0)
@@ -129,15 +131,56 @@ class ViewPanel(wx.Panel):
             
         for n in self.Nodes:
             gc.Translate(n.px, n.py)
-            n.draw(gc)
+            
+            gc.SetPen(wx.Pen(wx.Colour(0, 0, 0), 1))
+            gc.SetBrush(wx.Brush(wx.Colour(255, 255, 255)))
+            gc.SetFont(wx.Font(10, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+            
+            gc.DrawEllipse(-NODE_DIAMETER / 2, -NODE_DIAMETER / 2, NODE_DIAMETER, NODE_DIAMETER)
+            gc.DrawText('N%d' % n.id, -7, -7)
+            gc.DrawText('#c: %d' % len(n.cus_queue), -14, NODE_DIAMETER / 2)
+            
+            for c in n.cus_queue:
+                bg_clr = wx.Colour(200, 200, 200)
+                gc.SetBrush(wx.Brush(bg_clr))
+                gc.SetPen(wx.Pen(bg_clr, 0.5))
+                gc.DrawEllipse(-CUSTOMER_RADIUS / 2, -CUSTOMER_RADIUS / 2, CUSTOMER_RADIUS, CUSTOMER_RADIUS)
+                gc.DrawText(c.id, -7, -7)
+            
             gc.SetTransform(old_tr)
             
         for e in self.Edges[:len(self.Edges) // 2]:
-            e.draw(gc)
+            ax = e._to.px - e._from.px;
+            ay = e._to.py - e._from.py;
+            
+            la = sqrt(ax * ax + ay * ay);
+            ux = ax / la;
+            uy = ay / la;
+             
+            sx = e._from.px + ux * NODE_DIAMETER / 2
+            sy = e._from.py + uy * NODE_DIAMETER / 2
+            ex = e._to.px - ux * NODE_DIAMETER / 2
+            ey = e._to.py - uy * NODE_DIAMETER / 2
+             
+            gc.DrawLines([(sx, sy), (ex, ey)])
+            gc.DrawText('%d' % int(round(e.distance, 1)), (e._from.px + e._to.px) / 2, (e._from.py + e._to.py) / 2)
 
         for v in self.PRTs:
             gc.Translate(v.px, v.py)
-            v.draw(gc)
+            
+            gc.SetPen(wx.Pen(wx.Colour(0, 0, 0), 1))
+            gc.SetBrush(wx.Brush(wx.Colour(255, 255, 255)))
+            gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+            gc.DrawRectangle(-PRT_SIZE / 2, -PRT_SIZE / 2, PRT_SIZE, PRT_SIZE)
+            gc.DrawText('PRT%d' % v.id, -PRT_SIZE / 2, -PRT_SIZE / 2 - 10)
+            
+            if v.riding_cus:
+                bg_clr = wx.Colour(200, 200, 200)
+                gc.SetBrush(wx.Brush(bg_clr))
+                gc.SetPen(wx.Pen(bg_clr, 0.5))
+                gc.DrawEllipse(-CUSTOMER_RADIUS / 2, -CUSTOMER_RADIUS / 2, CUSTOMER_RADIUS, CUSTOMER_RADIUS)
+                gc.DrawText(v.riding_cus.id, -7, -7)
+            
             gc.SetTransform(old_tr)    
             
     def InitBuffer(self):

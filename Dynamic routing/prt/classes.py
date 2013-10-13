@@ -2,45 +2,30 @@ from __future__ import division
 from math import sqrt
 import wx
 
-NODE_DIAMETER = 40
-CUSTOMER_RADIUS = NODE_DIAMETER / 3
-PRT_SIZE = 20
-
 class Node():
     _id = 0
-    MAXD = 10000
+    MAXD = 1e400
     def __init__(self, px, py):
         self.id = Node._id
         self.px, self.py = None, None
+        self.visited, self.min_d = False, Node.MAXD
         
-        self.edges_inward = []
-        self.edges_outward = []
+        self.edges_inward, self.edges_outward = [], []
+        self.cus_queue = []
         
         self.set_position(px, py)
-        self.visited = False
-        self.min_d = None
-        
-        self.cus_queue = []
 
         Node._id += 1
         
     def __repr__(self):
         return 'N%d' % self.id
     
+    def init_node(self):
+        self.visited = False
+        self.min_d = Node.MAXD
+    
     def set_position(self, px, py):
         self.px, self.py = px, py
-    
-    def draw(self, gc):
-        gc.SetPen(wx.Pen(wx.Colour(0, 0, 0), 1))
-        gc.SetBrush(wx.Brush(wx.Colour(255, 255, 255)))
-        gc.SetFont(wx.Font(10, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-        
-        gc.DrawEllipse(-NODE_DIAMETER / 2, -NODE_DIAMETER / 2, NODE_DIAMETER, NODE_DIAMETER)
-        gc.DrawText('N%d' % self.id, -7, -7)
-        gc.DrawText('#c: %d' % len(self.cus_queue), -14, NODE_DIAMETER / 2)
-        
-        for c in self.cus_queue:
-            c.draw(gc) 
         
 class Edge():
     _id = 0
@@ -60,34 +45,11 @@ class Edge():
     
     def gen_biDir(self, Edges):
         Edges.append(Edge(self._to, self._from))
-    
-    def draw(self, gc):
-        ax = self._to.px - self._from.px;
-        ay = self._to.py - self._from.py;
-        
-        la = sqrt(ax * ax + ay * ay);
-        ux = ax / la;
-        uy = ay / la;
-         
-        sx = self._from.px + ux * NODE_DIAMETER / 2
-        sy = self._from.py + uy * NODE_DIAMETER / 2
-        ex = self._to.px - ux * NODE_DIAMETER / 2
-        ey = self._to.py - uy * NODE_DIAMETER / 2
-         
-        gc.DrawLines([(sx, sy), (ex, ey)])
-        gc.DrawText('%d' % int(round(self.distance, 1)), (self._from.px + self._to.px) / 2, (self._from.py + self._to.py) / 2)
           
 class Customer():
     def __init__(self, re_time, _id, sn, dn):
         self.re_time, self.id, self.sn, self.dn = re_time, _id, sn, dn
         self.marked = False
-                
-    def draw(self, gc):
-        bg_clr = wx.Colour(200, 200, 200)
-        gc.SetBrush(wx.Brush(bg_clr))
-        gc.SetPen(wx.Pen(bg_clr, 0.5))
-        gc.DrawEllipse(-CUSTOMER_RADIUS / 2, -CUSTOMER_RADIUS / 2, CUSTOMER_RADIUS, CUSTOMER_RADIUS)
-        gc.DrawText(self.id, -7, -7)    
         
 class PRT():
     _id = 0
@@ -113,56 +75,13 @@ class PRT():
     def __repr__(self):
         return 'PRT%d' % self.id
 
+    def init_position(self, n):
+        self.arrived_n = n
+        self.set_position(n.px, n.py)
+    
     def set_position(self, px, py):
         self.px, self.py = px, py
-        
-    def draw(self, gc):
-        gc.SetPen(wx.Pen(wx.Colour(0, 0, 0), 1))
-        gc.SetBrush(wx.Brush(wx.Colour(255, 255, 255)))
-        gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-        gc.DrawRectangle(-PRT_SIZE / 2, -PRT_SIZE / 2, PRT_SIZE, PRT_SIZE)
-        gc.DrawText('PRT%d' % self.id, -PRT_SIZE / 2, -PRT_SIZE / 2 - 10)
-        
-        if self.riding_cus:
-            self.riding_cus.draw(gc)
     
-    @classmethod
-    def find_NN(self, PRTs, Nodes):
-        best_v = None
-        for v in PRTs:
-            if v.state == 0:
-                best_v = v
-                break
-        else:
-            return None
-        return best_v
-    
-    @classmethod
-    def create_PRTbyNode_matrix(cls, nodes):
-        PRTbyNode_matrix = []
-        for i in nodes:
-            from_i = []
-            for j in nodes:
-                _ , path_e = cls.find_SP(i, j, nodes)
-                distance = sum([e.distance for e in path_e])
-                from_i.append(distance)
-            PRTbyNode_matrix.append(from_i)
-        return PRTbyNode_matrix
-    
-    @classmethod
-    def find_NearestNode(self, v, Nodes):
-        candi_nodes = [n for n in Nodes if any(c for c in n.cus_queue if c.marked == False)]
-        if not candi_nodes:
-            return None
-        target_n = None
-        nearest_distance = 1e400
-        for n in candi_nodes:
-            v.path_n, v.path_e = PRT.find_SP(v.arrived_n, n, Nodes)
-            distance = sum([e.distance for e in v.path_e])
-            if distance < nearest_distance:
-                target_n = n
-        return target_n
-            
     def calc_btw_ns(self, TIMER_MILSEC, simul_clock):
         if len(self.path_n) > 1:
             self.target_n = self.path_n[1]
@@ -173,7 +92,7 @@ class PRT():
             self.sin_theta = dy / sqrt(dx * dx + dy * dy)
         else:
             self.target_n = self.arrived_n
-
+    
     def update_pos(self, TIMER_MILSEC, simul_clock):
         if self.ETA <= simul_clock:
             self.set_position(self.target_n.px, self.target_n.py)
@@ -193,85 +112,6 @@ class PRT():
         else:
             self.px += PRT.PRT_SPEED * self.cos_theta
             self.py += PRT.PRT_SPEED * self.sin_theta  
-    
-    def init_position(self, n):
-        self.arrived_n = n
-        self.set_position(n.px, n.py)
-    
-    @classmethod
-    def find_SP(self, sn, en, Nodes):
-    #     init
-        for n in Nodes:
-            n.visited = False
-            n.min_d = Node.MAXD
-            
-        sn.min_d = 0
-        todo = [sn]
-        
-        while todo:
-            n = todo.pop(0)
-            n.visited = True
-            for e in n.edges_outward:
-                consi_n = e._to
-                dist = n.min_d + e.distance
-                if consi_n.min_d >= dist:
-                    consi_n.min_d = dist
-                if not consi_n.visited and not [x for x in todo if consi_n.id == x.id]:
-                    todo.append(consi_n)
-        path_n = []
-        path_e = []
-        path_n.append(en)
-        consi_n = en
-        while consi_n:
-            for e in consi_n.edges_inward:
-                if e._from.min_d + e.distance == consi_n.min_d:
-                    consi_n = e._from
-                    path_e.append(e)
-                    break 
-            else:
-                consi_n = None
-                break
-            path_n.append(consi_n)
-        path_n.reverse()
-        path_e.reverse()
-
-        return path_n, path_e 
-
-def t_D_algo_run(vehicle, sn, en, Nodes):
-#     init
-    for n in Nodes:
-        n.visited = False
-        n.min_d = Node.MAXD
-        
-    sn.min_d = 0
-    todo = [sn]
-    
-    while todo:
-        n = todo.pop(0)
-        n.visited = True
-        
-        for e in n.edges_outward:
-            target_n = e._to
-            dist = n.min_d + e.distance
-            
-            if target_n.min_d >= dist:
-                target_n.min_d = dist
-            if not target_n.visited and not [x for x in todo if target_n.id == x.id]:
-                todo.append(target_n)
-    
-    vehicle.path.append(en)
-    target_n = en
-    while target_n:
-        for e in target_n.edges_inward:
-            if e._from.min_d + e.distance == target_n.min_d:
-                target_n = e._from
-                break 
-        else:
-            target_n = None
-            break
-        vehicle.path.append(target_n)
-    vehicle.path.reverse()
-    return  vehicle.path   
          
 if __name__ == '__main__':
     sx, sy = 800, 600
