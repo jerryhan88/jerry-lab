@@ -60,8 +60,6 @@ class ViewPanel(wx.Panel):
         self.considered_cus = []
         self.NodeByNodeDistance_matrix = None
         
-        
-        
         sx, sy = self.GetSize()
         self.Nodes.append(Node(sx * 0.2, sy * 0.3))
         self.Nodes.append(Node(sx * 0.6, sy * 0.2))
@@ -161,8 +159,18 @@ class ViewPanel(wx.Panel):
             sy = e._from.py + uy * NODE_DIAMETER / 2
             ex = e._to.px - ux * NODE_DIAMETER / 2
             ey = e._to.py - uy * NODE_DIAMETER / 2
-             
+            
+            
+            px = -uy;
+            py = ux;
+                        
             gc.DrawLines([(sx, sy), (ex, ey)])
+            gc.DrawLines([(ex, ey), (ex - int((ux * 5)) + int(px * 3), ey
+                        - int(uy * 5) + int(py * 3))])
+            
+            gc.DrawLines([(ex, ey), (ex - int(ux * 5) - int(px * 3), ey
+                        - int(uy * 5) - int(py * 3))])            
+            
             gc.DrawText('%d' % int(round(e.distance, 1)), (e._from.px + e._to.px) / 2, (e._from.py + e._to.py) / 2)
 
         for v in self.PRTs:
