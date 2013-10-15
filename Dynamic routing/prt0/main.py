@@ -19,8 +19,7 @@ class MainFrame(wx.Frame):
 
         self.simul_clock = 0
         self.timer = wx.Timer(self)
-        self.timer.Start(TIMER_INTERVAL)
-        
+#         self.timer.Start(TIMER_INTERVAL)
         
         s0 = wx.SplitterWindow(self, style=wx.SP_NOBORDER)
         s1 = wx.SplitterWindow(s0, style=wx.SP_NOBORDER)
