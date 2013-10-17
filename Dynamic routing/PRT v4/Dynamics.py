@@ -1,11 +1,8 @@
 from __future__ import division
 from math import sqrt
+from Algorithms import NN
+from heapq import heappush, heappop
 import wx
-
-NODE_DIAMETER = 40
-CUSTOMER_RADIUS = NODE_DIAMETER / 3
-PRT_SIZE = 20
-
 class Node():
     _id = 0
     MAXD = 10000
@@ -98,8 +95,21 @@ class PRT():
     def init_position(self, n):
         self.arrived_n = n
         self.set_position(n.px, n.py)
-         
-if __name__ == '__main__':
-    pass
 
+def gen_customers():
+    event_queue = []
+    with open('Input', 'r') as fp:
+        for line in fp:
+            c, t_s, sd = line.split(',')
+            t = round(float(t_s), 1)
+            sn, dn = sd.split('-')
+            print t, c, sn, dn
+#             heappush(event_queue, ( , ))
+
+if __name__ == '__main__':
+    import input_gen
+    Nodes, Edges = input_gen.network1()
+    nn = NN(Nodes)
     
+# while self.ordered_output:
+#     yield heappop(self.ordered_output)
