@@ -17,46 +17,39 @@ class NN:
                 distance = sum([e.distance for e in path_e])
                 from_i.append(distance)
                 # find longest_distance in network
-                if NN_algo.Longest_dis < distance: NN_algo.Longest_dis = distance   
+                if NN.Longest_dis < distance: NN.Longest_dis = distance   
             NodeByNode_DMatrix.append(from_i)
         return NodeByNode_DMatrix
     
-    def create_PRTbyCustomer_matrix(self, PRTs, cus_queue, nodes):
-        first_arrived_cus = [c for c in cus_queue if c == nodes[c.sn].cus_queue[0]]
-        
-        row_size, col_size = len(PRTs), len(first_arrived_cus)
+    def create_PRTbyCustomer_matrix(self, PRTs, customers, nodes):
+        row_size, col_size = len(PRTs), len(customers)
         max_M_size = max(row_size, col_size)
         
-        PRTbyCustomer_matrix = [[NN_algo.Longest_dis] * max_M_size for _ in range(max_M_size)]
+        PRTbyCustomer_matrix = [[NN.Longest_dis] * max_M_size for _ in range(max_M_size)]
         
         for prt in PRTs:
-            for i, cus in enumerate(first_arrived_cus):
-                c_wait_n = nodes[cus.sn]
+            for i, cus in enumerate(customers):
                 if prt.state == 0:
-                    PRTbyCustomer_matrix[prt.id][i] = self.NodeByNode_DMatrix[prt.arrived_n.id][c_wait_n.id]
-                elif prt.state == 1:
-                    dx = prt.target_n.px - prt.px  
-                    dy = prt.target_n.py - prt.py
+                    PRTbyCustomer_matrix[prt.id][i] = self.NodeByNode_DMatrix[prt.arrived_n.id][cus.sn.id]
+                elif prt.state == 1 or prt.state == 3:
+                    dx = prt.next_n.px - prt.px  
+                    dy = prt.next_n.py - prt.py
                     remain_dis = sqrt(dx * dx + dy * dy) 
-                    PRTbyCustomer_matrix[prt.id][i] = self.NodeByNode_DMatrix[prt.target_n.id][c_wait_n.id] + remain_dis 
+                    PRTbyCustomer_matrix[prt.id][i] = self.NodeByNode_DMatrix[prt.next_n.id][cus.sn.id] + remain_dis 
                 else:
                     assert prt.state == 2
-                    PRTbyCustomer_matrix[prt.id][i] = self.NodeByNode_DMatrix[prt.dest_n.id][c_wait_n.id]
+                    dx = prt.arrived_n.px - prt.px  
+                    dy = prt.arrived_n.py - prt.py
+                    distance = sum([e.distance for e in prt.path_e]) - sqrt(dx * dx + dy * dy) 
+                    PRTbyCustomer_matrix[prt.id][i] = self.NodeByNode_DMatrix[prt.dest_n.id][cus.sn.id] + distance
         
         return PRTbyCustomer_matrix
     
-    def assign_PRTtoCustomer(self, PRTbyCustomer_matrix):
-        resultOfAssign = self.hungarian_algo.compute(PRTbyCustomer_matrix)
-        for row, column in resultOfAssign:
-            pass
-    
-#         m = Munkres()
-#         indexes = m.compute(self.NodeByNodeDistance_matrix)
-#         total = 0
-#         for row, column in indexes:
-#             value = self.NodeByNodeDistance_matrix[row][column]
-#             total += value
-#             print '(%d, %d) -> %d' % (row, column, value)
+    def find_opt_matching(self, PRTs, customers, M):
+        for prt_id, customer_id in self.hungarian_algo.compute(M):
+            if prt_id >= len(PRTs) or customer_id >= len(customers):
+                continue 
+            PRTs[prt_id].set_assi_cus(customers[customer_id])
     
     def find_NearestNode(self, v, Nodes):
         candi_nodes = [n for n in Nodes if any(c for c in n.cus_queue if c.marked == False)]
@@ -106,3 +99,109 @@ class NN:
         path_e.reverse()
 
         return path_n, path_e
+
+
+def metrix_display(M):
+    for r in M:
+        for v in r:
+            print '%.1f    ' % v,
+        print
+
+def scenario0():
+    customers = []
+    PRTs = []
+    
+    customers.append(Customer(10, 'C0', Nodes[2], Nodes[4]))
+    customers.append(Customer(11, 'C1', Nodes[5], Nodes[7]))
+    
+    prt0 = PRT()
+    prt0.init_position(Nodes[4])
+    PRTs.append(prt0)
+    
+    prt1 = PRT()
+    prt1.init_position(Nodes[0])
+    PRTs.append(prt1)
+    
+    return PRTs, customers
+
+def scenario1():
+    customers = []
+    PRTs = []
+    
+    customers.append(Customer(10, 'C0', Nodes[2], Nodes[4]))
+    customers.append(Customer(11, 'C1', Nodes[5], Nodes[7]))
+    
+    for init_n in (4, 0, 3):
+        prt = PRT()
+        prt.init_position(Nodes[init_n])
+        PRTs.append(prt)
+    
+    return PRTs, customers
+
+def scenario2():
+    # there is an transiting PRT
+    customers = []
+    PRTs = []
+    
+    customers.append(Customer(10, 'C0', Nodes[2], Nodes[4]))
+    customers.append(Customer(11, 'C1', Nodes[5], Nodes[7]))
+    
+    for init_n in (4, 0, 3):
+        prt = PRT()
+        prt.init_position(Nodes[init_n])
+        PRTs.append(prt)
+    
+    transiting_prt = PRTs[-1]
+    transiting_prt.state = 2
+    transiting_prt.next_n = Nodes[4]
+    transiting_prt.dest_n = Nodes[8]
+    
+    return PRTs, customers
+
+def scenario3():
+    # there is an transiting PRT
+    # there is an parking PRT
+    customers = []
+    PRTs = []
+    
+    customers.append(Customer(10, 'C0', Nodes[2], Nodes[4]))
+    customers.append(Customer(11, 'C1', Nodes[5], Nodes[7]))
+    customers.append(Customer(12, 'C2', Nodes[5], Nodes[8]))
+    customers.append(Customer(12, 'C3', Nodes[2], Nodes[6]))
+    
+    for init_n in (4, 0, 3, 5):
+        prt = PRT()
+        prt.init_position(Nodes[init_n])
+        PRTs.append(prt)
+    
+    transiting_prt = PRTs[-2]
+    transiting_prt.state = 2
+    transiting_prt.next_n = Nodes[4]
+    transiting_prt.dest_n = Nodes[8]
+    
+    parking_prt = PRTs[-1]
+    parking_prt.state = 3
+    parking_prt.next_n = Nodes[6]
+    parking_prt.px = (parking_prt.next_n.px + parking_prt.arrived_n.px) / 2
+      
+    parking_prt.py = (parking_prt.next_n.py + parking_prt.arrived_n.py) / 2 
+    
+    return PRTs, customers
+    
+if __name__ == '__main__':
+    import input_gen
+    from dynamics import PRT, Customer
+    
+    Nodes, Edges = input_gen.network1()
+    nn = NN(Nodes)
+#     PRTs, customers = scenario0()
+#     PRTs, customers = scenario1()
+#     PRTs, customers = scenario2()
+    PRTs, customers = scenario3()
+    
+    pc_M = nn.create_PRTbyCustomer_matrix(PRTs, customers, Nodes)
+    metrix_display(pc_M)
+    nn.find_opt_matching(PRTs, customers, pc_M)
+        
+    for prt in PRTs:
+        print 'PRT%d: assigned customer is (%s)' % (prt.id, prt.assigned_customer)  
