@@ -27,29 +27,33 @@ class NN:
         
         PRTbyCustomer_matrix = [[NN.Longest_dis] * max_M_size for _ in range(max_M_size)]
         
-        for prt in PRTs:
+        for prt_id, prt in enumerate(PRTs):
             for i, cus in enumerate(customers):
                 if prt.state == 0:
-                    PRTbyCustomer_matrix[prt.id][i] = self.NodeByNode_DMatrix[prt.arrived_n.id][cus.sn.id]
+                    PRTbyCustomer_matrix[prt_id][i] = self.NodeByNode_DMatrix[prt.arrived_n.id][cus.sn.id]
                 elif prt.state == 1 or prt.state == 3:
                     dx = prt.next_n.px - prt.px  
                     dy = prt.next_n.py - prt.py
                     remain_dis = sqrt(dx * dx + dy * dy) 
-                    PRTbyCustomer_matrix[prt.id][i] = self.NodeByNode_DMatrix[prt.next_n.id][cus.sn.id] + remain_dis 
+                    PRTbyCustomer_matrix[prt_id][i] = self.NodeByNode_DMatrix[prt.next_n.id][cus.sn.id] + remain_dis 
                 else:
                     assert prt.state == 2
                     dx = prt.arrived_n.px - prt.px  
                     dy = prt.arrived_n.py - prt.py
                     distance = sum([e.distance for e in prt.path_e]) - sqrt(dx * dx + dy * dy) 
-                    PRTbyCustomer_matrix[prt.id][i] = self.NodeByNode_DMatrix[prt.dest_n.id][cus.sn.id] + distance
+                    PRTbyCustomer_matrix[prt_id][i] = self.NodeByNode_DMatrix[prt.dest_n.id][cus.sn.id] + distance
         
         return PRTbyCustomer_matrix
     
     def find_opt_matching(self, PRTs, customers, M):
+        assignment_results = []
         for prt_id, customer_id in self.hungarian_algo.compute(M):
             if prt_id >= len(PRTs) or customer_id >= len(customers):
                 continue 
-            PRTs[prt_id].set_assi_cus(customers[customer_id])
+            #(prt, customer)
+            assignment_results.append((prt_id, customer_id))
+#             PRTs[prt_id].set_assi_cus(customers[customer_id])
+        return assignment_results
     
     def find_NearestNode(self, v, Nodes):
         candi_nodes = [n for n in Nodes if any(c for c in n.cus_queue if c.marked == False)]
@@ -201,7 +205,9 @@ if __name__ == '__main__':
     
     pc_M = nn.create_PRTbyCustomer_matrix(PRTs, customers, Nodes)
     metrix_display(pc_M)
-    nn.find_opt_matching(PRTs, customers, pc_M)
+    assignment_results = nn.find_opt_matching(PRTs, customers, pc_M)
         
-    for prt in PRTs:
-        print 'PRT%d: assigned customer is (%s)' % (prt.id, prt.assigned_customer)  
+    for prt_id, customer_id in assignment_results:
+        print '%s: assigned customer is (%s)' % (PRTs[prt_id], customers[customer_id])
+#     for prt in PRTs:
+#         print 'PRT%d: assigned customer is (%s)' % (prt.id, prt.assigned_customer)  

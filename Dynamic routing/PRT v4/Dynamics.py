@@ -54,7 +54,7 @@ class Customer():
 #         self.marked = False
     
     def __repr__(self):
-        return '%s, sn: N%d, en: N%d' % (self.id, self.sn.id, self.dn.id)
+        return '%s N%d->N%d' % (self.id, self.sn.id, self.dn.id)
         
 class PRT():
     _id = 0
@@ -96,20 +96,77 @@ class PRT():
         self.arrived_n = n
         self.set_position(n.px, n.py)
 
-def gen_customers():
+def gen_customers(Nodes):
     event_queue = []
     with open('Input', 'r') as fp:
         for line in fp:
             c, t_s, sd = line.split(',')
             t = round(float(t_s), 1)
             sn, dn = sd.split('-')
-            print t, c, sn, dn
-#             heappush(event_queue, ( , ))
+#             print t, c, sn, dn
+            heappush(event_queue, (t, Customer(t, c, Nodes[int(sn)], Nodes[int(dn)])))
+    return event_queue
+
+def select_scopesOfPRT(level, PRTs):
+    considered_PRT = []
+    for prt in PRTs:
+        if level == 0:
+            if prt.state != 0 : continue
+        elif level == 1:
+            if prt.state == 2 : continue
+        else:
+            assert level == 2
+        considered_PRT.append(prt)
+    return considered_PRT
+
+def next_event(event_queue):
+    while event_queue:
+        yield heappop(event_queue)
+
+
+def PRT_scenario1():
+    PRTs = []
+    
+    for init_n in (4, 0, 3):
+        prt = PRT()
+        prt.init_position(Nodes[init_n])
+        PRTs.append(prt)
+    
+    return PRTs
 
 if __name__ == '__main__':
     import input_gen
     Nodes, Edges = input_gen.network1()
     nn = NN(Nodes)
+    event_queue = gen_customers(Nodes)
+    PRTs = PRT_scenario1()
+    
+    cus_interception_allowed = False
+    scopeOfPRT = 0
+    update_op = 0
+    
+    waiting_customers = []
+    for t, Class in next_event(event_queue):
+        if isinstance(Class, Customer):
+            print t, Class
+            if update_op == 0:
+                waiting_customers.append(Class)
+                assignable_PRTs = select_scopesOfPRT(scopeOfPRT, PRTs)
+                if not assignable_PRTs:
+                    continue
+                M = nn.create_PRTbyCustomer_matrix(assignable_PRTs, waiting_customers, Nodes)
+                assignment_results = nn.find_opt_matching(PRTs, waiting_customers, M)
+                if not cus_interception_allowed:
+                    for prt_id, customer_id in assignment_results:
+                        assignable_PRTs[prt_id].set_assi_cus(waiting_customers[customer_id])
+                        assert assignable_PRTs[prt_id].state == 0
+                        assignable_PRTs[prt_id].state = 1
+                        heappush(event_queue, (t, assignable_PRTs[prt_id]))
+                        waiting_customers[customer_id] = None
+                    waiting_customers = [c for c in waiting_customers if c != None]
+        else:
+            assert isinstance(Class, PRT)
+            print t, ' prt', Class, Class.state
     
 # while self.ordered_output:
 #     yield heappop(self.ordered_output)
