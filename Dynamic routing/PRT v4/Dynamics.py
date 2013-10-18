@@ -2,7 +2,7 @@ from __future__ import division
 from math import sqrt
 from Algorithms import NN
 from heapq import heappush, heappop
-import wx
+
 class Node():
     _id = 0
     MAXD = 10000
@@ -60,12 +60,15 @@ class PRT():
     _id = 0
     PRT_SPEED = 5
     def __init__(self):
+
         self.id = PRT._id
         PRT._id += 1
         self.px, self.py = None, None
         self.path_n = []
         self.path_e = []
         self.assigned_customer = None
+        self.transporting_customer = None
+        
         self.arrived_n = None
         self.next_n = None
         self.dest_n = None
@@ -85,9 +88,6 @@ class PRT():
         
     def __repr__(self):
         return 'PRT%d' % self.id
-    
-    def set_assi_cus(self, customer):
-        self.assigned_customer = customer
          
     def set_position(self, px, py):
         self.px, self.py = px, py
@@ -95,38 +95,71 @@ class PRT():
     def init_position(self, n):
         self.arrived_n = n
         self.set_position(n.px, n.py)
+        
+    def update_state(self, a_customer, time, event_queue):
+        # state change
+        # a time point is cur_state -> next_state
+        # namely, the time is end of cur_state
+        if self.state == 0:
+            if self.arrived_n != a_customer.sn:
+                # Idle -> Approaching
+                self.state = 1
+            else:
+                assert self.arrived_n == a_customer.sn
+                # Idle -> Transiting
+                self.state = 2
+        elif self.state == 1:
+            if self.assigned_customer:
+                # Approaching -> Transiting
+                assert self.assigned_customer == a_customer
+                self.state = 2
+            else:
+                # Approaching -> Parking
+                assert not self.assigned_customer
+                self.state = 3
+        elif self.state == 2:
+            if not self.assigned_customer:
+                # Transiting -> Idle
+                self.state = 0
+            else:
+                if self.arrived_n == a_customer.sn:
+                    # Transiting -> Transiting
+                    self.state = 2
+                else:
+                    assert self.arrived_n != a_customer.sn
+                    # Transiting -> Approaching
+                    self.state = 1
+        else:
+            assert self.state == 3
+            ###  Check this part again!!!
+            
+            if self.assigned_customer:
+                # Parking -> Approaching 
+                self.state = 2
+            else:
+                # Parking -> Idle
+                self.state = 1
+    
+    def IdleToApproaching(self, a_customer):
+        self.assigned_customer = a_customer
+        self.state = 1
+    
+    def IdleToTransiting(self, a_customer):
+        self.transporting_customer = a_customer
+        self.state = 2
 
 def gen_customers(Nodes):
     event_queue = []
     with open('Input', 'r') as fp:
         for line in fp:
-            c, t_s, sd = line.split(',')
+            c_id, t_s, sd = line.split(',')
             t = round(float(t_s), 1)
             sn, dn = sd.split('-')
-#             print t, c, sn, dn
-            heappush(event_queue, (t, Customer(t, c, Nodes[int(sn)], Nodes[int(dn)])))
+            heappush(event_queue, (t, Customer(t, c_id, Nodes[int(sn)], Nodes[int(dn)])))
     return event_queue
-
-def select_scopesOfPRT(level, PRTs):
-    considered_PRT = []
-    for prt in PRTs:
-        if level == 0:
-            if prt.state != 0 : continue
-        elif level == 1:
-            if prt.state == 2 : continue
-        else:
-            assert level == 2
-        considered_PRT.append(prt)
-    return considered_PRT
-
-def next_event(event_queue):
-    while event_queue:
-        yield heappop(event_queue)
-
 
 def PRT_scenario1():
     PRTs = []
-    
     for init_n in (4, 0, 3):
         prt = PRT()
         prt.init_position(Nodes[init_n])
@@ -134,39 +167,28 @@ def PRT_scenario1():
     
     return PRTs
 
+def run(PRTs, Nodes):
+    reassignment_momonet = 0
+    scopeOfPRT = 0
+    assignment_changeable = False
+    
+    nn = NN(reassignment_momonet, scopeOfPRT, Nodes)
+    event_queue = gen_customers(Nodes)
+    
+    waiting_customers = []
+    
+    while event_queue:
+        t, event = heappop(event_queue)
+        print t, event
+        if isinstance(event, Customer):
+            a_customer = event
+            waiting_customers.append(a_customer)
+            nn.call_reassignment(waiting_customers, PRTs, t, event_queue)
+        else:
+            # prt's events
+            pass
 if __name__ == '__main__':
     import input_gen
     Nodes, Edges = input_gen.network1()
-    nn = NN(Nodes)
-    event_queue = gen_customers(Nodes)
     PRTs = PRT_scenario1()
-    
-    cus_interception_allowed = False
-    scopeOfPRT = 0
-    update_op = 0
-    
-    waiting_customers = []
-    for t, Class in next_event(event_queue):
-        if isinstance(Class, Customer):
-            print t, Class
-            if update_op == 0:
-                waiting_customers.append(Class)
-                assignable_PRTs = select_scopesOfPRT(scopeOfPRT, PRTs)
-                if not assignable_PRTs:
-                    continue
-                M = nn.create_PRTbyCustomer_matrix(assignable_PRTs, waiting_customers, Nodes)
-                assignment_results = nn.find_opt_matching(PRTs, waiting_customers, M)
-                if not cus_interception_allowed:
-                    for prt_id, customer_id in assignment_results:
-                        assignable_PRTs[prt_id].set_assi_cus(waiting_customers[customer_id])
-                        assert assignable_PRTs[prt_id].state == 0
-                        assignable_PRTs[prt_id].state = 1
-                        heappush(event_queue, (t, assignable_PRTs[prt_id]))
-                        waiting_customers[customer_id] = None
-                    waiting_customers = [c for c in waiting_customers if c != None]
-        else:
-            assert isinstance(Class, PRT)
-            print t, ' prt', Class, Class.state
-    
-# while self.ordered_output:
-#     yield heappop(self.ordered_output)
+    run(PRTs, Nodes)

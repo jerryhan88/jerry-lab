@@ -4,16 +4,18 @@ from munkres import Munkres, print_matrix
 
 class NN:
     Longest_dis = 0
-    def __init__(self, nodes):
-        self.NodeByNode_DMatrix = self.create_NodeByNode_DMatrix(nodes)
+    def __init__(self, reassignment_momonet, scopeOfPRT, nodes):
+        self.reassignment_momonet, self.scopeOfPRT = reassignment_momonet, scopeOfPRT
+        self.nodes = nodes
+        self.NodeByNode_DMatrix = self.create_NodeByNode_DMatrix()
         self.hungarian_algo = Munkres()
     
-    def create_NodeByNode_DMatrix(self, nodes):
+    def create_NodeByNode_DMatrix(self):
         NodeByNode_DMatrix = []
-        for i in nodes:
+        for i in self.nodes:
             from_i = []
-            for j in nodes:
-                _ , path_e = self.find_SP(i, j, nodes)
+            for j in self.nodes:
+                _ , path_e = self.find_SP(i, j)
                 distance = sum([e.distance for e in path_e])
                 from_i.append(distance)
                 # find longest_distance in network
@@ -21,7 +23,7 @@ class NN:
             NodeByNode_DMatrix.append(from_i)
         return NodeByNode_DMatrix
     
-    def create_PRTbyCustomer_matrix(self, PRTs, customers, nodes):
+    def create_PRTbyCustomer_matrix(self, PRTs, customers):
         row_size, col_size = len(PRTs), len(customers)
         max_M_size = max(row_size, col_size)
         
@@ -45,31 +47,17 @@ class NN:
         
         return PRTbyCustomer_matrix
     
-    def find_opt_matching(self, PRTs, customers, M):
+    def find_opt_matching(self, customers, PRTs, M):
         assignment_results = []
         for prt_id, customer_id in self.hungarian_algo.compute(M):
             if prt_id >= len(PRTs) or customer_id >= len(customers):
                 continue 
-            #(prt, customer)
+            # (prt, customer)
             assignment_results.append((prt_id, customer_id))
-#             PRTs[prt_id].set_assi_cus(customers[customer_id])
         return assignment_results
     
-    def find_NearestNode(self, v, Nodes):
-        candi_nodes = [n for n in Nodes if any(c for c in n.cus_queue if c.marked == False)]
-        if not candi_nodes:
-            return None
-        target_n = None
-        nearest_distance = 1e400
-        for n in candi_nodes:
-            v.path_n, v.path_e = self.find_SP(v.arrived_n, n, Nodes)
-            distance = sum([e.distance for e in v.path_e])
-            if distance < nearest_distance:
-                target_n = n
-        return target_n
-    
-    def find_SP(self, sn, en, Nodes):
-        for n in Nodes:
+    def find_SP(self, sn, en):
+        for n in self.nodes:
             n.init_node()
             
         sn.min_d = 0
@@ -104,6 +92,46 @@ class NN:
 
         return path_n, path_e
 
+    def call_reassignment(self, waiting_customers, PRTs, cur_time, event_queue):
+        target_PRTs = select_scopesOfPRT(scopeOfPRT, PRTs)
+        if not target_PRTs:
+            assert not waiting_customers
+            return None
+        assignment_results = self.find_opt_matching(waiting_customers, target_PRTs, M)
+        
+        for prt_id, customer_id in assignment_results:
+            a_waiting_cus = waiting_customers[customer_id]
+            a_prt = target_PRTs[prt_id]
+            if a_prt.state == 0:
+                event_et = cur_time
+                if self.arrived_n != a_customer.sn:
+                    # Idle -> Approaching
+                    heappush(event_queue, (event_et, a_prt.IdleToApproaching(a_waiting_cus)))
+                else:
+                    assert self.arrived_n == a_customer.sn
+                    # Idle -> Transiting
+                    heappush(event_queue, (event_et, a_prt.IdleToTransiting(a_waiting_cus)))
+            elif a_prt.state == 1:
+                pass
+            elif a_prt.state == 2:
+                pass
+            elif a_prt.state == 3:
+                pass
+                
+            waiting_customers[customer_id] = None
+        waiting_customers = [c for c in waiting_customers if c != None]
+    
+    def select_scopesOfPRT(self, PRTs):
+        target_PRTs = []
+        for prt in PRTs:
+            if self.scopeOfPRT == 0:
+                if prt.state != 0 : continue
+            elif self.scopeOfPRT == 1:
+                if prt.state == 2 : continue
+            else:
+                assert self.scopeOfPRT == 2
+            target_PRTs.append(prt)
+        return target_PRTs
 
 def metrix_display(M):
     for r in M:
