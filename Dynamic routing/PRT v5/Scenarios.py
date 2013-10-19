@@ -1,5 +1,5 @@
 from __future__ import division
-from dynamics import PRT, Customer
+from Dynamics import PRT, Customer
 
 def scenario0():
     customers = []
@@ -19,18 +19,14 @@ def scenario0():
     return PRTs, customers
 
 def scenario1(Nodes):
-    customers = []
     PRTs = []
     
-    customers.append(Customer(10, 'C0', Nodes[2], Nodes[4]))
-    customers.append(Customer(11, 'C1', Nodes[5], Nodes[7]))
-    
     for init_n in (4, 0, 3):
-        prt = PRT()
+        prt = PRT(Nodes)
         prt.init_position(Nodes[init_n])
         PRTs.append(prt)
     
-    return PRTs, customers
+    return PRTs
 
 def scenario2(Nodes):
     # there is an transiting PRT

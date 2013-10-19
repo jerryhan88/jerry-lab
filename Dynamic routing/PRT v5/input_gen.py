@@ -1,7 +1,7 @@
 from __future__ import division
 from random import randrange, random, uniform
 from numpy.random import poisson
-from dynamics import Node, Edge
+from Dynamics import Node, Edge
 
 def run():
     requests = []

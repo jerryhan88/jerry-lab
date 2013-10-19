@@ -2,33 +2,21 @@ from __future__ import division
 from math import sqrt
 from munkres import Munkres
 
-def select_scopesOfPRT(self, PRTs):
-        target_PRTs = []
-        for prt in PRTs:
-            if self.scopeOfPRT == 0:
-                if prt.state != 0 : continue
-            elif self.scopeOfPRT == 1:
-                if prt.state == 2 : continue
-            else:
-                assert self.scopeOfPRT == 2
-            target_PRTs.append(prt)
-        return target_PRTs
-
 Longest_dis = 0
 
 def NN0(PRTs, customers, Nodes):
     target_PRTs = [prt for prt in PRTs if prt.state == 0]
-    if not target_PRTs: return None 
+    if not target_PRTs: return None, None 
     return find_opt_matching(target_PRTs, customers, Nodes), target_PRTs 
 
 def NN1(PRTs, customers, Nodes):
     target_PRTs = [prt for prt in PRTs if prt.state == 0 or prt.state == 3]
-    if not target_PRTs: return None 
+    if not target_PRTs: return None, None
     return find_opt_matching(target_PRTs, customers, Nodes), target_PRTs
 
 def NN2(PRTs, customers, Nodes):
     target_PRTs = [prt for prt in PRTs if prt.state != 1]
-    if not target_PRTs: return None 
+    if not target_PRTs: return None, None
     return find_opt_matching(target_PRTs, customers, Nodes), target_PRTs
 
 def NN3(PRTs, customers, Nodes):
@@ -36,14 +24,14 @@ def NN3(PRTs, customers, Nodes):
     assert target_PRTs
     return find_opt_matching(target_PRTs, customers, Nodes), target_PRTs
 
-def find_opt_matching(PRTs, customers, Nodes):
+def find_opt_matching(target_PRTs, customers, Nodes):
     NodeByNode_DMatrix = create_NodeByNode_DMatrix(Nodes)
     PRTbyCustomer_matrix = create_PRTbyCustomer_matrix(target_PRTs, customers, NodeByNode_DMatrix)
 
     hungarian_algo = Munkres()
     assignment_results = []
     for prt_id, customer_id in hungarian_algo.compute(PRTbyCustomer_matrix):
-        if prt_id >= len(PRTs) or customer_id >= len(customers):
+        if prt_id >= len(target_PRTs) or customer_id >= len(customers):
             continue 
         # (prt, customer)
         assignment_results.append((prt_id, customer_id))
@@ -55,7 +43,7 @@ def create_PRTbyCustomer_matrix(PRTs, customers, NodeByNode_DMatrix):
     row_size, col_size = len(PRTs), len(customers)
     max_M_size = max(row_size, col_size)
     
-    PRTbyCustomer_matrix = [[Longest_dis] * max_M_size for _ in range(max_M_size)]
+    PRTbyCustomer_matrix = [[Longest_dis / PRT_SPEED] * max_M_size for _ in range(max_M_size)]
     
     for prt_id, prt in enumerate(PRTs):
         for i, cus in enumerate(customers):
