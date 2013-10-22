@@ -166,7 +166,6 @@ class Customer():
     def __repr__(self):
         return 'C%d N%d->N%d (t:%.1f)' % (self.id, self.sn.id, self.dn.id, self.arriving_time)
 
-
 # Every resources are accessible
 Nodes = gen_network0()
 
