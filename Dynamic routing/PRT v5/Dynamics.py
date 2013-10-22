@@ -5,7 +5,7 @@ Nodes, Edges = Input_gen.network1()
 PRTs, customers = Scenarios.scenario2(Nodes)
 
 def run():
-    pass
+    print Nodes 
 
 if __name__ == '__main__':
     run()
