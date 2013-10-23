@@ -9,14 +9,24 @@ def NN0(event_time, PRTs, waiting_customers, Nodes):
     if not target_PRTs: return None
     target_customers = [customer for customer in waiting_customers if not customer.assigned_PRT]
     
-    for prt_id, customer_id in find_opt_matching(target_PRTs, target_customers, Nodes):
+    for prt_id, customer_id in find_opt_matching(event_time, target_PRTs, target_customers, Nodes):
             chosen_prt = target_PRTs[prt_id]
-            target_c = waiting_customers[customer_id]
+            target_c = target_customers[customer_id]
             chosen_prt.re_assign_customer(event_time, target_c)
 
-def find_opt_matching(target_PRTs, customers, Nodes):
+def NN1(event_time, PRTs, waiting_customers, Nodes):
+    target_PRTs = [prt for prt in PRTs if prt.state == 0 or prt.state == 2 ]
+    if not target_PRTs: return None
+    target_customers = [customer for customer in waiting_customers if not customer.assigned_PRT]
+    
+    for prt_id, customer_id in find_opt_matching(event_time, target_PRTs, target_customers, Nodes):
+            chosen_prt = target_PRTs[prt_id]
+            target_c = target_customers[customer_id]
+            chosen_prt.re_assign_customer(event_time, target_c)
+
+def find_opt_matching(cur_time, target_PRTs, customers, Nodes):
     NodeByNode_DMatrix = create_NodeByNode_DMatrix(Nodes)
-    PRTbyCustomer_matrix = create_PRTbyCustomer_matrix(target_PRTs, customers, NodeByNode_DMatrix)
+    PRTbyCustomer_matrix = create_PRTbyCustomer_matrix(cur_time, target_PRTs, customers, NodeByNode_DMatrix)
 
     hungarian_algo = Munkres()
     assignment_results = []
@@ -27,7 +37,7 @@ def find_opt_matching(target_PRTs, customers, Nodes):
         assignment_results.append((prt_id, customer_id))
     return assignment_results
 
-def create_PRTbyCustomer_matrix(PRTs, customers, NodeByNode_DMatrix):
+def create_PRTbyCustomer_matrix(cur_time, PRTs, customers, NodeByNode_DMatrix):
     from Dynamics import PRT_SPEED
     global Longest_dis
     row_size, col_size = len(PRTs), len(customers)
@@ -42,7 +52,7 @@ def create_PRTbyCustomer_matrix(PRTs, customers, NodeByNode_DMatrix):
             elif prt.state == 1:
                 # find next node
                 next_n = None
-                path_travel_distance = (cur_time - last_planed_time) * PRT_SPEED
+                path_travel_distance = (cur_time - prt.last_planed_time) * PRT_SPEED
                 sum_edges_distance = 0
                 for i, e in enumerate(prt.path_e):
                     sum_edges_distance += e.distance 
@@ -53,9 +63,9 @@ def create_PRTbyCustomer_matrix(PRTs, customers, NodeByNode_DMatrix):
                 remain_dis = sqrt(dx * dx + dy * dy) 
                 PRTbyCustomer_matrix[prt_id][i] = (NodeByNode_DMatrix[next_n.id][cus.sn.id] + remain_dis) / PRT_SPEED 
             elif prt.state == 2:
-                path_travel_distance = (cur_time - last_planed_time) * PRT_SPEED                
+                path_travel_distance = (cur_time - prt.last_planed_time) * PRT_SPEED                
                 distance = sum([e.distance for e in prt.path_e]) - path_travel_distance 
-                PRTbyCustomer_matrix[prt_id][i] = (NodeByNode_DMatrix[prt.path_n[-1]][cus.sn.id] + distance) / PRT_SPEED
+                PRTbyCustomer_matrix[prt_id][i] = (NodeByNode_DMatrix[prt.path_n[-1].id][cus.sn.id] + distance) / PRT_SPEED
             else:
                 # if prt.state == 3  there is only one node in path
                 assert prt.state == 3 and len(prt.path_n) == 1

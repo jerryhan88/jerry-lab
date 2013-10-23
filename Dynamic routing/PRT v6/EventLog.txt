@@ -1,0 +1,322 @@
+3.0: On_CustomerArrival - C0 N9->N8 (t:3.0)
+3.0:    On_IdleToApproaching - PRT0-Now N6, path: [N6, N10, N9]
+6.0: On_CustomerArrival - C1 N4->N2 (t:6.0)
+6.0:    On_IdleToApproaching - PRT1-Now N0, path: [N0, N3, N4]
+9.0: On_CustomerArrival - C2 N5->N4 (t:9.0)
+9.0:    On_IdleToApproaching - PRT2-Now N7, path: [N7, N3, N4, N1, N2, N5]
+12.0: On_CustomerArrival - C3 N8->N3 (t:12.0)
+15.0: On_CustomerArrival - C4 N5->N6 (t:15.0)
+18.0: On_CustomerArrival - C5 N9->N5 (t:18.0)
+21.0: On_CustomerArrival - C6 N3->N8 (t:21.0)
+24.0: On_CustomerArrival - C7 N6->N2 (t:24.0)
+25.8:    On_ApproachingToTransiting - PRT0-Now N9, picking up customer - C0 N9->N8 (t:3.0)
+26.0:    On_ApproachingToTransiting - PRT1-Now N4, picking up customer - C1 N4->N2 (t:6.0)
+27.0: On_CustomerArrival - C8 N10->N8 (t:27.0)
+30.0: On_CustomerArrival - C9 N9->N3 (t:30.0)
+33.0: On_CustomerArrival - C10 N8->N9 (t:33.0)
+36.0: On_CustomerArrival - C11 N7->N5 (t:36.0)
+39.0: On_CustomerArrival - C12 N1->N4 (t:39.0)
+42.0: On_CustomerArrival - C13 N6->N10 (t:42.0)
+45.0: On_CustomerArrival - C14 N10->N5 (t:45.0)
+48.0:    On_TransitingToIdle - PRT1-Now N2
+48.0:    On_IdleToApproaching - PRT1-Now N2, path: [N2, N5]
+48.0: On_CustomerArrival - C15 N9->N2 (t:48.0)
+51.0: On_CustomerArrival - C16 N8->N6 (t:51.0)
+54.0: On_CustomerArrival - C17 N0->N7 (t:54.0)
+56.0:    On_ApproachingToTransiting - PRT1-Now N5, picking up customer - C4 N5->N6 (t:15.0)
+57.0: On_CustomerArrival - C18 N4->N9 (t:57.0)
+60.0: On_CustomerArrival - C19 N7->N0 (t:60.0)
+63.0: On_CustomerArrival - C20 N5->N9 (t:63.0)
+63.8:    On_ApproachingToTransiting - PRT2-Now N5, picking up customer - C2 N5->N4 (t:9.0)
+65.4:    On_TransitingToIdle - PRT0-Now N8
+65.4: On_IdleToTransiting - PRT0-Now N8, picking up customer - C3 N8->N3 (t:12.0)
+66.0:    On_TransitingToIdle - PRT1-Now N6
+66.0: On_IdleToTransiting - PRT1-Now N6, picking up customer - C7 N6->N2 (t:24.0)
+66.0: On_CustomerArrival - C21 N2->N3 (t:66.0)
+69.0: On_CustomerArrival - C22 N9->N2 (t:69.0)
+72.1: On_CustomerArrival - C23 N6->N2 (t:72.1)
+75.1: On_CustomerArrival - C24 N10->N8 (t:75.1)
+77.8:    On_TransitingToIdle - PRT2-Now N4
+77.8: On_IdleToTransiting - PRT2-Now N4, picking up customer - C18 N4->N9 (t:57.0)
+78.1: On_CustomerArrival - C25 N4->N0 (t:78.1)
+81.1: On_CustomerArrival - C26 N3->N5 (t:81.1)
+84.1: On_CustomerArrival - C27 N10->N1 (t:84.1)
+87.1: On_CustomerArrival - C28 N6->N7 (t:87.1)
+90.1: On_CustomerArrival - C29 N6->N8 (t:90.1)
+90.2:    On_TransitingToIdle - PRT0-Now N3
+90.2: On_IdleToTransiting - PRT0-Now N3, picking up customer - C6 N3->N8 (t:21.0)
+93.1: On_CustomerArrival - C30 N5->N10 (t:93.1)
+96.1: On_CustomerArrival - C31 N6->N4 (t:96.1)
+99.1: On_CustomerArrival - C32 N6->N4 (t:99.1)
+102.1: On_CustomerArrival - C33 N6->N3 (t:102.1)
+104.6:    On_TransitingToIdle - PRT2-Now N9
+104.6: On_IdleToTransiting - PRT2-Now N9, picking up customer - C5 N9->N5 (t:18.0)
+105.1: On_CustomerArrival - C34 N2->N6 (t:105.1)
+108.1: On_CustomerArrival - C35 N7->N5 (t:108.1)
+111.1: On_CustomerArrival - C36 N0->N8 (t:111.1)
+114.1: On_CustomerArrival - C37 N9->N10 (t:114.1)
+115.0:    On_TransitingToIdle - PRT0-Now N8
+115.0: On_IdleToTransiting - PRT0-Now N8, picking up customer - C10 N8->N9 (t:33.0)
+117.1: On_CustomerArrival - C38 N9->N10 (t:117.1)
+117.4:    On_TransitingToIdle - PRT2-Now N5
+117.4: On_IdleToTransiting - PRT2-Now N5, picking up customer - C20 N5->N9 (t:63.0)
+120.1: On_CustomerArrival - C39 N5->N4 (t:120.1)
+123.1: On_CustomerArrival - C40 N7->N3 (t:123.1)
+126.1: On_CustomerArrival - C41 N8->N9 (t:126.1)
+129.0:    On_TransitingToIdle - PRT0-Now N9
+129.0: On_IdleToTransiting - PRT0-Now N9, picking up customer - C9 N9->N3 (t:30.0)
+129.1: On_CustomerArrival - C42 N9->N6 (t:129.1)
+132.1: On_CustomerArrival - C43 N10->N6 (t:132.1)
+135.1: On_CustomerArrival - C44 N4->N7 (t:135.1)
+137.6:    On_TransitingToIdle - PRT1-Now N2
+137.6: On_IdleToTransiting - PRT1-Now N2, picking up customer - C21 N2->N3 (t:66.0)
+138.1: On_CustomerArrival - C45 N10->N8 (t:138.1)
+141.1: On_CustomerArrival - C46 N0->N6 (t:141.1)
+144.1: On_CustomerArrival - C47 N5->N6 (t:144.1)
+147.1: On_CustomerArrival - C48 N9->N2 (t:147.1)
+150.1: On_CustomerArrival - C49 N8->N1 (t:150.1)
+150.2:    On_TransitingToIdle - PRT2-Now N9
+150.2: On_IdleToTransiting - PRT2-Now N9, picking up customer - C15 N9->N2 (t:48.0)
+153.1: On_CustomerArrival - C50 N2->N8 (t:153.1)
+156.1: On_CustomerArrival - C51 N3->N8 (t:156.1)
+159.1: On_CustomerArrival - C52 N1->N7 (t:159.1)
+162.1: On_CustomerArrival - C53 N0->N6 (t:162.1)
+165.1: On_CustomerArrival - C54 N10->N5 (t:165.1)
+168.1: On_CustomerArrival - C55 N7->N0 (t:168.1)
+171.1: On_CustomerArrival - C56 N6->N4 (t:171.1)
+174.1: On_CustomerArrival - C57 N4->N10 (t:174.1)
+177.2: On_CustomerArrival - C58 N0->N10 (t:177.2)
+180.2: On_CustomerArrival - C59 N2->N1 (t:180.2)
+183.2: On_CustomerArrival - C60 N2->N8 (t:183.2)
+183.8:    On_TransitingToIdle - PRT0-Now N3
+183.8: On_IdleToTransiting - PRT0-Now N3, picking up customer - C26 N3->N5 (t:81.1)
+186.1: On_CustomerArrival - C61 N10->N0 (t:186.1)
+187.6:    On_TransitingToIdle - PRT1-Now N3
+187.6: On_IdleToTransiting - PRT1-Now N3, picking up customer - C51 N3->N8 (t:156.1)
+189.1: On_CustomerArrival - C62 N4->N1 (t:189.1)
+192.1: On_CustomerArrival - C63 N2->N7 (t:192.1)
+195.1: On_CustomerArrival - C64 N3->N1 (t:195.1)
+198.1: On_CustomerArrival - C65 N5->N0 (t:198.1)
+199.0:    On_TransitingToIdle - PRT2-Now N2
+199.0: On_IdleToTransiting - PRT2-Now N2, picking up customer - C34 N2->N6 (t:105.1)
+201.1: On_CustomerArrival - C66 N1->N10 (t:201.1)
+204.1: On_CustomerArrival - C67 N2->N3 (t:204.1)
+207.1: On_CustomerArrival - C68 N8->N9 (t:207.1)
+210.1: On_CustomerArrival - C69 N10->N1 (t:210.1)
+212.4:    On_TransitingToIdle - PRT1-Now N8
+212.4: On_IdleToTransiting - PRT1-Now N8, picking up customer - C16 N8->N6 (t:51.0)
+213.1: On_CustomerArrival - C70 N7->N10 (t:213.1)
+216.1: On_CustomerArrival - C71 N0->N7 (t:216.1)
+217.0:    On_TransitingToIdle - PRT2-Now N6
+217.0: On_IdleToTransiting - PRT2-Now N6, picking up customer - C13 N6->N10 (t:42.0)
+219.1: On_CustomerArrival - C72 N9->N3 (t:219.1)
+222.1: On_CustomerArrival - C73 N2->N6 (t:222.1)
+225.1: On_CustomerArrival - C74 N4->N1 (t:225.1)
+225.8:    On_TransitingToIdle - PRT0-Now N5
+225.8: On_IdleToTransiting - PRT0-Now N5, picking up customer - C30 N5->N10 (t:93.1)
+228.1: On_CustomerArrival - C75 N5->N4 (t:228.1)
+229.8:    On_TransitingToIdle - PRT2-Now N10
+229.8: On_IdleToTransiting - PRT2-Now N10, picking up customer - C8 N10->N8 (t:27.0)
+231.1: On_CustomerArrival - C76 N6->N5 (t:231.1)
+234.1: On_CustomerArrival - C77 N3->N9 (t:234.1)
+237.1: On_CustomerArrival - C78 N2->N6 (t:237.1)
+240.1: On_CustomerArrival - C79 N0->N8 (t:240.1)
+243.1: On_CustomerArrival - C80 N3->N0 (t:243.1)
+246.1: On_CustomerArrival - C81 N3->N2 (t:246.1)
+248.6:    On_TransitingToIdle - PRT0-Now N10
+248.6: On_IdleToTransiting - PRT0-Now N10, picking up customer - C14 N10->N5 (t:45.0)
+249.1: On_CustomerArrival - C82 N10->N3 (t:249.1)
+249.2:    On_TransitingToIdle - PRT1-Now N6
+249.2: On_IdleToTransiting - PRT1-Now N6, picking up customer - C23 N6->N2 (t:72.1)
+252.2: On_CustomerArrival - C83 N3->N10 (t:252.2)
+255.2: On_CustomerArrival - C84 N6->N7 (t:255.2)
+258.2: On_CustomerArrival - C85 N4->N7 (t:258.2)
+261.1: On_CustomerArrival - C86 N0->N2 (t:261.1)
+264.1: On_CustomerArrival - C87 N3->N2 (t:264.1)
+267.1: On_CustomerArrival - C88 N7->N4 (t:267.1)
+270.1: On_CustomerArrival - C89 N9->N6 (t:270.1)
+271.4:    On_TransitingToIdle - PRT0-Now N5
+271.4: On_IdleToTransiting - PRT0-Now N5, picking up customer - C39 N5->N4 (t:120.1)
+273.1: On_CustomerArrival - C90 N4->N7 (t:273.1)
+276.2: On_CustomerArrival - C91 N4->N7 (t:276.2)
+279.2: On_CustomerArrival - C92 N0->N4 (t:279.2)
+279.4:    On_TransitingToIdle - PRT2-Now N8
+279.4: On_IdleToTransiting - PRT2-Now N8, picking up customer - C41 N8->N9 (t:126.1)
+282.1: On_CustomerArrival - C93 N2->N1 (t:282.1)
+285.2: On_CustomerArrival - C94 N5->N6 (t:285.2)
+285.4:    On_TransitingToIdle - PRT0-Now N4
+285.4: On_IdleToTransiting - PRT0-Now N4, picking up customer - C25 N4->N0 (t:78.1)
+288.1: On_CustomerArrival - C95 N8->N9 (t:288.1)
+291.1: On_CustomerArrival - C96 N5->N3 (t:291.1)
+293.4:    On_TransitingToIdle - PRT2-Now N9
+293.4: On_IdleToTransiting - PRT2-Now N9, picking up customer - C22 N9->N2 (t:69.0)
+294.1: On_CustomerArrival - C97 N5->N8 (t:294.1)
+297.1: On_CustomerArrival - C98 N9->N8 (t:297.1)
+300.1: On_CustomerArrival - C99 N2->N10 (t:300.1)
+305.4:    On_TransitingToIdle - PRT0-Now N0
+305.4: On_IdleToTransiting - PRT0-Now N0, picking up customer - C17 N0->N7 (t:54.0)
+320.8:    On_TransitingToIdle - PRT1-Now N2
+320.8: On_IdleToTransiting - PRT1-Now N2, picking up customer - C50 N2->N8 (t:153.1)
+342.2:    On_TransitingToIdle - PRT2-Now N2
+342.2: On_IdleToTransiting - PRT2-Now N2, picking up customer - C59 N2->N1 (t:180.2)
+350.2:    On_TransitingToIdle - PRT0-Now N7
+350.2: On_IdleToTransiting - PRT0-Now N7, picking up customer - C11 N7->N5 (t:36.0)
+355.6:    On_TransitingToIdle - PRT1-Now N8
+355.6: On_IdleToTransiting - PRT1-Now N8, picking up customer - C49 N8->N1 (t:150.1)
+372.2:    On_TransitingToIdle - PRT2-Now N1
+372.2: On_IdleToTransiting - PRT2-Now N1, picking up customer - C12 N1->N4 (t:39.0)
+400.4:    On_TransitingToIdle - PRT1-Now N1
+400.4: On_IdleToTransiting - PRT1-Now N1, picking up customer - C52 N1->N7 (t:159.1)
+404.2:    On_TransitingToIdle - PRT2-Now N4
+404.2: On_IdleToTransiting - PRT2-Now N4, picking up customer - C44 N4->N7 (t:135.1)
+405.0:    On_TransitingToIdle - PRT0-Now N5
+405.0: On_IdleToTransiting - PRT0-Now N5, picking up customer - C47 N5->N6 (t:144.1)
+415.0:    On_TransitingToIdle - PRT0-Now N6
+415.0: On_IdleToTransiting - PRT0-Now N6, picking up customer - C28 N6->N7 (t:87.1)
+429.0:    On_TransitingToIdle - PRT2-Now N7
+429.0: On_IdleToTransiting - PRT2-Now N7, picking up customer - C19 N7->N0 (t:60.0)
+457.2:    On_TransitingToIdle - PRT1-Now N7
+457.2: On_IdleToTransiting - PRT1-Now N7, picking up customer - C35 N7->N5 (t:108.1)
+473.8:    On_TransitingToIdle - PRT2-Now N0
+473.8: On_IdleToTransiting - PRT2-Now N0, picking up customer - C36 N0->N8 (t:111.1)
+489.4:    On_TransitingToIdle - PRT0-Now N7
+489.4: On_IdleToTransiting - PRT0-Now N7, picking up customer - C40 N7->N3 (t:123.1)
+502.2:    On_TransitingToIdle - PRT0-Now N3
+502.2: On_IdleToTransiting - PRT0-Now N3, picking up customer - C64 N3->N1 (t:195.1)
+506.6:    On_TransitingToIdle - PRT2-Now N8
+506.6: On_IdleToTransiting - PRT2-Now N8, picking up customer - C68 N8->N9 (t:207.1)
+512.0:    On_TransitingToIdle - PRT1-Now N5
+512.0: On_IdleToTransiting - PRT1-Now N5, picking up customer - C65 N5->N0 (t:198.1)
+520.6:    On_TransitingToIdle - PRT2-Now N9
+520.6: On_IdleToTransiting - PRT2-Now N9, picking up customer - C37 N9->N10 (t:114.1)
+522.2:    On_TransitingToIdle - PRT0-Now N1
+522.2: On_IdleToTransiting - PRT0-Now N1, picking up customer - C66 N1->N10 (t:201.1)
+546.0:    On_TransitingToIdle - PRT1-Now N0
+546.0: On_IdleToTransiting - PRT1-Now N0, picking up customer - C46 N0->N6 (t:141.1)
+556.2:    On_TransitingToIdle - PRT2-Now N10
+556.2: On_IdleToTransiting - PRT2-Now N10, picking up customer - C24 N10->N8 (t:75.1)
+567.0:    On_TransitingToIdle - PRT0-Now N10
+567.0: On_IdleToTransiting - PRT0-Now N10, picking up customer - C27 N10->N1 (t:84.1)
+605.8:    On_TransitingToIdle - PRT2-Now N8
+605.8: On_IdleToTransiting - PRT2-Now N8, picking up customer - C95 N8->N9 (t:288.1)
+606.0:    On_TransitingToIdle - PRT1-Now N6
+606.0: On_IdleToTransiting - PRT1-Now N6, picking up customer - C29 N6->N8 (t:90.1)
+611.8:    On_TransitingToIdle - PRT0-Now N1
+611.8:    On_IdleToApproaching - PRT0-Now N1, path: [N1, N0]
+619.8:    On_TransitingToIdle - PRT2-Now N9
+619.8: On_IdleToTransiting - PRT2-Now N9, picking up customer - C38 N9->N10 (t:117.1)
+623.8:    On_ApproachingToTransiting - PRT0-Now N0, picking up customer - C53 N0->N6 (t:162.1)
+655.4:    On_TransitingToIdle - PRT2-Now N10
+655.4: On_IdleToTransiting - PRT2-Now N10, picking up customer - C43 N10->N6 (t:132.1)
+668.4:    On_TransitingToIdle - PRT1-Now N8
+668.4:    On_IdleToApproaching - PRT1-Now N8, path: [N8, N7]
+680.4:    On_ApproachingToTransiting - PRT1-Now N7, picking up customer - C55 N7->N0 (t:168.1)
+683.8:    On_TransitingToIdle - PRT0-Now N6
+683.8: On_IdleToTransiting - PRT0-Now N6, picking up customer - C31 N6->N4 (t:96.1)
+688.2:    On_TransitingToIdle - PRT2-Now N6
+688.2: On_IdleToTransiting - PRT2-Now N6, picking up customer - C32 N6->N4 (t:99.1)
+725.2:    On_TransitingToIdle - PRT1-Now N0
+725.2: On_IdleToTransiting - PRT1-Now N0, picking up customer - C58 N0->N10 (t:177.2)
+733.4:    On_TransitingToIdle - PRT0-Now N4
+733.4: On_IdleToTransiting - PRT0-Now N4, picking up customer - C57 N4->N10 (t:174.1)
+737.8:    On_TransitingToIdle - PRT2-Now N4
+737.8: On_IdleToTransiting - PRT2-Now N4, picking up customer - C62 N4->N1 (t:189.1)
+745.8:    On_TransitingToIdle - PRT2-Now N1
+745.8:    On_IdleToApproaching - PRT2-Now N1, path: [N1, N0]
+757.8:    On_ApproachingToTransiting - PRT2-Now N0, picking up customer - C71 N0->N7 (t:216.1)
+786.2:    On_TransitingToIdle - PRT0-Now N10
+786.2: On_IdleToTransiting - PRT0-Now N10, picking up customer - C45 N10->N8 (t:138.1)
+798.0:    On_TransitingToIdle - PRT1-Now N10
+798.0: On_IdleToTransiting - PRT1-Now N10, picking up customer - C54 N10->N5 (t:165.1)
+802.6:    On_TransitingToIdle - PRT2-Now N7
+802.6: On_IdleToTransiting - PRT2-Now N7, picking up customer - C70 N7->N10 (t:213.1)
+820.8:    On_TransitingToIdle - PRT1-Now N5
+820.8: On_IdleToTransiting - PRT1-Now N5, picking up customer - C75 N5->N4 (t:228.1)
+834.8:    On_TransitingToIdle - PRT1-Now N4
+834.8: On_IdleToTransiting - PRT1-Now N4, picking up customer - C74 N4->N1 (t:225.1)
+835.8:    On_TransitingToIdle - PRT0-Now N8
+835.8:    On_IdleToApproaching - PRT0-Now N8, path: [N8, N7]
+842.8:    On_TransitingToIdle - PRT1-Now N1
+842.8:    On_IdleToApproaching - PRT1-Now N1, path: [N1, N0]
+847.8:    On_ApproachingToTransiting - PRT0-Now N7, picking up customer - C88 N7->N4 (t:267.1)
+854.8:    On_ApproachingToTransiting - PRT1-Now N0, picking up customer - C79 N0->N8 (t:240.1)
+872.6:    On_TransitingToIdle - PRT0-Now N4
+872.6: On_IdleToTransiting - PRT0-Now N4, picking up customer - C85 N4->N7 (t:258.2)
+880.2:    On_TransitingToIdle - PRT2-Now N10
+880.2: On_IdleToTransiting - PRT2-Now N10, picking up customer - C61 N10->N0 (t:186.1)
+887.6:    On_TransitingToIdle - PRT1-Now N8
+887.6:    On_IdleToApproaching - PRT1-Now N8, path: [N8, N9]
+897.4:    On_TransitingToIdle - PRT0-Now N7
+897.4:    On_IdleToApproaching - PRT0-Now N7, path: [N7, N3]
+901.6:    On_ApproachingToTransiting - PRT1-Now N9, picking up customer - C42 N9->N6 (t:129.1)
+910.2:    On_ApproachingToTransiting - PRT0-Now N3, picking up customer - C77 N3->N9 (t:234.1)
+924.4:    On_TransitingToIdle - PRT1-Now N6
+924.4: On_IdleToTransiting - PRT1-Now N6, picking up customer - C33 N6->N3 (t:102.1)
+937.0:    On_TransitingToIdle - PRT2-Now N0
+937.0: On_IdleToTransiting - PRT2-Now N0, picking up customer - C86 N0->N2 (t:261.1)
+949.0:    On_TransitingToIdle - PRT0-Now N9
+949.0: On_IdleToTransiting - PRT0-Now N9, picking up customer - C48 N9->N2 (t:147.1)
+979.0:    On_TransitingToIdle - PRT2-Now N2
+979.0: On_IdleToTransiting - PRT2-Now N2, picking up customer - C60 N2->N8 (t:183.2)
+997.8:    On_TransitingToIdle - PRT0-Now N2
+997.8: On_IdleToTransiting - PRT0-Now N2, picking up customer - C63 N2->N7 (t:192.1)
+1002.0:    On_TransitingToIdle - PRT1-Now N3
+1002.0: On_IdleToTransiting - PRT1-Now N3, picking up customer - C80 N3->N0 (t:243.1)
+1013.8:    On_TransitingToIdle - PRT2-Now N8
+1013.8:    On_IdleToApproaching - PRT2-Now N8, path: [N8, N9]
+1027.8:    On_ApproachingToTransiting - PRT2-Now N9, picking up customer - C72 N9->N3 (t:219.1)
+1034.0:    On_TransitingToIdle - PRT1-Now N0
+1034.0: On_IdleToTransiting - PRT1-Now N0, picking up customer - C92 N0->N4 (t:279.2)
+1044.6:    On_TransitingToIdle - PRT0-Now N7
+1044.6:    On_IdleToApproaching - PRT0-Now N7, path: [N7, N3]
+1054.0:    On_TransitingToIdle - PRT1-Now N4
+1054.0: On_IdleToTransiting - PRT1-Now N4, picking up customer - C90 N4->N7 (t:273.1)
+1057.4:    On_ApproachingToTransiting - PRT0-Now N3, picking up customer - C81 N3->N2 (t:246.1)
+1078.8:    On_TransitingToIdle - PRT1-Now N7
+1078.8:    On_IdleToApproaching - PRT1-Now N7, path: [N7, N3]
+1082.6:    On_TransitingToIdle - PRT2-Now N3
+1082.6: On_IdleToTransiting - PRT2-Now N3, picking up customer - C87 N3->N2 (t:264.1)
+1091.4:    On_TransitingToIdle - PRT0-Now N2
+1091.4: On_IdleToTransiting - PRT0-Now N2, picking up customer - C67 N2->N3 (t:204.1)
+1091.6:    On_ApproachingToTransiting - PRT1-Now N3, picking up customer - C83 N3->N10 (t:252.2)
+1116.6:    On_TransitingToIdle - PRT2-Now N2
+1116.6: On_IdleToTransiting - PRT2-Now N2, picking up customer - C73 N2->N6 (t:222.1)
+1134.6:    On_TransitingToIdle - PRT2-Now N6
+1134.6: On_IdleToTransiting - PRT2-Now N6, picking up customer - C56 N6->N4 (t:171.1)
+1141.4:    On_TransitingToIdle - PRT0-Now N3
+1141.4:    On_IdleToApproaching - PRT0-Now N3, path: [N3, N4]
+1153.4:    On_ApproachingToTransiting - PRT0-Now N4, picking up customer - C91 N4->N7 (t:276.2)
+1156.4:    On_TransitingToIdle - PRT1-Now N10
+1156.4: On_IdleToTransiting - PRT1-Now N10, picking up customer - C69 N10->N1 (t:210.1)
+1178.2:    On_TransitingToIdle - PRT0-Now N7
+1178.2:    On_IdleToApproaching - PRT0-Now N7, path: [N7, N3, N4, N1, N2]
+1184.2:    On_TransitingToIdle - PRT2-Now N4
+1184.2:    On_IdleToApproaching - PRT2-Now N4, path: [N4, N1, N2]
+1201.2:    On_TransitingToIdle - PRT1-Now N1
+1201.2:    On_IdleToApproaching - PRT1-Now N1, path: [N1, N2]
+1206.2:    On_ApproachingToTransiting - PRT2-Now N2, picking up customer - C93 N2->N1 (t:282.1)
+1215.2:    On_ApproachingToTransiting - PRT1-Now N2, picking up customer - C99 N2->N10 (t:300.1)
+1225.0:    On_ApproachingToTransiting - PRT0-Now N2, picking up customer - C78 N2->N6 (t:237.1)
+1236.2:    On_TransitingToIdle - PRT2-Now N1
+1236.2:    On_IdleToApproaching - PRT2-Now N1, path: [N1, N2, N5]
+1243.0:    On_TransitingToIdle - PRT0-Now N6
+1243.0: On_IdleToTransiting - PRT0-Now N6, picking up customer - C76 N6->N5 (t:231.1)
+1246.0:    On_TransitingToIdle - PRT1-Now N10
+1246.0: On_IdleToTransiting - PRT1-Now N10, picking up customer - C82 N10->N3 (t:249.1)
+1258.2:    On_ApproachingToTransiting - PRT2-Now N5, picking up customer - C94 N5->N6 (t:285.2)
+1268.2:    On_TransitingToIdle - PRT2-Now N6
+1268.2: On_IdleToTransiting - PRT2-Now N6, picking up customer - C84 N6->N7 (t:255.2)
+1278.6:    On_TransitingToIdle - PRT0-Now N5
+1278.6: On_IdleToTransiting - PRT0-Now N5, picking up customer - C96 N5->N3 (t:291.1)
+1310.8:    On_TransitingToIdle - PRT1-Now N3
+1310.8:    On_IdleToApproaching - PRT1-Now N3, path: [N3, N4, N8, N9]
+1320.6:    On_TransitingToIdle - PRT0-Now N3
+1320.6:    On_IdleToApproaching - PRT0-Now N3, path: [N3, N4, N8, N9]
+1342.6:    On_TransitingToIdle - PRT2-Now N7
+1342.6:    On_IdleToApproaching - PRT2-Now N7, path: [N7, N3, N4, N1, N2, N5]
+1349.6:    On_ApproachingToTransiting - PRT1-Now N9, picking up customer - C89 N9->N6 (t:270.1)
+1359.4:    On_ApproachingToTransiting - PRT0-Now N9, picking up customer - C98 N9->N8 (t:297.1)
+1372.4:    On_TransitingToIdle - PRT1-Now N6
+1397.4:    On_ApproachingToTransiting - PRT2-Now N5, picking up customer - C97 N5->N8 (t:294.1)
+1399.0:    On_TransitingToIdle - PRT0-Now N8
+1424.2:    On_TransitingToIdle - PRT2-Now N8

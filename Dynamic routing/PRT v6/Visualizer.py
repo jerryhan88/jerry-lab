@@ -5,6 +5,8 @@ from classes import Node, Edge, Customer, PRT
 from util import DragZoomPanel
 import wx
 
+import Dynamics
+
 REQUEST = []
 
 NODE_DIAMETER = 40
@@ -28,6 +30,7 @@ class MainFrame(wx.Frame):
         s0 = wx.SplitterWindow(self, style=wx.SP_NOBORDER)
         s1 = wx.SplitterWindow(s0, style=wx.SP_NOBORDER)
         op = OutputPanel(s0)
+        Dynamics.logger = op.WriteLog
         s0.SplitHorizontally(s1, op, -200)
         s0.SetMinimumPaneSize(20)
         s0.SetSashGravity(1)
