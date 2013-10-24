@@ -116,28 +116,122 @@ class PRT():
     def __repr__(self):
         return 'PRT%d-Now N%d' % (self.id, self.arrived_n.id)
     
-    def remove_A_customerInWaitingList(self, target_customer):
-        # remove servicing customer in waiting_customer
-        for i, customer in enumerate(waiting_customers):
-            if customer == target_customer:
-                return waiting_customers.pop(i)
-    
     def re_assign_customer(self, cur_time, target_c):
         if self.state == 0 :
             if self.arrived_n != target_c.sn:
                 # Idle -> Approaching
-                x = (cur_time, self.On_IdleToApproaching, target_c)
+                x = [cur_time, self.On_IdleToApproaching, target_c]
                 heappush(event_queue, x)
             else:
                 assert self.arrived_n == target_c.sn
                 # Idle -> Transiting
-                x = (cur_time, self.On_IdleToTransiting, target_c)
+                x = [cur_time, self.On_IdleToTransiting, target_c]
+                heappush(event_queue, x)
+        elif self.state == 2:
+            # When this PRT become idle, target_c will be assigned
+            pass
+        elif self.state == 1:
+            if self.assigned_customer != target_c:
+                # Approaching -> Approaching
+                # Even though this PRT approaching assigned customer
+                # the PRT assigned to target_c has been changed
+                x = [cur_time, self.On_ApproachingToApproaching, target_c]
                 heappush(event_queue, x)
         else:
+            # parking to approaching
             assert False
+    
+    def On_ApproachingToApproaching(self, cur_time, target_c):
+        assert self.state == 1
+        
+#         if target_c.assigned_PRT:
+#                     # if there is approaching PRT to target_c
+#                     
+#                     # (make the assigned_PRT state form approaching to parking)
+#                     target_event_id = find_target_event(target_c.assigned_PRT.On_ApproachingToTransiting)
+#                     print target_event_id 
+#                     x = (event_queue[target_event_id][0], None, event_queue[target_event_id][2])
+#                     event_queue[target_event_id] = x
+#                     x = (cur_time, target_c.assigned_PRT.On_ApproachingToParking, None)
+#                     heappush(event_queue, x)
+#                 
+#                 
+#                 # find already scheduled event which is self.On_ApproachingToTransiting and make this event useless
+#                 
+#                 target_event_id = find_target_event(self.On_ApproachingToTransiting)
+#                 print target_event_id 
+#                 x = (event_queue[target_event_id][0], None, event_queue[target_event_id][2])
+#                 event_queue[target_event_id] = x
+        
+        
+        target_c.assigned_PRT = self
+        self.assigned_customer.assigned_PRT = None
+        self.assigned_customer = target_c
+        
+        next_n = None
+        sum_edges_distance = 0
+        path_travel_distance = (cur_time - self.last_planed_time) * PRT_SPEED
+        for e in self.path_e:
+            sum_edges_distance += e.distance 
+            if sum_edges_distance >= path_travel_distance:
+                next_n = e._to
+                break
+        
+        dx = next_n.px - self.px  
+        dy = next_n.py - self.py
+        remain_dis = sqrt(dx * dx + dy * dy)
+        
+        if next_n == target_c.sn:
+            self.path_n, self.path_e = Algorithms.find_SP(self.arrived_n, next_n, Nodes)
+            evt_change_point = cur_time + remain_dis / PRT_SPEED
+        else:
+            passed_path_n, passed_path_e = Algorithms.find_SP(self.arrived_n, next_n, Nodes)
+            path_n_Rerouted, path_e_Rerouted = Algorithms.find_SP(next_n, target_c.sn, Nodes)
+            self.path_n = passed_path_n + path_n_Rerouted[1:]
+            self.path_e = passed_path_e + path_e_Rerouted
+            evt_change_point = cur_time + (remain_dis + sum([e.distance for e in path_e_Rerouted])) / PRT_SPEED 
+            
+        x = [evt_change_point, self.On_ApproachingToTransiting, None]
+        heappush(event_queue, x)
+             
+    def On_ApproachingToParking(self, cur_time, args=None):
+        assert self.state == 1
+        
+        lost_customer = self.assigned_customer
+        
+        self.state = 3
+        self.assigned_customer = None
+        assert lost_customer
+        
+        next_n = None
+        sum_edges_distance = 0
+        path_travel_distance = (cur_time - self.last_planed_time) * PRT_SPEED
+        for e in self.path_e:
+            sum_edges_distance += e.distance 
+            if sum_edges_distance >= path_travel_distance:
+                next_n = e._to
+                break
+                
+        self.path_n = next_n 
+        dx = next_n.px - prt.px  
+        dy = next_n.py - prt.py
+        remain_dis = sqrt(dx * dx + dy * dy)
+        evt_change_point = cur_time + remain_dis / PRT_SPEED
+        x = [evt_change_point, self.On_ParkingToIdle, None]
+        heappush(event_queue, x)
+        
+        logger('%.1f:    On_A2P - %s, lost %s' % (cur_time, self, lost_customer))
+    
+    def On_ParkingToIdle(self, cur_time, args=None):
+        assert self.state == 3
+        
+        self.state = 0
+        self.arrived_n = self.path_n[0]
+        logger('%.1f:    On_P2I - %s' % (cur_time, self))
     
     def On_IdleToApproaching(self, cur_time, target_c):
         assert self.state == 0
+        
         self.state = 1
         self.assigned_customer = target_c
         target_c.assigned_PRT = self
@@ -146,16 +240,16 @@ class PRT():
         self.last_planed_time = cur_time
 
         evt_change_point = cur_time + sum([e.distance for e in self.path_e]) / PRT_SPEED
-        x = (evt_change_point, self.On_ApproachingToTransiting, None)
+        x = [evt_change_point, self.On_ApproachingToTransiting, None]
         heappush(event_queue, x)
 
-        logger('%.1f:    On_IdleToApproaching - %s, path: %s' % (cur_time, self, self.path_n))
+        logger('%.1f:    On_I2A - %s, path: %s' % (cur_time, self, self.path_n))
         
     def On_ApproachingToTransiting(self, cur_time, args=None):
         assert self.state == 1
 
         self.state = 2
-        self.transporting_customer = self.remove_A_customerInWaitingList(self.assigned_customer)
+        self.transporting_customer = remove_A_customerInWaitingList(self.assigned_customer)
         assert self.transporting_customer
         
         self.assigned_customer = None
@@ -164,23 +258,23 @@ class PRT():
         self.path_n, self.path_e = Algorithms.find_SP(self.transporting_customer.sn, self.transporting_customer.dn, Nodes)
         self.last_planed_time = cur_time
         evt_change_point = cur_time + sum([e.distance for e in self.path_e]) / PRT_SPEED
-        x = (evt_change_point, self.On_TransitingToIdle, None)
+        x = [evt_change_point, self.On_TransitingToIdle, None]
         heappush(event_queue, x)
-        logger('%.1f:    On_ApproachingToTransiting - %s, picking up customer - %s' % (cur_time, self, self.transporting_customer)) 
+        logger('%.1f:    On_A2T - %s, picking up customer - %s' % (cur_time, self, self.transporting_customer)) 
 
     def On_IdleToTransiting(self, cur_time, target_c):
         assert self.state == 0
         
         self.state = 2
-        self.transporting_customer = self.remove_A_customerInWaitingList(target_c)
+        self.transporting_customer = remove_A_customerInWaitingList(target_c)
         assert self.transporting_customer
         
         self.path_n, self.path_e = Algorithms.find_SP(self.arrived_n, self.transporting_customer.dn, Nodes)
         self.last_planed_time = cur_time
         evt_change_point = cur_time + sum([e.distance for e in self.path_e]) / PRT_SPEED
-        x = (evt_change_point, self.On_TransitingToIdle, None)
+        x = [evt_change_point, self.On_TransitingToIdle, None]
         heappush(event_queue, x)
-        logger('%.1f: On_IdleToTransiting - %s, picking up customer - %s' % (cur_time, self, self.transporting_customer))
+        logger('%.1f:    On_I2T - %s, picking up customer - %s' % (cur_time, self, self.transporting_customer))
     
     def On_TransitingToIdle(self, cur_time, args=None):
         assert self.state == 2
@@ -189,7 +283,7 @@ class PRT():
         self.arrived_n = self.transporting_customer.dn
         dispatcher(cur_time, PRTs, waiting_customers, Nodes)
                 
-        logger('%.1f:    On_TransitingToIdle - %s' % (cur_time, self))
+        logger('%.1f:    On_T2I - %s' % (cur_time, self))
 
 class Customer():
     _id = 0
@@ -210,19 +304,30 @@ class Customer():
 PRT_SPEED = 20
 waiting_customers = []
 event_queue = []
+
+def remove_A_customerInWaitingList(target_customer):
+    # remove servicing customer in waiting_customer
+    for i, customer in enumerate(waiting_customers):
+        if customer == target_customer:
+            return waiting_customers.pop(i)
+
+def find_target_event(target_event):
+    for i, event in enumerate(event_queue):
+        if target_event == event[1]:
+            return i
     
 def On_CustomerArrival(event_time, args=None):
     customer = Customers.pop(0)
     waiting_customers.append(customer)
     dispatcher(event_time, PRTs, waiting_customers, Nodes)
     
-    return '%.1f: On_CustomerArrival - %s' % (event_time, customer)
+    logger('%.1f: On_CustomerArrival - %s' % (event_time, customer))
 
 def init_dynamics(_Nodes, _PRTs, _Customers, _dispatcher):
     global Nodes, PRTs, Customers, dispatcher
     Nodes, PRTs, Customers, dispatcher = _Nodes, _PRTs, _Customers, _dispatcher
     for customer in Customers:
-        x = (customer.arriving_time, On_CustomerArrival, None)
+        x = [customer.arriving_time, On_CustomerArrival, None]
         heappush(event_queue, x)
 
 def process_events(now):
@@ -248,7 +353,9 @@ def test():
 
     write_input_info(Customers, PRTs)
 
-    dispatcher = Algorithms.NN0
+#     dispatcher = Algorithms.NN0
+#     dispatcher = Algorithms.NN1
+    dispatcher = Algorithms.NN2
     
     init_dynamics(Nodes, PRTs, Customers, dispatcher)
     
