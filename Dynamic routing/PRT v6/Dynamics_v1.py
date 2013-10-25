@@ -99,7 +99,7 @@ class Edge():
         self._to.edges_inward.append(self)
         
     def __repr__(self):
-        return 'N%d->N%d' % (self._from.id, self._to.id)
+        return 'Edge %d, N%d -> N%d' % (self.id, self._from.id, self._to.id)
     
 class PRT():
     _id = 0
@@ -148,44 +148,48 @@ class PRT():
     def On_ApproachingToApproaching(self, cur_time, target_c):
         assert self.state == 1
         
-        prev_c = self.assigned_customer 
-        
         self.assigned_customer = target_c
         prev_PRT = target_c.assigned_PRT
         
         if prev_PRT and prev_PRT.assigned_customer == target_c:
-            # check last event
-            last_evt = prev_PRT.event_seq[-1]
-            if last_evt[1] == prev_PRT.On_ApproachingToApproaching:
-                # prev_PRT also reassigned, so we don't need to anything
-                pass
-            else:
-                assert last_evt[1] == prev_PRT.On_ApproachingToTransiting
-                # prev_PRT lost customer and don't have any assigned customer
-                last_evt[1] = None
-                x = (cur_time, prev_PRT.On_ApproachingToParking, target_c)
-                heappush(event_queue, x)
-                prev_PRT.event_seq.append(x)
+            pass
+        
+#         if target_c.assigned_PRT:
+#                     # if there is approaching PRT to target_c
+#                     
+#                     # (make the assigned_PRT state form approaching to parking)
+#                     target_event_id = find_target_event(target_c.assigned_PRT.On_ApproachingToTransiting)
+#                     print target_event_id 
+#                     x = (event_queue[target_event_id][0], None, event_queue[target_event_id][2])
+#                     event_queue[target_event_id] = x
+#                     x = (cur_time, target_c.assigned_PRT.On_ApproachingToParking, None)
+#                     heappush(event_queue, x)
+#                 
+#                 
+#                 # find already scheduled event which is self.On_ApproachingToTransiting and make this event useless
+#                 
+#                 target_event_id = find_target_event(self.On_ApproachingToTransiting)
+#                 print target_event_id 
+#                 x = (event_queue[target_event_id][0], None, event_queue[target_event_id][2])
+#                 event_queue[target_event_id] = x
+        
         
         target_c.assigned_PRT = self
-        
-        # make already scheduled event A2T
-        assert self.event_seq[-1][1] == self.On_ApproachingToApproaching
-        A2T_event = self.event_seq[-2]
-        assert A2T_event[1] == self.On_ApproachingToTransiting and A2T_event[2] != target_c 
-        A2T_event[1] = None
+        self.assigned_customer.assigned_PRT = None
+        self.assigned_customer = target_c
         
         next_n = None
         sum_edges_distance = 0
-        edges_counter = 0
         path_travel_distance = (cur_time - self.last_planed_time) * PRT_SPEED
         for e in self.path_e:
-            sum_edges_distance += e.distance
-            edges_counter += 1 
+            sum_edges_distance += e.distance 
             if sum_edges_distance >= path_travel_distance:
                 next_n = e._to
                 break
-        remain_dis = sum([e.distance for e in self.path_e[:edges_counter]]) - path_travel_distance
+        
+        dx = next_n.px - self.px  
+        dy = next_n.py - self.py
+        remain_dis = sqrt(dx * dx + dy * dy)
         
         if next_n == target_c.sn:
             self.path_n, self.path_e = Algorithms.find_SP(self.arrived_n, next_n, Nodes)
@@ -200,10 +204,8 @@ class PRT():
         x = [evt_change_point, self.On_ApproachingToTransiting, target_c]
         heappush(event_queue, x)
         self.event_seq.append(x)
-        
-        logger('%.1f:    On_A2A - %s, prev_c:%s - new_c:%s' % (cur_time, self, prev_c, target_c))
              
-    def On_ApproachingToParking(self, cur_time, target_c):
+    def On_ApproachingToParking(self, cur_time, args=None):
         assert self.state == 1
         
         lost_customer = self.assigned_customer
@@ -214,16 +216,17 @@ class PRT():
         
         next_n = None
         sum_edges_distance = 0
-        edges_counter = 0
         path_travel_distance = (cur_time - self.last_planed_time) * PRT_SPEED
         for e in self.path_e:
-            sum_edges_distance += e.distance
-            edges_counter += 1 
+            sum_edges_distance += e.distance 
             if sum_edges_distance >= path_travel_distance:
                 next_n = e._to
                 break
-        remain_dis = sum([e.distance for e in self.path_e[:edges_counter]]) - path_travel_distance
-        
+                
+        self.path_n = next_n 
+        dx = next_n.px - prt.px  
+        dy = next_n.py - prt.py
+        remain_dis = sqrt(dx * dx + dy * dy)
         evt_change_point = cur_time + remain_dis / PRT_SPEED
         x = [evt_change_point, self.On_ParkingToIdle, None]
         heappush(event_queue, x)
@@ -308,7 +311,7 @@ class Customer():
         self.assigned_PRT = None
     
     def __repr__(self):
-        return '(C%d) N%d->N%d' % (self.id, self.sn.id, self.dn.id)
+        return 'C%d N%d->N%d (t:%.1f)' % (self.id, self.sn.id, self.dn.id, self.arriving_time)
 
 
 
@@ -322,12 +325,17 @@ def remove_A_customerInWaitingList(target_customer):
     for i, customer in enumerate(waiting_customers):
         if customer == target_customer:
             return waiting_customers.pop(i)
+
+def find_target_event(target_event):
+    for i, event in enumerate(event_queue):
+        if target_event == event[1]:
+            return i
     
 def On_CustomerArrival(event_time, args=None):
     customer = Customers.pop(0)
     waiting_customers.append(customer)
     dispatcher(event_time, PRTs, waiting_customers, Nodes)
-
+    
     logger('%.1f: On_CustomerArrival - %s' % (event_time, customer))
 
 def init_dynamics(_Nodes, _PRTs, _Customers, _dispatcher):
@@ -362,10 +370,7 @@ def test():
 
 #     dispatcher = Algorithms.NN0
 #     dispatcher = Algorithms.NN1
-#     dispatcher = Algorithms.NN2
-#     dispatcher = Algorithms.NN3
-#     dispatcher = Algorithms.NN4
-    dispatcher = Algorithms.NN5
+    dispatcher = Algorithms.NN2
     
     init_dynamics(Nodes, PRTs, Customers, dispatcher)
     
