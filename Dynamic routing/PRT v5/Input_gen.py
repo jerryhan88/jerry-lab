@@ -24,7 +24,6 @@ def run_poi(Nnodes, Nrequest, TTime):
     
     request_at = []
     for i, t in enumerate(pd):
-        
         if i == 0:
             request_at.append(t)
             continue
