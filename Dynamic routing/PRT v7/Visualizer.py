@@ -32,7 +32,7 @@ class MainFrame(wx.Frame):
         
         self.now = 0.0
         self.timer = wx.Timer(self)
-        self.timer.Start(TIMER_INTERVAL)
+#         self.timer.Start(TIMER_INTERVAL)
         
         self.set_toolbar()
         s0 = wx.SplitterWindow(self, style=wx.SP_NOBORDER)
@@ -48,6 +48,7 @@ class MainFrame(wx.Frame):
         self.Show(True)
         self.vp.SetFocus()
         Dynamics.logger = op.WriteLog
+        Dynamics.on_notify_customer_arrival = ip.on_notify_customer_arrival
         
         self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
         self.Bind(wx.EVT_CLOSE, self.OnClose)
@@ -145,6 +146,8 @@ class InputPanel(wx.ListCtrl):
                 self.SetStringItem(rowCount, 2, sn)
                 self.SetStringItem(rowCount, 3, dn)
                 rowCount += 1
+    def on_notify_customer_arrival(self, c):
+        pass
 
 class OutputPanel(wx.TextCtrl):
     def __init__(self, parent):

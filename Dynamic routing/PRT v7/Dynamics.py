@@ -5,6 +5,8 @@ from numpy.random import poisson
 from heapq import heappush, heappop
 import Algorithms
 
+on_notify_customer_arrival = lambda x: None
+
 class Node():
     _id = 0
     BIG_NUM = 1000000
@@ -272,6 +274,8 @@ def On_CustomerArrival(event_time, args=None):
     customer = Customers.pop(0)
     waiting_customers.append(customer)
     dispatcher(event_time, PRTs, waiting_customers, Nodes)
+    
+    on_notify_customer_arrival(customer)
 
     logger('%.1f: On_CustomerArrival - %s' % (event_time, customer))
 
