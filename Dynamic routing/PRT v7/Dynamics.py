@@ -41,7 +41,7 @@ class Edge():
         return 'N%d->N%d' % (self._from.id, self._to.id)
     
 
-ST_IDLE, ST_APPROACHING = 0, 1
+ST_IDLE, ST_APPROACHING, ST_TRANSITING, ST_PARKING = 0, 1, 2, 3
 
 class PRT():
     _id = 0
@@ -73,10 +73,10 @@ class PRT():
                 x = [cur_time, self.On_IdleToTransiting, target_c]
                 heappush(event_queue, x)
                 self.event_seq.append(x)
-        elif self.state == 2:
+        elif self.state == ST_TRANSITING:
             # When this PRT become idle, target_c will be assigned
             pass
-        elif self.state == 1:
+        elif self.state == ST_APPROACHING:
             if self.assigned_customer != target_c:
                 # Approaching -> Approaching
                 # Even though this PRT approaching assigned customer
@@ -89,7 +89,7 @@ class PRT():
             assert False
     
     def On_ApproachingToApproaching(self, cur_time, target_c):
-        assert self.state == 1
+        assert self.state == ST_APPROACHING
         
         prev_c = self.assigned_customer 
         
@@ -147,11 +147,11 @@ class PRT():
         logger('%.1f:    On_A2A - %s, prev_c:%s - new_c:%s' % (cur_time, self, prev_c, target_c))
              
     def On_ApproachingToParking(self, cur_time, target_c):
-        assert self.state == 1
+        assert self.state == ST_APPROACHING
         
         lost_customer = self.assigned_customer
         
-        self.state = 3
+        self.state = ST_PARKING
         self.assigned_customer = None
         assert lost_customer
         
@@ -175,16 +175,16 @@ class PRT():
         logger('%.1f:    On_A2P - %s, lost %s' % (cur_time, self, lost_customer))
     
     def On_ParkingToIdle(self, cur_time, args=None):
-        assert self.state == 3
+        assert self.state == ST_PARKING
         
-        self.state = 0
+        self.state = ST_IDLE
         self.arrived_n = self.path_n[0]
         logger('%.1f:    On_P2I - %s' % (cur_time, self))
     
     def On_IdleToApproaching(self, cur_time, target_c):
-        assert self.state == 0
+        assert self.state == ST_IDLE
         
-        self.state = 1
+        self.state = ST_APPROACHING
         self.assigned_customer = target_c
         target_c.assigned_PRT = self
         
@@ -199,9 +199,9 @@ class PRT():
         logger('%.1f:    On_I2A - %s, path: %s' % (cur_time, self, self.path_n))
         
     def On_ApproachingToTransiting(self, cur_time, target_c):
-        assert self.state == 1
+        assert self.state == ST_APPROACHING
 
-        self.state = 2
+        self.state = ST_TRANSITING
         self.transporting_customer = remove_A_customerInWaitingList(self.assigned_customer)
         assert self.transporting_customer
         
@@ -217,9 +217,9 @@ class PRT():
         logger('%.1f:    On_A2T - %s, picking up customer - %s' % (cur_time, self, self.transporting_customer)) 
 
     def On_IdleToTransiting(self, cur_time, target_c):
-        assert self.state == 0
+        assert self.state == ST_IDLE
         
-        self.state = 2
+        self.state = ST_TRANSITING
         self.transporting_customer = remove_A_customerInWaitingList(target_c)
         assert self.transporting_customer
         
@@ -232,9 +232,9 @@ class PRT():
         logger('%.1f:    On_I2T - %s, picking up customer - %s' % (cur_time, self, self.transporting_customer))
     
     def On_TransitingToIdle(self, cur_time, args=None):
-        assert self.state == 2
+        assert self.state == ST_TRANSITING
         
-        self.state = 0
+        self.state = ST_IDLE
         self.arrived_n = self.transporting_customer.dn
         dispatcher(cur_time, PRTs, waiting_customers, Nodes)
                 
@@ -255,7 +255,7 @@ class Customer():
 
 
 # Prepare dynamics run
-PRT_SPEED = 20
+PRT_SPEED = 50
 waiting_customers = []
 event_queue = []
 

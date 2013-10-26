@@ -17,21 +17,22 @@ event_queue = []
 
 class MainFrame(wx.Frame):
     def __init__(self):
-        wx.Frame.__init__(self, None, -1, 'Dynamic routing experiment', size=(1024, 768))
+        wx.Frame.__init__(self, None, -1, 'Dynamic routing experiment', size=(1024, 768), pos = (20,20))
         # Every resources are accessible
         self.Nodes, self.Edges = Dynamics.gen_network(*Input_gen.network0())
         self.Customers = Dynamics.gen_customer(self.Nodes)
         self.PRTs = Dynamics.gen_PRT(Input_gen.PRT_pos_ex0(), self.Nodes)
-        dispatcher = Algorithms.NN0
+#         dispatcher = Algorithms.NN0
 #         dispatcher = Algorithms.NN1
 #         dispatcher = Algorithms.NN2
 #         dispatcher = Algorithms.NN3
 #         dispatcher = Algorithms.NN4
-#         dispatcher = Algorithms.NN5
+        dispatcher = Algorithms.NN5
         Dynamics.init_dynamics(self.Nodes, self.PRTs, self.Customers, dispatcher)
         
         self.now = 0.0
         self.timer = wx.Timer(self)
+        self.timer.Start(TIMER_INTERVAL)
         
         self.set_toolbar()
         s0 = wx.SplitterWindow(self, style=wx.SP_NOBORDER)
@@ -70,6 +71,7 @@ class MainFrame(wx.Frame):
                     if sum_edges_distance >= path_travel_distance:
                         prev_n = e._from
                         next_n = e._to
+                        break
                 
                 prev_n_arrival_time = prt.last_planed_time + sum(e.distance for e in prt.path_e[:edges_counter - 1]) / Dynamics.PRT_SPEED  
     
