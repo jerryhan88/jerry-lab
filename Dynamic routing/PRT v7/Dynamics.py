@@ -51,6 +51,7 @@ class PRT():
         
         self.arrived_n = init_node
         self.px, self.py = self.arrived_n.px, self.arrived_n.py
+        self.path_n, self.path_e = [], []
         
         self.state = ST_IDLE
         self.last_planed_time = 0
@@ -265,7 +266,7 @@ def remove_A_customerInWaitingList(target_customer):
             return waiting_customers.pop(i)
 
 def logger(s):
-    print s    
+    print s
 
 def On_CustomerArrival(event_time, args=None):
     customer = Customers.pop(0)
@@ -295,7 +296,7 @@ def test():
     import Input_gen
     
     # Every resources are accessible
-    Nodes = gen_network(*Input_gen.network0())
+    Nodes, Edges = gen_network(*Input_gen.network0())
     Customers = gen_customer(Nodes)
     PRTs = gen_PRT(Input_gen.PRT_pos_ex0(), Nodes)
  
@@ -317,9 +318,10 @@ def test():
 # -----------------------------------------------------------------
 def gen_network(ns_pos, ns_connection):
     Nodes = [Node(px, py) for px, py in ns_pos]
+    Edges = []
     for pn, nn in ns_connection:
-        Edge(Nodes[pn], Nodes[nn])
-    return Nodes
+        Edges.append(Edge(Nodes[pn], Nodes[nn]))
+    return Nodes, Edges
 
 def gen_PRT(pos, Nodes):
     return [PRT(Nodes[init_pos]) for init_pos in pos]
