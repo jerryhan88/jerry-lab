@@ -59,10 +59,25 @@ class PRT():
         
         self.state = ST_IDLE
         self.last_planed_time = 0
-        self.event_seq = [] 
+        self.event_seq = []
+        
+        # For calculating measure
+        self.empty_travel_distance = 0.0
+        self.total_travel_distance = 0.0
+        self.idle_times = 0.0
+        customers_flow_time = []
+        customers_waiting_time = []
     
     def __repr__(self):
         return 'PRT%d-Now N%d' % (self.id, self.arrived_n.id)
+    
+    def calc_customer_flow_time(self, service_finished_time):
+        pass
+#         customers_flow_time.append((customer.id, customer.service_finished_time - customer.arriving_time))
+        
+    def calc_customers_waiting_time(self, pick_up_time):
+        pass
+#         customers_waiting_time.append((customer.id, pick_up_time - customer.arriving_time))
     
     def re_assign_customer(self, cur_time, target_c):
         if self.state == ST_IDLE :
@@ -91,6 +106,66 @@ class PRT():
         else:
             # parking to approaching
             assert False
+    
+    def On_IdleToApproaching(self, cur_time, target_c):
+        assert self.state == ST_IDLE
+        
+        self.state = ST_APPROACHING
+        self.assigned_customer = target_c
+        target_c.assigned_PRT = self
+        
+        self.idle_times += self.last_planed_time - cur_time  
+        
+        self.path_n, self.path_e = Algorithms.find_SP(self.arrived_n, self.assigned_customer.sn, Nodes)
+        self.last_planed_time = cur_time
+
+        evt_change_point = cur_time + sum([e.distance for e in self.path_e]) / PRT_SPEED
+        x = [evt_change_point, self.On_ApproachingToTransiting, target_c]
+        heappush(event_queue, x)
+        self.event_seq.append(x)
+
+        logger('%.1f:    On_I2A - %s, path: %s' % (cur_time, self, self.path_n))
+    
+    def On_IdleToTransiting(self, cur_time, target_c):
+        assert self.state == ST_IDLE
+        
+        self.state = ST_TRANSITING
+        self.transporting_customer = remove_A_customerInWaitingList(target_c)
+        self.idle_times += self.last_planed_time - cur_time  
+        assert self.transporting_customer
+        
+        self.path_n, self.path_e = Algorithms.find_SP(self.arrived_n, self.transporting_customer.dn, Nodes)
+        self.last_planed_time = cur_time
+        evt_change_point = cur_time + sum([e.distance for e in self.path_e]) / PRT_SPEED
+        x = [evt_change_point, self.On_TransitingToIdle, None]
+        heappush(event_queue, x)
+        self.event_seq.append(x)
+        logger('%.1f:    On_I2T - %s, picking up customer - %s' % (cur_time, self, self.transporting_customer))    
+    
+    def On_ApproachingToTransiting(self, cur_time, target_c):
+        assert self.state == ST_APPROACHING
+
+        self.state = ST_TRANSITING
+        
+        travel_distance = sum(e.distance for e in self.path_e)
+        self.empty_travel_distance += travel_distance
+        self.total_travel_distance += travel_distance
+        
+#         calc_customers_waiting_time(self.assigned_customer, cur_time)
+        
+        self.transporting_customer = remove_A_customerInWaitingList(self.assigned_customer)
+        assert self.transporting_customer
+        
+        self.assigned_customer = None
+        self.arrived_n = self.transporting_customer.sn
+        
+        self.path_n, self.path_e = Algorithms.find_SP(self.transporting_customer.sn, self.transporting_customer.dn, Nodes)
+        self.last_planed_time = cur_time
+        evt_change_point = cur_time + sum([e.distance for e in self.path_e]) / PRT_SPEED
+        x = [evt_change_point, self.On_TransitingToIdle, None]
+        heappush(event_queue, x)
+        self.event_seq.append(x)
+        logger('%.1f:    On_A2T - %s, picking up customer - %s' % (cur_time, self, self.transporting_customer))
     
     def On_ApproachingToApproaching(self, cur_time, target_c):
         assert self.state == ST_APPROACHING
@@ -171,6 +246,8 @@ class PRT():
                 break
         remain_dis = sum([e.distance for e in self.path_e[:edges_counter]]) - path_travel_distance
         
+        self.path_n, self.path_e = self.path_n[:edges_counter + 1], self.path_e[:edges_counter]
+        
         evt_change_point = cur_time + remain_dis / PRT_SPEED
         x = [evt_change_point, self.On_ParkingToIdle, None]
         heappush(event_queue, x)
@@ -178,73 +255,29 @@ class PRT():
         
         logger('%.1f:    On_A2P - %s, lost %s' % (cur_time, self, lost_customer))
     
-    def On_ParkingToIdle(self, cur_time, args=None):
-        assert self.state == ST_PARKING
-        
-        self.state = ST_IDLE
-        self.arrived_n = self.path_n[0]
-        logger('%.1f:    On_P2I - %s' % (cur_time, self))
-    
-    def On_IdleToApproaching(self, cur_time, target_c):
-        assert self.state == ST_IDLE
-        
-        self.state = ST_APPROACHING
-        self.assigned_customer = target_c
-        target_c.assigned_PRT = self
-        
-        self.path_n, self.path_e = Algorithms.find_SP(self.arrived_n, self.assigned_customer.sn, Nodes)
-        self.last_planed_time = cur_time
-
-        evt_change_point = cur_time + sum([e.distance for e in self.path_e]) / PRT_SPEED
-        x = [evt_change_point, self.On_ApproachingToTransiting, target_c]
-        heappush(event_queue, x)
-        self.event_seq.append(x)
-
-        logger('%.1f:    On_I2A - %s, path: %s' % (cur_time, self, self.path_n))
-        
-    def On_ApproachingToTransiting(self, cur_time, target_c):
-        assert self.state == ST_APPROACHING
-
-        self.state = ST_TRANSITING
-        self.transporting_customer = remove_A_customerInWaitingList(self.assigned_customer)
-        assert self.transporting_customer
-        
-        self.assigned_customer = None
-        self.arrived_n = self.transporting_customer.sn
-        
-        self.path_n, self.path_e = Algorithms.find_SP(self.transporting_customer.sn, self.transporting_customer.dn, Nodes)
-        self.last_planed_time = cur_time
-        evt_change_point = cur_time + sum([e.distance for e in self.path_e]) / PRT_SPEED
-        x = [evt_change_point, self.On_TransitingToIdle, None]
-        heappush(event_queue, x)
-        self.event_seq.append(x)
-        logger('%.1f:    On_A2T - %s, picking up customer - %s' % (cur_time, self, self.transporting_customer)) 
-
-    def On_IdleToTransiting(self, cur_time, target_c):
-        assert self.state == ST_IDLE
-        
-        self.state = ST_TRANSITING
-        self.transporting_customer = remove_A_customerInWaitingList(target_c)
-        assert self.transporting_customer
-        
-        self.path_n, self.path_e = Algorithms.find_SP(self.arrived_n, self.transporting_customer.dn, Nodes)
-        self.last_planed_time = cur_time
-        evt_change_point = cur_time + sum([e.distance for e in self.path_e]) / PRT_SPEED
-        x = [evt_change_point, self.On_TransitingToIdle, None]
-        heappush(event_queue, x)
-        self.event_seq.append(x)
-        logger('%.1f:    On_I2T - %s, picking up customer - %s' % (cur_time, self, self.transporting_customer))
-    
     def On_TransitingToIdle(self, cur_time, args=None):
         assert self.state == ST_TRANSITING
         
         self.state = ST_IDLE
         self.arrived_n = self.transporting_customer.dn
+        
+#         calc_customer_flow_time(self.transporting_customer, cur_time)
+        self.total_travel_distance += sum(e.distance for e in self.path_e)
+        
         self.transporting_customer = None
         self.path_n, self.path_e = None, None
         dispatcher(cur_time, PRTs, waiting_customers, Nodes)
                 
         logger('%.1f:    On_T2I - %s' % (cur_time, self))
+    
+    def On_ParkingToIdle(self, cur_time, args=None):
+        assert self.state == ST_PARKING
+        
+        self.state = ST_IDLE
+        self.arrived_n = self.path_n[-1]
+        self.total_travel_distance += sum(e.distance for e in self.path_e)
+        
+        logger('%.1f:    On_P2I - %s' % (cur_time, self))
 
 class Customer():
     _id = 0
@@ -258,6 +291,8 @@ class Customer():
     
     def __repr__(self):
         return '(C%d) N%d->N%d' % (self.id, self.sn.id, self.dn.id)
+    
+
 
 
 # Prepare dynamics run

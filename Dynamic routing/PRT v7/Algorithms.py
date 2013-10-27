@@ -2,6 +2,9 @@ from __future__ import division
 from math import sqrt
 from munkres import Munkres
 
+def get_all_dispatchers():
+    return {'NN0': NN0, 'NN1': NN1, 'NN2': NN2, 'NN3': NN3, 'NN4': NN4, 'NN5': NN5}
+
 on_notify_assignmentment_point = lambda x: None
 
 Longest_dis = 0
@@ -154,7 +157,8 @@ def find_SP(sn, en, Nodes):
     path_e.reverse()
 
     return path_n, path_e
-    
+
+
 if __name__ == '__main__':
     import input_gen, Scenarios 
     
