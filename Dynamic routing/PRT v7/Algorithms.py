@@ -2,67 +2,52 @@ from __future__ import division
 from math import sqrt
 from munkres import Munkres
 
+on_notify_assignmentment_point = lambda x: None
+
 Longest_dis = 0
+
+def reassignment(event_time, target_PRTs, target_customers, Nodes):
+    for prt_id, customer_id in find_opt_matching(event_time, target_PRTs, target_customers, Nodes):
+        chosen_prt = target_PRTs[prt_id]
+        target_c = target_customers[customer_id]
+        chosen_prt.re_assign_customer(event_time, target_c)
+    on_notify_assignmentment_point(None)
 
 def NN0(event_time, PRTs, waiting_customers, Nodes):
     target_PRTs = [prt for prt in PRTs if prt.state == 0]
     if not target_PRTs: return None
     target_customers = [customer for customer in waiting_customers if not customer.assigned_PRT]
-    
-    for prt_id, customer_id in find_opt_matching(event_time, target_PRTs, target_customers, Nodes):
-            chosen_prt = target_PRTs[prt_id]
-            target_c = target_customers[customer_id]
-            chosen_prt.re_assign_customer(event_time, target_c)
+    reassignment(event_time, target_PRTs, target_customers, Nodes)
 
 def NN1(event_time, PRTs, waiting_customers, Nodes):
     target_PRTs = [prt for prt in PRTs if prt.state == 0 or prt.state == 2 ]
     if not target_PRTs: return None
     target_customers = [customer for customer in waiting_customers if not customer.assigned_PRT]
-    
-    for prt_id, customer_id in find_opt_matching(event_time, target_PRTs, target_customers, Nodes):
-            chosen_prt = target_PRTs[prt_id]
-            target_c = target_customers[customer_id]
-            chosen_prt.re_assign_customer(event_time, target_c)
+    reassignment(event_time, target_PRTs, target_customers, Nodes)
 
 def NN2(event_time, PRTs, waiting_customers, Nodes):
     target_PRTs = [prt for prt in PRTs if prt.state == 0 or prt.state == 1 ]
     if not target_PRTs: return None
     target_customers = waiting_customers
-    
-    for prt_id, customer_id in find_opt_matching(event_time, target_PRTs, target_customers, Nodes):
-            target_prt = target_PRTs[prt_id]
-            target_c = target_customers[customer_id]
-            target_prt.re_assign_customer(event_time, target_c)
+    reassignment(event_time, target_PRTs, target_customers, Nodes)
 
 def NN3(event_time, PRTs, waiting_customers, Nodes):
     target_PRTs = [prt for prt in PRTs if prt.state != 2 ]
     if not target_PRTs: return None
     target_customers = waiting_customers
-    
-    for prt_id, customer_id in find_opt_matching(event_time, target_PRTs, target_customers, Nodes):
-            target_prt = target_PRTs[prt_id]
-            target_c = target_customers[customer_id]
-            target_prt.re_assign_customer(event_time, target_c)
+    reassignment(event_time, target_PRTs, target_customers, Nodes)
 
 def NN4(event_time, PRTs, waiting_customers, Nodes):
     target_PRTs = [prt for prt in PRTs if prt.state != 3 ]
     if not target_PRTs: return None
     target_customers = waiting_customers
-    
-    for prt_id, customer_id in find_opt_matching(event_time, target_PRTs, target_customers, Nodes):
-            target_prt = target_PRTs[prt_id]
-            target_c = target_customers[customer_id]
-            target_prt.re_assign_customer(event_time, target_c)            
+    reassignment(event_time, target_PRTs, target_customers, Nodes)            
 
 def NN5(event_time, PRTs, waiting_customers, Nodes):
     target_PRTs = PRTs
     if not target_PRTs: return None
     target_customers = waiting_customers
-    
-    for prt_id, customer_id in find_opt_matching(event_time, target_PRTs, target_customers, Nodes):
-            target_prt = target_PRTs[prt_id]
-            target_c = target_customers[customer_id]
-            target_prt.re_assign_customer(event_time, target_c)
+    reassignment(event_time, target_PRTs, target_customers, Nodes)
 
 def find_opt_matching(cur_time, target_PRTs, customers, Nodes):
     NodeByNode_DMatrix = create_NodeByNode_DMatrix(Nodes)

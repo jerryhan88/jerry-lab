@@ -1,7 +1,9 @@
 from __future__ import division
 from math import sqrt
 from util import DragZoomPanel
-import wx, Dynamics, Algorithms, Input_gen 
+import wx, Dynamics, Algorithms, Input_gen
+from Dynamics import ST_IDLE, ST_APPROACHING, ST_TRANSITING, ST_PARKING
+  
 
 TIMER_INTERVAL = 100
 CLOCK_INCREMENT = 100
@@ -17,7 +19,7 @@ event_queue = []
 
 class MainFrame(wx.Frame):
     def __init__(self):
-        wx.Frame.__init__(self, None, -1, 'Dynamic routing experiment', size=(1024, 768), pos = (20,20))
+        wx.Frame.__init__(self, None, -1, 'Dynamic routing experiment', size=(1024, 768), pos=(20, 20))
         # Every resources are accessible
         self.Nodes, self.Edges = Dynamics.gen_network(*Input_gen.network0())
         self.Customers = Dynamics.gen_customer(self.Nodes)
@@ -30,9 +32,11 @@ class MainFrame(wx.Frame):
         dispatcher = Algorithms.NN5
         Dynamics.init_dynamics(self.Nodes, self.PRTs, self.Customers, dispatcher)
         
+        self.waiting_customers_in_node = [[] for _ in range(len(self.Nodes))]
+        
         self.now = 0.0
         self.timer = wx.Timer(self)
-#         self.timer.Start(TIMER_INTERVAL)
+        self.timer.Start(TIMER_INTERVAL)
         
         self.set_toolbar()
         s0 = wx.SplitterWindow(self, style=wx.SP_NOBORDER)
@@ -49,10 +53,15 @@ class MainFrame(wx.Frame):
         self.vp.SetFocus()
         Dynamics.logger = op.WriteLog
         Dynamics.on_notify_customer_arrival = ip.on_notify_customer_arrival
+        Algorithms.on_notify_assignmentment_point = self.pause_clock_ressignement_point 
         
         self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
         self.Bind(wx.EVT_CLOSE, self.OnClose)
-
+    
+    def pause_clock_ressignement_point(self, _):
+        if self.check_reassign.GetValue():
+            self.timer.Stop()
+    
     def OnTimer(self, evt):
         self.now += CLOCK_INCREMENT / 1000
         Dynamics.process_events(self.now)
@@ -75,7 +84,7 @@ class MainFrame(wx.Frame):
                         break
                 
                 prev_n_arrival_time = prt.last_planed_time + sum(e.distance for e in prt.path_e[:edges_counter - 1]) / Dynamics.PRT_SPEED  
-    
+                
                 dx = next_n.px - prev_n.px
                 dy = next_n.py - prev_n.py
                 cos_theta = dx / sqrt(dx * dx + dy * dy)
@@ -85,6 +94,10 @@ class MainFrame(wx.Frame):
                 prt.py = prev_n.py + sin_theta * (self.now - prev_n_arrival_time) * Dynamics.PRT_SPEED
             else:
                 prt.px, prt.py = prt.arrived_n.px, prt.arrived_n.py 
+        
+        self.waiting_customers_in_node = [[] for _ in range(len(self.Nodes))]
+        for c in Dynamics.waiting_customers:
+            self.waiting_customers_in_node[c.sn.id].append(c.id) 
         
         self.vp.RefreshGC()
                 
@@ -115,13 +128,16 @@ class MainFrame(wx.Frame):
         b_pause = tb.AddSimpleTool(wx.ID_ANY, load_icon('pic/pause.bmp'))
         b_s_down = tb.AddSimpleTool(wx.ID_ANY, load_icon('pic/speed_down.bmp'))
         b_s_up = tb.AddSimpleTool(wx.ID_ANY, load_icon('pic/speed_up.bmp'))
+        
+        self.check_reassign = wx.CheckBox(tb, -1, "Check reassignment point", pos=(100, 5))
+#         self.check_reassign.SetValue(True)
         self.Bind(wx.EVT_MENU, self.OnPlay, b_play)
         self.Bind(wx.EVT_MENU, self.OnPause, b_pause)
         self.Bind(wx.EVT_MENU, self.OnSpeedDown, b_s_down)
         self.Bind(wx.EVT_MENU, self.OnSpeedUp, b_s_up)
         
-        tb.Realize()        
-
+        tb.Realize()
+            
 class InputPanel(wx.ListCtrl):
     def __init__(self, parent):
         wx.ListCtrl.__init__(self, parent, -1, style=wx.LC_REPORT | wx.SUNKEN_BORDER)
@@ -181,32 +197,35 @@ class ViewPanel(DragZoomPanel):
             
             gc.DrawEllipse(-NODE_DIAMETER / 2, -NODE_DIAMETER / 2, NODE_DIAMETER, NODE_DIAMETER)
             gc.DrawText('N%d' % n.id, -7, -7)
-#             gc.DrawText('#c: %d' % len(n.cus_queue), -14, NODE_DIAMETER / 2)
-            
-#             for c in n.cus_queue:
-#                 bg_clr = wx.Colour(200, 200, 200)
-#                 gc.SetBrush(wx.Brush(bg_clr))
-#                 gc.SetPen(wx.Pen(bg_clr, 0.5))
-#                 gc.DrawEllipse(-CUSTOMER_RADIUS / 2, -CUSTOMER_RADIUS / 2, CUSTOMER_RADIUS, CUSTOMER_RADIUS)
-#                 gc.DrawText(c.id, -7, -7)
             gc.SetTransform(old_tr)
             
+        for i, waiting_c_in_node in enumerate(self.Parent.Parent.Parent.waiting_customers_in_node):
+            if waiting_c_in_node:
+                waiting_c_str = '('
+                for j, c_id in enumerate(waiting_c_in_node):
+                    waiting_c_str += 'C%d' % c_id
+                    if j < len(waiting_c_in_node) - 1:
+                        waiting_c_str += ', '
+                    else:
+                        waiting_c_str += ')'
+                gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+                gc.DrawText(waiting_c_str, self.Parent.Parent.Parent.Nodes[i].px + NODE_DIAMETER / 2, self.Parent.Parent.Parent.Nodes[i].py - NODE_DIAMETER / 2)
+        
         for e in self.Parent.Parent.Parent.Edges:
-            ax = e._to.px - e._from.px;
-            ay = e._to.py - e._from.py;
+            ax = e._to.px - e._from.px
+            ay = e._to.py - e._from.py
             
-            la = sqrt(ax * ax + ay * ay);
-            ux = ax / la;
-            uy = ay / la;
+            la = sqrt(ax * ax + ay * ay)
+            ux = ax / la
+            uy = ay / la
              
             sx = e._from.px + ux * NODE_DIAMETER / 2
             sy = e._from.py + uy * NODE_DIAMETER / 2
             ex = e._to.px - ux * NODE_DIAMETER / 2
             ey = e._to.py - uy * NODE_DIAMETER / 2
             
-            
-            px = -uy;
-            py = ux;
+            px = -uy
+            py = ux
                         
             gc.DrawLines([(sx, sy), (ex, ey)])
             gc.DrawLines([(ex, ey), (ex - int((ux * 5)) + int(px * 3), ey
@@ -215,25 +234,45 @@ class ViewPanel(DragZoomPanel):
             gc.DrawLines([(ex, ey), (ex - int(ux * 5) - int(px * 3), ey
                         - int(uy * 5) - int(py * 3))])            
             
+            gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
             gc.DrawText('%d' % int(round(e.distance, 1)), (e._from.px + e._to.px) / 2, (e._from.py + e._to.py) / 2)
             
         for v in self.Parent.Parent.Parent.PRTs:
             gc.Translate(v.px, v.py)
             
             gc.SetPen(wx.Pen(wx.Colour(0, 0, 0), 1))
-            gc.SetBrush(wx.Brush(wx.Colour(255, 255, 255)))
+            if v.state == ST_IDLE:
+                # IDLE PRT's color is GRAY
+                gc.SetBrush(wx.Brush(wx.Colour(200, 200, 200)))
+            elif v.state == ST_APPROACHING:
+                # APPROACHING PRT's color is WHITE
+                gc.SetBrush(wx.Brush(wx.Colour(255, 255, 255)))
+            elif v.state == ST_TRANSITING:
+                # TRANSITING PRT's color is PINK
+                gc.SetBrush(wx.Brush(wx.Colour(255, 193, 193))) 
+            else:
+                assert v.state == ST_PARKING
+                # PARKING PRT's color is YELLOW
+                gc.SetBrush(wx.Brush(wx.Colour(255, 242, 0)))
+            
             gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
             gc.DrawRectangle(-PRT_SIZE / 2, -PRT_SIZE / 2, PRT_SIZE, PRT_SIZE)
             gc.DrawText('PRT%d' % v.id, -PRT_SIZE / 2, -PRT_SIZE / 2 - 10)
             
-#             if v.riding_cus:
-#                 bg_clr = wx.Colour(200, 200, 200)
-#                 gc.SetBrush(wx.Brush(bg_clr))
-#                 gc.SetPen(wx.Pen(bg_clr, 0.5))
-#                 gc.DrawEllipse(-CUSTOMER_RADIUS / 2, -CUSTOMER_RADIUS / 2, CUSTOMER_RADIUS, CUSTOMER_RADIUS)
-#                 gc.DrawText(v.riding_cus.id, -7, -7)
+            if v.assigned_customer:
+                assert v.state == ST_APPROACHING
+                gc.DrawText('C%d' % v.assigned_customer.id, -7, -7)                
+
+            if v.transporting_customer:
+                bg_clr = wx.Colour(255, 255, 0)
+                gc.SetBrush(wx.Brush(bg_clr))
+                gc.SetPen(wx.Pen(bg_clr, 0.5))
+                gc.DrawEllipse(-CUSTOMER_RADIUS / 2, -CUSTOMER_RADIUS / 2, CUSTOMER_RADIUS, CUSTOMER_RADIUS)
+                gc.DrawText('C%d' % v.transporting_customer.id, -7, -7)
             
             gc.SetTransform(old_tr)
+            
+    
         
 if __name__ == '__main__':
     app = wx.PySimpleApp()

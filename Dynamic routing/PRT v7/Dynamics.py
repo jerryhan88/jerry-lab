@@ -54,6 +54,8 @@ class PRT():
         self.arrived_n = init_node
         self.px, self.py = self.arrived_n.px, self.arrived_n.py
         self.path_n, self.path_e = [], []
+        self.assigned_customer = None
+        self.transporting_customer = None
         
         self.state = ST_IDLE
         self.last_planed_time = 0
@@ -238,6 +240,8 @@ class PRT():
         
         self.state = ST_IDLE
         self.arrived_n = self.transporting_customer.dn
+        self.transporting_customer = None
+        self.path_n, self.path_e = None, None
         dispatcher(cur_time, PRTs, waiting_customers, Nodes)
                 
         logger('%.1f:    On_T2I - %s' % (cur_time, self))
