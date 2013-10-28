@@ -41,15 +41,16 @@ class MainFrame(wx.Frame):
         ip = InputPanel(s0)
         s0.SplitVertically(ip, s1, 220)
         s0.SetMinimumPaneSize(20)
-        s0.SetSashGravity(1)
         
         self.mp = MeasurePanel(s1)
         
         s1.SplitVertically(s2, self.mp, -200)
+        s1.SetSashGravity(1)
         
         self.vp = ViewPanel(s2)
         lp = LogPanel(s2)
         s2.SplitHorizontally(self.vp, lp, -200)
+        s2.SetSashGravity(1)
         
         Dynamics.logger = lp.WriteLog
 
