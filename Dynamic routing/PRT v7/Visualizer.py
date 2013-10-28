@@ -31,7 +31,6 @@ class MainFrame(wx.Frame):
         
         self.now = 0.0
         self.timer = wx.Timer(self)
-        #self.timer.Start(TIMER_INTERVAL)
         
         self.set_toolbar()
         
@@ -44,9 +43,9 @@ class MainFrame(wx.Frame):
         s0.SetMinimumPaneSize(20)
         s0.SetSashGravity(1)
         
-        mp = MeasurePanel(s1)
+        self.mp = MeasurePanel(s1)
         
-        s1.SplitVertically(s2, mp, -200)
+        s1.SplitVertically(s2, self.mp, -200)
         
         self.vp = ViewPanel(s2)
         lp = LogPanel(s2)
@@ -57,8 +56,7 @@ class MainFrame(wx.Frame):
         Algorithms.on_notify_assignmentment_point = self.pause_clock_ressignement_point 
          
         self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
-        #self.Bind(wx.EVT_CLOSE, self.OnClose)
-#         Dynamics.on_notify_customer_arrival = ip.on_notify_customer_arrival
+        Dynamics.on_notify_customer_arrival = ip.on_notify_customer_arrival
 
         self.Show(True)
         
@@ -66,17 +64,12 @@ class MainFrame(wx.Frame):
         if dispatcher == None:
             return
         
-#         dispatcher = Algorithms.NN0
-#         dispatcher = Algorithms.NN1
-#         dispatcher = Algorithms.NN2
-#         dispatcher = Algorithms.NN3
-#         dispatcher = Algorithms.NN4
-#        dispatcher = Algorithms.NN5
         Dynamics.init_dynamics(self.Nodes, self.PRTs, self.Customers, dispatcher)
         
         self.SetTitle(TITLE + ' - ' + dispatcher.__name__)
         
         self.vp.SetFocus()
+        self.onTimer_counter = 0
 
     def select_dispatcher(self):
         AD = Algorithms.get_all_dispatchers()
@@ -84,6 +77,9 @@ class MainFrame(wx.Frame):
         if dlg.ShowModal() == wx.ID_OK:
             dispatcher = AD[dlg.GetStringSelection()]
             dlg.Destroy()
+            
+            self.timer.Start(TIMER_INTERVAL)
+            
             return dispatcher
         else:
             self.Close()
@@ -130,6 +126,12 @@ class MainFrame(wx.Frame):
             self.waiting_customers_in_node[c.sn.id].append(c.id) 
         
         self.vp.RefreshGC()
+        
+        self.onTimer_counter += 1
+        
+        if self.onTimer_counter == 10:
+            self.onTimer_counter = 0
+            self.mp.update_stat()
                 
     def OnPlay(self, _):
         self.timer.Start(TIMER_INTERVAL)
@@ -137,16 +139,16 @@ class MainFrame(wx.Frame):
     def OnPause(self, _):
         self.timer.Stop()
         
+        
     def OnSpeedUp(self, _):
         global CLOCK_INCREMENT
         CLOCK_INCREMENT *= CLOCK_INCR_DIFF
+        self.vp.RefreshGC()
         
     def OnSpeedDown(self, _):
         global CLOCK_INCREMENT
         CLOCK_INCREMENT /= CLOCK_INCR_DIFF
-    
-    #def OnClose(self, event):
-    #    self.Destroy()
+        self.vp.RefreshGC()
         
     def set_toolbar(self):
         def load_icon(path):
@@ -160,7 +162,6 @@ class MainFrame(wx.Frame):
         b_s_up = tb.AddSimpleTool(wx.ID_ANY, load_icon('pic/speed_up.bmp'))
         
         self.check_reassign = wx.CheckBox(tb, -1, "Check reassignment point", pos=(100, 5))
-#         self.check_reassign.SetValue(True)
         self.Bind(wx.EVT_MENU, self.OnPlay, b_play)
         self.Bind(wx.EVT_MENU, self.OnPause, b_pause)
         self.Bind(wx.EVT_MENU, self.OnSpeedDown, b_s_down)
@@ -172,25 +173,53 @@ class MeasurePanel(wx.ListCtrl):
     def __init__(self, parent):
         wx.ListCtrl.__init__(self, parent, -1, style=wx.LC_REPORT | wx.SUNKEN_BORDER)
         self.InsertColumn(0, 'Measure')
-        self.InsertColumn(1, 'Value')
+        self.InsertColumn(1, 'Value', wx.LIST_FORMAT_RIGHT)
 
         self.SetColumnWidth(0, 80)
-        self.SetColumnWidth(1, 120)
+        self.SetColumnWidth(1, 110)
         
+        # Total Travel Distance
         self.InsertStringItem(0, 'TTD')
         self.SetStringItem(0, 1, '%.1f' % 0.0)
         
-        
+        # Empty Travel Distance
         self.InsertStringItem(1, 'ETD')
         self.SetStringItem(1, 1, '%.1f' % 0.0)
         
+        # Average Waiting Time
         self.InsertStringItem(2, 'AWT')
         self.SetStringItem(2, 1, '%.1f' % 0.0)
-        
+         
+        # Average Flow Time
         self.InsertStringItem(3, 'AFT')
         self.SetStringItem(3, 1, '%.1f' % 0.0)
         
+        self.PRTs = self.Parent.Parent.Parent.PRTs
+                
     def update_stat(self):
+        
+        TTD = 0.0
+        ETD = 0.0
+        TWT = 0.0
+        numOfPickedUp_customer = 0
+        TFT = 0.0
+        numOfServiced_customer = 0
+        
+        for prt in self.PRTs:
+            TTD += prt.total_travel_distance
+            ETD += prt.empty_travel_distance
+            TWT += prt.customers_waiting_time
+            TFT += prt.customers_flow_time
+            
+            numOfPickedUp_customer += prt.numOfPickedUp_customer
+            numOfServiced_customer += prt.numOfServiced_customer
+        
+        self.SetStringItem(0, 1, '%.1f' % TTD)
+        self.SetStringItem(1, 1, '%.1f' % ETD)
+        if numOfPickedUp_customer != 0:
+            self.SetStringItem(2, 1, '%.1f' % (TWT / numOfPickedUp_customer))
+        if numOfServiced_customer != 0:    
+            self.SetStringItem(3, 1, '%.1f' % (TFT / numOfServiced_customer))
         
         self.Refresh()
             
@@ -218,6 +247,13 @@ class InputPanel(wx.ListCtrl):
                 self.SetStringItem(rowCount, 2, sn)
                 self.SetStringItem(rowCount, 3, dn)
                 rowCount += 1
+                
+    def on_notify_customer_arrival(self, customer):
+        if customer.id != 0:
+            self.SetItemBackgroundColour(customer.id - 1, wx.Colour(255, 255, 255))
+        self.SetItemBackgroundColour(customer.id, wx.Colour(200, 200, 200))
+        
+        self.Refresh()
 
 class LogPanel(wx.TextCtrl):
     def __init__(self, parent):
@@ -240,8 +276,8 @@ class ViewPanel(DragZoomPanel):
             win.OnSpeedUp(None) if e.m_wheelRotation > 0 else win.OnSpeedDown(None)
         else:
             DragZoomPanel.OnMouseWheel(self, e)
-        #self.set_scale(self.scale * (self.scale_inc if e.m_wheelRotation > 0 else (1 / self.scale_inc)), e.m_x, e.m_y)
-        #self.RefreshGC()
+        # self.set_scale(self.scale * (self.scale_inc if e.m_wheelRotation > 0 else (1 / self.scale_inc)), e.m_x, e.m_y)
+        # self.RefreshGC()
 
     def OnDrawDevice(self, gc):
         gc.SetFont(wx.Font(12, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))

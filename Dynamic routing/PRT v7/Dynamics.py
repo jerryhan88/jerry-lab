@@ -65,25 +65,28 @@ class PRT():
         self.empty_travel_distance = 0.0
         self.total_travel_distance = 0.0
         self.idle_times = 0.0
-        customers_flow_time = []
-        customers_waiting_time = []
+        self.customers_flow_time = 0.0
+        self.numOfServiced_customer = 0
+        self.customers_waiting_time = 0.0
+        self.numOfPickedUp_customer = 0
     
     def __repr__(self):
         return 'PRT%d-Now N%d' % (self.id, self.arrived_n.id)
     
     def calc_customer_flow_time(self, service_finished_time):
-        pass
-#         customers_flow_time.append((customer.id, customer.service_finished_time - customer.arriving_time))
+        self.customers_flow_time += service_finished_time - self.transporting_customer.arriving_time
+        self.numOfServiced_customer += 1
         
     def calc_customers_waiting_time(self, pick_up_time):
-        pass
-#         customers_waiting_time.append((customer.id, pick_up_time - customer.arriving_time))
+        self.customers_waiting_time += pick_up_time - self.assigned_customer.arriving_time
+        self.numOfPickedUp_customer += 1
     
     def re_assign_customer(self, cur_time, target_c):
         if self.state == ST_IDLE :
             if self.arrived_n != target_c.sn:
                 # Idle -> Approaching
                 x = [cur_time, self.On_IdleToApproaching, target_c]
+#                 self.On_IdleToApproaching(cur_time, target_c)
                 heappush(event_queue, x)
                 self.event_seq.append(x)
             else:
@@ -111,7 +114,27 @@ class PRT():
         assert self.state == ST_IDLE
         
         self.state = ST_APPROACHING
+        
+        
+        prev_c = self.assigned_customer 
+        
         self.assigned_customer = target_c
+        prev_PRT = target_c.assigned_PRT
+        
+        if prev_PRT and prev_PRT.assigned_customer == target_c:
+            # check last event
+            last_evt = prev_PRT.event_seq[-1]
+            if last_evt[1] == prev_PRT.On_ApproachingToApproaching:
+                # prev_PRT also reassigned, so we don't need to anything
+                pass
+            else:
+                assert last_evt[1] == prev_PRT.On_ApproachingToTransiting
+                # prev_PRT lost customer and don't have any assigned customer
+                last_evt[1] = None
+                x = (cur_time, prev_PRT.On_ApproachingToParking, target_c)
+                heappush(event_queue, x)
+                prev_PRT.event_seq.append(x)
+        
         target_c.assigned_PRT = self
         
         self.idle_times += self.last_planed_time - cur_time  
@@ -124,7 +147,7 @@ class PRT():
         heappush(event_queue, x)
         self.event_seq.append(x)
 
-        logger('%.1f:    On_I2A - %s, path: %s' % (cur_time, self, self.path_n))
+        logger('%.1f:    On_I2A - %s, assigned customer %s, path: %s' % (cur_time, self, self.assigned_customer, self.path_n))
     
     def On_IdleToTransiting(self, cur_time, target_c):
         assert self.state == ST_IDLE
@@ -151,10 +174,12 @@ class PRT():
         self.empty_travel_distance += travel_distance
         self.total_travel_distance += travel_distance
         
-#         calc_customers_waiting_time(self.assigned_customer, cur_time)
+        self.calc_customers_waiting_time(cur_time)
         
         self.transporting_customer = remove_A_customerInWaitingList(self.assigned_customer)
         assert self.transporting_customer
+        
+        
         
         self.assigned_customer = None
         self.arrived_n = self.transporting_customer.sn
@@ -261,7 +286,7 @@ class PRT():
         self.state = ST_IDLE
         self.arrived_n = self.transporting_customer.dn
         
-#         calc_customer_flow_time(self.transporting_customer, cur_time)
+        self.calc_customer_flow_time(cur_time)
         self.total_travel_distance += sum(e.distance for e in self.path_e)
         
         self.transporting_customer = None
@@ -276,6 +301,7 @@ class PRT():
         self.state = ST_IDLE
         self.arrived_n = self.path_n[-1]
         self.total_travel_distance += sum(e.distance for e in self.path_e)
+        self.path_n, self.path_e = None, None
         
         logger('%.1f:    On_P2I - %s' % (cur_time, self))
 
@@ -345,18 +371,19 @@ def test():
  
 #     dispatcher = Algorithms.NN0
 #     dispatcher = Algorithms.NN1
-#     dispatcher = Algorithms.NN2
+    dispatcher = Algorithms.NN2
 #     dispatcher = Algorithms.NN3
 #     dispatcher = Algorithms.NN4
-    dispatcher = Algorithms.NN5
+#     dispatcher = Algorithms.NN5
      
     init_dynamics(Nodes, PRTs, Customers, dispatcher)
      
-    now, time_end = 0.0, max(c.arriving_time for c in Customers) + 100
+    now, time_end = 0.0, max(c.arriving_time for c in Customers) + 1000000
     while now < time_end:
         process_events(now)
         now += 1
-        sleep(0.01)
+#         sleep(0.01)
+        sleep(0.0001)
 
 # -----------------------------------------------------------------
 def gen_network(ns_pos, ns_connection):
