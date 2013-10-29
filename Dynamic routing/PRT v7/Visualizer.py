@@ -13,7 +13,6 @@ NODE_DIAMETER = 40
 CUSTOMER_RADIUS = NODE_DIAMETER / 3
 PRT_SIZE = 20
 
-PRT_SPEED = 20
 waiting_customers = []
 event_queue = []
 
@@ -22,6 +21,7 @@ TITLE = 'PRT Simulator'
 class MainFrame(wx.Frame):
     def __init__(self):
         wx.Frame.__init__(self, None, -1, TITLE, size=(1024, 768), pos=(20, 20))
+#         wx.Frame.__init__(self, None, -1, TITLE, size=(1920, 960), pos=(0, 0))
         # Every resources are accessible
         self.Nodes, self.Edges = Dynamics.gen_network(*Input_gen.network0())
         self.Customers = Dynamics.gen_customer(self.Nodes)
@@ -91,7 +91,8 @@ class MainFrame(wx.Frame):
     
     def OnTimer(self, evt):
         self.now += CLOCK_INCREMENT / 1000
-        Dynamics.process_events(self.now)
+        if not Dynamics.process_events(self.now):
+            self.OnPause(None)
         
         # Update positions of PRTs
         for prt in self.PRTs:
@@ -139,7 +140,7 @@ class MainFrame(wx.Frame):
 
     def OnPause(self, _):
         self.timer.Stop()
-        
+        self.mp.update_stat()
         
     def OnSpeedUp(self, _):
         global CLOCK_INCREMENT
@@ -170,6 +171,9 @@ class MainFrame(wx.Frame):
         
         tb.Realize()
 
+
+measure_name = ['T.TravelDist', 'T.TravelDist', 'T.E.TravelDist', 'A.WaitTime', 'A.FlowTime']
+
 class MeasurePanel(wx.ListCtrl):
     def __init__(self, parent):
         wx.ListCtrl.__init__(self, parent, -1, style=wx.LC_REPORT | wx.SUNKEN_BORDER)
@@ -179,21 +183,9 @@ class MeasurePanel(wx.ListCtrl):
         self.SetColumnWidth(0, 80)
         self.SetColumnWidth(1, 110)
         
-        # Total Travel Distance
-        self.InsertStringItem(0, 'TTD')
-        self.SetStringItem(0, 1, '%.1f' % 0.0)
-        
-        # Empty Travel Distance
-        self.InsertStringItem(1, 'ETD')
-        self.SetStringItem(1, 1, '%.1f' % 0.0)
-        
-        # Average Waiting Time
-        self.InsertStringItem(2, 'AWT')
-        self.SetStringItem(2, 1, '%.1f' % 0.0)
-         
-        # Average Flow Time
-        self.InsertStringItem(3, 'AFT')
-        self.SetStringItem(3, 1, '%.1f' % 0.0)
+        for i, mn in enumerate(measure_name):
+            self.InsertStringItem(i, 'T.TravelDist')
+            self.SetStringItem(i, 1, '%.1f' % 0.0)
         
         self.PRTs = self.Parent.Parent.Parent.PRTs
                 
@@ -288,6 +280,8 @@ class ViewPanel(DragZoomPanel):
         old_tr = gc.GetTransform()
         
         for n in self.Parent.Parent.Parent.Parent.Nodes:
+            if not n.isStation:
+                continue
             gc.Translate(n.px, n.py)
             
             gc.SetPen(wx.Pen(wx.Colour(0, 0, 0), 1))
@@ -295,7 +289,8 @@ class ViewPanel(DragZoomPanel):
             gc.SetFont(wx.Font(10, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
             
             gc.DrawEllipse(-NODE_DIAMETER / 2, -NODE_DIAMETER / 2, NODE_DIAMETER, NODE_DIAMETER)
-            gc.DrawText('N%d' % n.id, -7, -7)
+            if n.isStation:
+                gc.DrawText('N%d' % n.id, -7, -7)
             gc.SetTransform(old_tr)
             
         for i, waiting_c_in_node in enumerate(self.Parent.Parent.Parent.Parent.waiting_customers_in_node):
@@ -305,30 +300,84 @@ class ViewPanel(DragZoomPanel):
                 gc.DrawText(waiting_c_str, self.Parent.Parent.Parent.Parent.Nodes[i].px + NODE_DIAMETER / 2, self.Parent.Parent.Parent.Parent.Nodes[i].py - NODE_DIAMETER / 2)
         
         for e in self.Parent.Parent.Parent.Parent.Edges:
-            ax = e._to.px - e._from.px
-            ay = e._to.py - e._from.py
+            prev_n, next_n = e._from, e._to
             
-            la = sqrt(ax * ax + ay * ay)
-            ux = ax / la
-            uy = ay / la
-             
-            sx = e._from.px + ux * NODE_DIAMETER / 2
-            sy = e._from.py + uy * NODE_DIAMETER / 2
-            ex = e._to.px - ux * NODE_DIAMETER / 2
-            ey = e._to.py - uy * NODE_DIAMETER / 2
+            if prev_n.isStation and not next_n.isStation:
+                ax = next_n.px - prev_n.px
+                ay = next_n.py - prev_n.py
+                
+                la = sqrt(ax * ax + ay * ay)
+                ux = ax / la
+                uy = ay / la
+                 
+                sx = prev_n.px + ux * NODE_DIAMETER / 2
+                sy = prev_n.py + uy * NODE_DIAMETER / 2
+                ex = next_n.px
+                ey = next_n.py
+                            
+                gc.DrawLines([(sx, sy), (ex, ey)])
+                gc.SetFont(wx.Font(5, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+                gc.DrawText('%d' % int(round(e.distance, 1)), (prev_n.px + next_n.px) / 2, (prev_n.py + next_n.py) / 2)
+                
+            elif not prev_n.isStation and not next_n.isStation:
+                sx = prev_n.px
+                sy = prev_n.py
+                ex = next_n.px
+                ey = next_n.py
+                gc.DrawLines([(sx, sy), (ex, ey)])
+                gc.SetFont(wx.Font(5, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+                gc.DrawText('%d' % int(round(e.distance, 1)), (prev_n.px + next_n.px) / 2, (prev_n.py + next_n.py) / 2)
+                    
+            elif not prev_n.isStation and next_n.isStation:
+                ax = next_n.px - prev_n.px
+                ay = next_n.py - prev_n.py
+                
+                la = sqrt(ax * ax + ay * ay)
+                ux = ax / la
+                uy = ay / la
+                
+                sx = prev_n.px
+                sy = prev_n.py
+                ex = next_n.px - ux * NODE_DIAMETER / 2
+                ey = next_n.py - uy * NODE_DIAMETER / 2
+                
+                px = -uy
+                py = ux
+                            
+                gc.DrawLines([(sx, sy), (ex, ey)])
+                gc.DrawLines([(ex, ey), (ex - int((ux * 5)) + int(px * 3), ey
+                            - int(uy * 5) + int(py * 3))])
+                
+                gc.DrawLines([(ex, ey), (ex - int(ux * 5) - int(px * 3), ey
+                            - int(uy * 5) - int(py * 3))])
+                gc.SetFont(wx.Font(5, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+                gc.DrawText('%d' % int(round(e.distance, 1)), (prev_n.px + next_n.px) / 2, (prev_n.py + next_n.py) / 2)
             
-            px = -uy
-            py = ux
-                        
-            gc.DrawLines([(sx, sy), (ex, ey)])
-            gc.DrawLines([(ex, ey), (ex - int((ux * 5)) + int(px * 3), ey
-                        - int(uy * 5) + int(py * 3))])
-            
-            gc.DrawLines([(ex, ey), (ex - int(ux * 5) - int(px * 3), ey
-                        - int(uy * 5) - int(py * 3))])            
-            
-            gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-            gc.DrawText('%d' % int(round(e.distance, 1)), (e._from.px + e._to.px) / 2, (e._from.py + e._to.py) / 2)
+            if prev_n.isStation and next_n.isStation: 
+                ax = next_n.px - prev_n.px
+                ay = next_n.py - prev_n.py
+                
+                la = sqrt(ax * ax + ay * ay)
+                ux = ax / la
+                uy = ay / la
+                 
+                sx = prev_n.px + ux * NODE_DIAMETER / 2
+                sy = prev_n.py + uy * NODE_DIAMETER / 2
+                ex = next_n.px - ux * NODE_DIAMETER / 2
+                ey = next_n.py - uy * NODE_DIAMETER / 2
+                
+                px = -uy
+                py = ux
+                            
+                gc.DrawLines([(sx, sy), (ex, ey)])
+                gc.DrawLines([(ex, ey), (ex - int((ux * 5)) + int(px * 3), ey
+                            - int(uy * 5) + int(py * 3))])
+                
+                gc.DrawLines([(ex, ey), (ex - int(ux * 5) - int(px * 3), ey
+                            - int(uy * 5) - int(py * 3))])           
+                
+                gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+                gc.DrawText('%d' % int(round(e.distance, 1)), (prev_n.px + next_n.px) / 2, (prev_n.py + next_n.py) / 2)
             
         for v in self.Parent.Parent.Parent.Parent.PRTs:
             gc.Translate(v.px, v.py)

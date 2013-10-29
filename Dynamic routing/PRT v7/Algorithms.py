@@ -14,39 +14,44 @@ def reassignment(event_time, target_PRTs, target_customers, Nodes):
         chosen_prt = target_PRTs[prt_id]
         target_c = target_customers[customer_id]
         chosen_prt.re_assign_customer(event_time, target_c)
-    on_notify_assignmentment_point(None)
 
 def NN0(event_time, PRTs, waiting_customers, Nodes):
+    on_notify_assignmentment_point(None)
     target_PRTs = [prt for prt in PRTs if prt.state == 0]
     if not target_PRTs: return None
     target_customers = [customer for customer in waiting_customers if not customer.assigned_PRT]
     reassignment(event_time, target_PRTs, target_customers, Nodes)
 
 def NN1(event_time, PRTs, waiting_customers, Nodes):
+    on_notify_assignmentment_point(None)
     target_PRTs = [prt for prt in PRTs if prt.state == 0 or prt.state == 2 ]
     if not target_PRTs: return None
     target_customers = [customer for customer in waiting_customers if not customer.assigned_PRT]
     reassignment(event_time, target_PRTs, target_customers, Nodes)
 
 def NN2(event_time, PRTs, waiting_customers, Nodes):
+    on_notify_assignmentment_point(None)
     target_PRTs = [prt for prt in PRTs if prt.state == 0 or prt.state == 1 ]
     if not target_PRTs: return None
     target_customers = waiting_customers
     reassignment(event_time, target_PRTs, target_customers, Nodes)
 
 def NN3(event_time, PRTs, waiting_customers, Nodes):
+    on_notify_assignmentment_point(None)
     target_PRTs = [prt for prt in PRTs if prt.state != 2 ]
     if not target_PRTs: return None
     target_customers = waiting_customers
     reassignment(event_time, target_PRTs, target_customers, Nodes)
 
 def NN4(event_time, PRTs, waiting_customers, Nodes):
+    on_notify_assignmentment_point(None)
     target_PRTs = [prt for prt in PRTs if prt.state != 3 ]
     if not target_PRTs: return None
     target_customers = waiting_customers
     reassignment(event_time, target_PRTs, target_customers, Nodes)            
 
 def NN5(event_time, PRTs, waiting_customers, Nodes):
+    on_notify_assignmentment_point(None)
     target_PRTs = PRTs
     if not target_PRTs: return None
     target_customers = waiting_customers
@@ -137,7 +142,7 @@ def find_SP(sn, en, Nodes):
             dist = n.min_d + e.distance
             if consi_n.min_d >= dist:
                 consi_n.min_d = dist
-            if not consi_n.visited and not [x for x in todo if consi_n.id == x.id]:
+            if not consi_n.visited and not [x for x in todo if consi_n.id == x.id] and consi_n != en:
                 todo.append(consi_n)
     path_n = []
     path_e = []

@@ -10,8 +10,9 @@ on_notify_customer_arrival = lambda x: None
 class Node():
     _id = 0
     BIG_NUM = 1000000
-    def __init__(self, px, py):
+    def __init__(self, px, py, isStation):
         self.id = Node._id
+        self.isStation = isStation
         Node._id += 1
         self.px, self.py = px, py
         
@@ -128,10 +129,14 @@ class PRT():
                 # prev_PRT also reassigned, so we don't need to anything
                 pass
             else:
+#                 if last_evt[1] != prev_PRT.On_ApproachingToTransiting:
+#                     print 1
+#                 
+#                 
                 assert last_evt[1] == prev_PRT.On_ApproachingToTransiting
                 # prev_PRT lost customer and don't have any assigned customer
                 last_evt[1] = None
-                x = (cur_time, prev_PRT.On_ApproachingToParking, target_c)
+                x = [cur_time, prev_PRT.On_ApproachingToParking, target_c]
                 heappush(event_queue, x)
                 prev_PRT.event_seq.append(x)
         
@@ -163,7 +168,7 @@ class PRT():
         x = [evt_change_point, self.On_TransitingToIdle, None]
         heappush(event_queue, x)
         self.event_seq.append(x)
-        logger('%.1f:    On_I2T - %s, picking up customer - %s' % (cur_time, self, self.transporting_customer))    
+        logger('%.1f:    On_I2T - %s, picking up customer-%s, path: %s' % (cur_time, self, self.transporting_customer, self.path_n))    
     
     def On_ApproachingToTransiting(self, cur_time, target_c):
         assert self.state == ST_APPROACHING
@@ -210,7 +215,7 @@ class PRT():
                 assert last_evt[1] == prev_PRT.On_ApproachingToTransiting
                 # prev_PRT lost customer and don't have any assigned customer
                 last_evt[1] = None
-                x = (cur_time, prev_PRT.On_ApproachingToParking, target_c)
+                x = [cur_time, prev_PRT.On_ApproachingToParking, target_c]
                 heappush(event_queue, x)
                 prev_PRT.event_seq.append(x)
         
@@ -219,7 +224,9 @@ class PRT():
         # make already scheduled event A2T
         assert self.event_seq[-1][1] == self.On_ApproachingToApproaching
         A2T_event = self.event_seq[-2]
-        assert A2T_event[1] == self.On_ApproachingToTransiting and A2T_event[2] != target_c 
+#         if A2T_event[1] != self.On_ApproachingToTransiting:
+#             print 1
+        assert (A2T_event[1] == self.On_ApproachingToTransiting or A2T_event[1] == self.On_ApproachingToParking) and A2T_event[2] != target_c 
         A2T_event[1] = None
         
         next_n = None
@@ -322,7 +329,7 @@ class Customer():
 
 
 # Prepare dynamics run
-PRT_SPEED = 50
+PRT_SPEED = 80
 waiting_customers = []
 event_queue = []
 
@@ -357,6 +364,9 @@ def process_events(now):
 #         print even_time, hdr, args
         if hdlr != None:
             hdlr(even_time, args)
+    if not event_queue:
+        return False
+    return True
 
 # -----------------------------------------------------------------
 
@@ -371,23 +381,22 @@ def test():
  
 #     dispatcher = Algorithms.NN0
 #     dispatcher = Algorithms.NN1
-    dispatcher = Algorithms.NN2
+#     dispatcher = Algorithms.NN2
 #     dispatcher = Algorithms.NN3
 #     dispatcher = Algorithms.NN4
-#     dispatcher = Algorithms.NN5
+    dispatcher = Algorithms.NN5
      
     init_dynamics(Nodes, PRTs, Customers, dispatcher)
      
-    now, time_end = 0.0, max(c.arriving_time for c in Customers) + 1000000
-    while now < time_end:
-        process_events(now)
+    now = 0.0
+    while process_events(now):
         now += 1
 #         sleep(0.01)
         sleep(0.0001)
 
 # -----------------------------------------------------------------
 def gen_network(ns_pos, ns_connection):
-    Nodes = [Node(px, py) for px, py in ns_pos]
+    Nodes = [Node(px, py, isStation) for px, py, isStation in ns_pos]
     Edges = []
     for pn, nn in ns_connection:
         Edges.append(Edge(Nodes[pn], Nodes[nn]))
