@@ -184,7 +184,7 @@ class MeasurePanel(wx.ListCtrl):
         self.SetColumnWidth(1, 110)
         
         for i, mn in enumerate(measure_name):
-            self.InsertStringItem(i, 'T.TravelDist')
+            self.InsertStringItem(i, mn)
             self.SetStringItem(i, 1, '%.1f' % 0.0)
         
         self.PRTs = self.Parent.Parent.Parent.PRTs

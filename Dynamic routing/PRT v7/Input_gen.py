@@ -44,7 +44,15 @@ def gen_customer_arrival_poisson(num_request, Last_arriving_time, ns_pos):
     return Requests
 
 def PRT_pos_ex0():
-    return [6, 0, 8, 7]
+    return [6, 0, 8, 7,
+            1, 0, 9, 7,
+            2, 0, 8, 9,
+            3, 0, 9, 7,
+            4, 0, 8, 9,
+            6, 0, 9, 9,
+            7, 0, 8, 7,
+            8, 10, 8, 9,
+            ]
 
 def make_txt_ofCustomerArrival(Requests):
     i_txt = open('Info. Arrivals of customers.txt', 'w')
@@ -54,6 +62,6 @@ def make_txt_ofCustomerArrival(Requests):
 
 if __name__ == '__main__':
     ns_pos, ns_connection = network0()
-    num_request, Last_arriving_time = 100, 300.0
+    num_request, Last_arriving_time = 1000, 300.0
     make_txt_ofCustomerArrival(gen_customer_arrival_poisson(num_request, Last_arriving_time, ns_pos))
     print 'customer arrivals are generated'
