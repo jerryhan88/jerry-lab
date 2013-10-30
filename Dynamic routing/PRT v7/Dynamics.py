@@ -361,7 +361,6 @@ def init_dynamics(_Nodes, _PRTs, _Customers, _dispatcher):
 def process_events(now):
     while event_queue and event_queue[0][0] <= now:
         even_time, hdlr, args = heappop(event_queue)
-#         print even_time, hdr, args
         if hdlr != None:
             hdlr(even_time, args)
     if not event_queue:
