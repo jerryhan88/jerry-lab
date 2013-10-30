@@ -6,6 +6,25 @@ from heapq import heappush, heappop
 import Algorithms
 
 #---------------------------------------------------------------------
+# For calculating measure
+Total_empty_travel_distance = 0.0
+NumOfPickedUpCustomer = 0
+
+Total_travel_distance = 0.0
+Total_customers_flow_time = 0.0
+NumOfServicedCustomer = 0
+
+Total_customers_waiting_time = 0.0
+NumOfWaitingCustomer = 0
+ChaningPointOfNWC = 0.0
+MaxCustomerWaitingTime = 0.0
+
+IdleState_times = 0.0
+ApproachingState_times = 0.0
+TransitingState_times = 0.0
+ParkingState_times = 0.0
+
+#---------------------------------------------------------------------
 # Classes
 
 class Node():
@@ -85,10 +104,17 @@ class PRT():
                 # Idle -> Approaching
                 self.On_IdleToApproaching(cur_time, target_c)
                 self.event_seq.append(self.On_IdleToApproaching)
+            else:
+                # self.arrived_n == target_c.sn
+                assert False 
     
     def On_IdleToApproaching(self, cur_time, target_c):
         logger('%.1f:    On_I2A - %s, assigned customer %s, path: %s' % (cur_time, self, self.assigned_customer, self.path_n))
         assert self.state == ST_IDLE
+        
+        # Measure update
+        global IdleState_times
+        IdleState_times += cur_time - self.last_planed_time
         
         # Modify event already scheduled
         prev_PRT = target_c.assigned_PRT
@@ -100,9 +126,6 @@ class PRT():
         self.assigned_customer = target_c
         target_c.assigned_PRT = self
         
-        # Measure update
-        IdleState_times += self.last_planed_time - cur_time
-        
         # Set things for next state
         self.path_n, self.path_e = Algorithms.find_SP(self.arrived_n, self.assigned_customer.sn, Nodes)
         self.last_planed_time = cur_time
@@ -111,7 +134,54 @@ class PRT():
         heappush(event_queue, x)
         self.event_seq.append(x)
         
-        logger('%.1f:        path: %s' % (self.path_n))
+        logger('            path: %s' % (self.path_n))
+        
+    def On_ApproachingToTransiting(self, cur_time, target_c):
+        logger('%.1f:    On_A2T - %s, picking up customer - %s' % (cur_time, self, target_c))
+        assert self.state == ST_APPROACHING and self.assigned_customer == target_c
+        
+        # Measure update
+        global ApproachingState_times, Total_empty_travel_distance, NumOfPickedUpCustomer, Total_travel_distance
+        time_duration = cur_time - self.last_planed_time
+        ApproachingState_times += time_duration 
+        travel_distance =  time_duration * PRT_SPEED
+        Total_empty_travel_distance = travel_distance 
+        NumOfPickedUpCustomer += 1
+        Total_travel_distance = travel_distance
+        
+        # State update
+        self.state = ST_TRANSITING
+        self.transporting_customer = remove_A_customerInWaitingList(self.assigned_customer)
+        assert self.transporting_customer
+        self.assigned_customer = None
+        self.arrived_n = self.transporting_customer.sn
+        
+        # Set things for next state
+        self.path_n, self.path_e = Algorithms.find_SP(self.transporting_customer.sn, self.transporting_customer.dn, Nodes)
+        self.last_planed_time = cur_time
+        evt_change_point = cur_time + sum([e.distance for e in self.path_e]) / PRT_SPEED
+        x = [evt_change_point, self.On_TransitingToIdle, target_c]
+        heappush(event_queue, x)
+        self.event_seq.append(x)
+        
+        logger('            path: %s' % (self.path_n))
+
+def On_TransitingToIdle(self, cur_time, target_c):
+        logger('%.1f:    On_T2I - %s' % (cur_time, self))    
+        assert self.state == ST_TRANSITING
+        
+#         self.state = ST_IDLE
+#         self.arrived_n = self.transporting_customer.dn
+#         
+#         self.calc_customer_flow_time(cur_time)
+#         self.total_travel_distance += sum(e.distance for e in self.path_e)
+#         
+#         self.transporting_customer = None
+#         self.path_n, self.path_e = None, None
+#         dispatcher(cur_time, PRTs, waiting_customers, Nodes)
+#                 
+
+
 
 #---------------------------------------------------------------------
 # Generate things such as Network, PRT, Customer
@@ -188,24 +258,11 @@ def process_events(now):
         return False
     return True
 
-#---------------------------------------------------------------------
-# For calculating measure
-Total_empty_travel_distance = 0.0
-NumOfPickedUpCustomer = 0
-
-Total_travel_distance = 0.0
-Total_customers_flow_time = 0.0
-NumOfServicedCustomer = 0
-
-Total_customers_waiting_time = 0.0
-NumOfWaitingCustomer = 0
-ChaningPointOfNWC = 0.0
-MaxCustomerWaitingTime = 0.0
-
-IdleState_times = 0.0
-ApproachingState_times = 0.0
-TransitingState_times = 0.0
-ParkingState_times = 0.0
+def remove_A_customerInWaitingList(target_customer):
+    # Remove servicing customer in waiting_customer
+    for i, customer in enumerate(waiting_customers):
+        if customer == target_customer:
+            return waiting_customers.pop(i)
 
 #---------------------------------------------------------------------
 def test():
@@ -231,6 +288,10 @@ def test():
     while process_events(now):
         now += 1
         sleep(0.0001)
+    
+    print IdleState_times
+    print ApproachingState_times
+    print ParkingState_times
     
 if __name__ == '__main__':
     test()

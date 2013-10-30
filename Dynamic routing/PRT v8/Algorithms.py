@@ -2,8 +2,11 @@ from __future__ import division
 from math import sqrt
 from munkres import Munkres
 
-Longest_dis = 0
+
 on_notify_assignmentment_point = lambda x: None
+
+# For using Hungarian method, give long distance(cost) to augmented cell
+Longest_dis = 100000000
 
 def get_all_dispatchers():
     return {'NN0': NN0, 'NN1': NN1, 'NN2': NN2, 'NN3': NN3, 'NN4': NN4, 'NN5': NN5}
@@ -62,77 +65,74 @@ def NN5(event_time, PRTs, waiting_customers, Nodes):
     target_customers = waiting_customers
     reassignment(event_time, target_PRTs, target_customers, Nodes)
 
-def find_opt_matching(cur_time, target_PRTs, customers, Nodes):
-    NodeByNode_DMatrix = create_NodeByNode_DMatrix(Nodes)
-    PRTbyCustomer_matrix = create_PRTbyCustomer_matrix(cur_time, target_PRTs, customers, NodeByNode_DMatrix)
-
+def find_opt_matching(cur_time, target_PRTs, Customers, Nodes):
+    from Dynamics import PRT_SPEED, ST_IDLE, ST_APPROACHING, ST_TRANSITING, ST_PARKING
+    # Create_PRTbyCustomer_matrix
+    row_size, col_size = len(target_PRTs), len(Customers)
+    max_M_size = max(row_size, col_size)
+    PRTbyCustomer_matrix = [[Longest_dis / PRT_SPEED] * max_M_size for _ in range(max_M_size)]
+    
+    for prt_id, prt in enumerate(target_PRTs):
+        travel_distance = (cur_time - prt.last_planed_time) * PRT_SPEED
+        for i, cus in enumerate(Customers):
+            if prt.state == ST_IDLE:
+                # Calculate remain distance
+                remain_dis = 0
+                
+                # Calculate distance to location a customer is waiting
+                _, path_e = find_SP(prt.arrived_n, cus.sn, Nodes)
+                
+            elif prt.state == ST_APPROACHING:
+                # Calculate remain distance to next node
+                _, next_n, xth = find_PRT_position_on_PATH(prt.path_e, travel_distance)
+                remain_dis = sum([e.distance for e in prt.path_e[:xth]]) - travel_distance
+                
+                # Calculate distance to location a customer is waiting
+                _, path_e = find_SP(next_n, cus.sn, Nodes)
+                
+            elif prt.state == ST_TRANSITING:
+                # Calculate remain distance to destination of the boarding customer
+                remain_dis = sum([e.distance for e in prt.path_e]) - travel_distance
+                
+                # Calculate distance to location a customer is waiting
+                _, path_e = find_SP(prt.path_n[-1], cus.sn, Nodes)
+                
+            elif prt.state == ST_PARKING:
+                # Calculate remain distance to next node
+                _, next_n, xth = find_PRT_position_on_PATH(prt.path_e, travel_distance)
+                assert next_n == prt.path_n[-1]
+                remain_dis = sum([e.distance for e in prt.path_e[:xth]]) - travel_distance
+                 
+                # Calculate distance to location a customer is waiting
+                _, path_e = find_SP(next_n, cus.sn, Nodes)
+                
+            else:
+                assert False
+            
+            PRTbyCustomer_matrix[prt_id][i] = (sum([e.distance for e in path_e]) + remain_dis) / PRT_SPEED
+    
+    # Apply Hungarian method        
     hungarian_algo = Munkres()
     assignment_results = []
     for prt_id, customer_id in hungarian_algo.compute(PRTbyCustomer_matrix):
-        if prt_id >= len(target_PRTs) or customer_id >= len(customers):
+        if prt_id >= len(target_PRTs) or customer_id >= len(Customers):
             continue 
         # (prt, customer)
         assignment_results.append((prt_id, customer_id))
     return assignment_results
 
-def create_PRTbyCustomer_matrix(cur_time, PRTs, customers, NodeByNode_DMatrix):
-    from Dynamics import PRT_SPEED
-    global Longest_dis
-    row_size, col_size = len(PRTs), len(customers)
-    max_M_size = max(row_size, col_size)
-    
-    PRTbyCustomer_matrix = [[Longest_dis / PRT_SPEED] * max_M_size for _ in range(max_M_size)]
-    
-    for prt_id, prt in enumerate(PRTs):
-        for i, cus in enumerate(customers):
-            if prt.state == 0:
-                PRTbyCustomer_matrix[prt_id][i] = NodeByNode_DMatrix[prt.arrived_n.id][cus.sn.id] / PRT_SPEED
-            elif prt.state == 1:
-                # find next node
-                next_n = None
-                path_travel_distance = (cur_time - prt.last_planed_time) * PRT_SPEED
-                sum_edges_distance = 0
-                edges_counter = 0
-                for e in prt.path_e:
-                    sum_edges_distance += e.distance
-                    edges_counter += 1 
-                    if sum_edges_distance >= path_travel_distance:
-                        next_n = e._to
-                        break
-                remain_dis = sum([e.distance for e in prt.path_e[:edges_counter]]) - path_travel_distance
-                PRTbyCustomer_matrix[prt_id][i] = (NodeByNode_DMatrix[next_n.id][cus.sn.id] + remain_dis) / PRT_SPEED 
-            elif prt.state == 2:
-                path_travel_distance = (cur_time - prt.last_planed_time) * PRT_SPEED                
-                distance = sum([e.distance for e in prt.path_e]) - path_travel_distance 
-                PRTbyCustomer_matrix[prt_id][i] = (NodeByNode_DMatrix[prt.path_n[-1].id][cus.sn.id] + distance) / PRT_SPEED
-            else:
-                # if prt.state == 3  there is only one node in path
-                assert prt.state == 3 and len(prt.path_n) == 1
-                next_n = prt.path_n[-1]
-                dx = next_n.px - prt.px  
-                dy = next_n.py - prt.py
-                remain_dis = sqrt(dx * dx + dy * dy) 
-                PRTbyCustomer_matrix[prt_id][i] = (NodeByNode_DMatrix[next_n.id][cus.sn.id] + remain_dis) / PRT_SPEED
-    return PRTbyCustomer_matrix
-
-def create_NodeByNode_DMatrix(Nodes):
-    stationNode = [n for n in Nodes if n.isStation]
-    NodeByNode_DMatrix = []
-    for i in stationNode:
-        from_i = []
-        for j in stationNode:
-            _ , path_e = find_SP(i, j, Nodes)
-            distance = sum([e.distance for e in path_e])
-            from_i.append(distance)
-            # find longest_distance in network
-            global Longest_dis
-            if Longest_dis < distance: Longest_dis = distance   
-        NodeByNode_DMatrix.append(from_i)
-    return NodeByNode_DMatrix
+def find_PRT_position_on_PATH(path_e, travel_distance):
+    sum_edges_distance = 0
+    xth = 0
+    for e in path_e:
+        sum_edges_distance += e.distance
+        xth += 1 
+        if sum_edges_distance >= travel_distance:
+            return e._from, e._to, xth
+    else:
+        assert False 
 
 def find_SP(sn, en, Nodes):
-    if sn.id == 6:
-        print 1
     # Initialize node state for adapting Dijkstra algorithm
     for n in Nodes:
         n.init_node()
@@ -142,15 +142,17 @@ def find_SP(sn, en, Nodes):
     todo = [sn]
     while todo:
         n = todo.pop()
+        n.visitiedCount += 1
+        n.visited = True if n.visitiedCount == len(n.edges_inward) else False
+                
         for e in n.edges_outward:
             consi_n = e._to
             dist = n.min_d + e.distance
             if consi_n.min_d >= dist:
                 consi_n.min_d = dist
-#                 consi_n.visitiedCount += 1
-#                 consi_n.visited = True if n.visitiedCount == len(n.edges_inward) else False
-            if not consi_n.visited:
+            if n.visitiedCount == 1:
                 todo.append(consi_n)
+        
         if en.visited:
             break
                 
@@ -170,7 +172,6 @@ def find_SP(sn, en, Nodes):
     path_n.reverse()
     path_e.reverse()
 
-    print sn, en, path_n 
     assert sn == path_n[0]
     assert en == path_n[-1] 
     
