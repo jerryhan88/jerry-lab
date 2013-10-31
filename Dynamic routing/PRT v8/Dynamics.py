@@ -19,10 +19,10 @@ NumOfWaitingCustomer = 0
 ChaningPointOfNWC = 0.0
 MaxCustomerWaitingTime = 0.0
 
-IdleState_times = 0.0
-ApproachingState_times = 0.0
-TransitingState_times = 0.0
-ParkingState_times = 0.0
+IdleState_time = 0.0
+ApproachingState_time = 0.0
+TransitingState_time = 0.0
+ParkingState_time = 0.0
 
 #---------------------------------------------------------------------
 # Classes
@@ -88,100 +88,316 @@ class PRT():
         self.px, self.py = self.arrived_n.px, self.arrived_n.py
         
         self.state = ST_IDLE
+        self.stateChangingPoint = 0.0
         self.assigned_customer = None
         self.transporting_customer = None
         self.event_seq = []
         
-        self.last_planed_time = 0
+        self.last_planed_time = 0.0
         self.path_n, self.path_e = [], []
     
     def __repr__(self):
-        return 'PRT%d-Now N%d' % (self.id, self.arrived_n.id)
+        return 'PRT%d(S%d-N%d)' % (self.id, self.state, self.arrived_n.id)
+    
+    def find_target_event_inEventSeq(self, cur_time, target_prt, event_name, target_c):
+        for evt in target_prt.event_seq:
+            if evt[1] == event_name and evt[2] == target_c:
+                assert evt[0] >= cur_time
+                return evt  
+        else:
+            assert False
+    
+    def modify_passed_assignedPRT_event(self, cur_time, prev_PRT, target_c):
+        # Modify event of tager_c's previous assigned PRT which is already scheduled
+        if not prev_PRT:
+            return None
+        else:
+            logger('                    There is the prev PRT for the target customer: %s' % (prev_PRT))
+            if prev_PRT.assigned_customer == target_c:
+                # Change event of On_ApproachingToTransiting on prev_PRT's event_seq
+                targetEvent = self.find_target_event_inEventSeq(cur_time, prev_PRT, prev_PRT.On_ApproachingToTransiting, target_c)
+                targetEvent[1] = None
+                x = [cur_time, prev_PRT.On_ApproachingToParking, target_c]
+                prev_PRT.event_seq.append(x)
+                prev_PRT.On_ApproachingToParking(cur_time, target_c)
+            else:
+                assert prev_PRT.assigned_customer != target_c
     
     def re_assign_customer(self, cur_time, target_c):
         if self.state == ST_IDLE :
             if self.arrived_n != target_c.sn:
                 # Idle -> Approaching
+                x = [cur_time, self.On_IdleToApproaching, target_c]
+                self.event_seq.append(x)
                 self.On_IdleToApproaching(cur_time, target_c)
-                self.event_seq.append(self.On_IdleToApproaching)
             else:
                 # self.arrived_n == target_c.sn
-                assert False 
+                # Idle -> Transiting
+                x = [cur_time, self.On_IdleToTransiting, target_c]
+                self.event_seq.append(x)
+                self.On_IdleToTransiting(cur_time, target_c)
+        elif self.state == ST_APPROACHING:
+            if self.assigned_customer != target_c:
+                # Approaching -> Approaching
+                # Even though this PRT approaching assigned customer
+                # the PRT assigned to target_c has been changed
+                x = [cur_time, self.On_ApproachingToApproaching, target_c]
+                self.event_seq.append(x)
+                self.On_ApproachingToApproaching(cur_time, target_c)
+            else:
+                # There is no assigned customer change
+                assert self.assigned_customer == target_c
+        elif self.state == ST_PARKING:
+            if self.event_seq[-1][1] == self.On_ParkingToIdle and self.event_seq[-2][1] == self.On_ApproachingToParking:
+                # This PRT temporally becomes parking state, but it is going to be approaching soon
+                # This situation can be happened, because an assignment is processed by step by step
+                assert cur_time == self.event_seq[-2][0]
+                x = [cur_time, self.On_ApproachingToApproaching, target_c]
+                self.event_seq.append(x)
+                self.On_ApproachingToApproaching(cur_time, target_c)
+            else:
+                assert False
+        else:
+            print self.state
+            assert False
     
     def On_IdleToApproaching(self, cur_time, target_c):
-        logger('%.1f:    On_I2A - %s, assigned customer %s, path: %s' % (cur_time, self, self.assigned_customer, self.path_n))
+        logger('%.1f:    On_I2A - %s, assigned customer %s' % (cur_time, self, target_c))
         assert self.state == ST_IDLE
+        prev_PRT = target_c.assigned_PRT
         
         # Measure update
-        global IdleState_times
-        IdleState_times += cur_time - self.last_planed_time
-        
-        # Modify event already scheduled
-        prev_PRT = target_c.assigned_PRT
-        if prev_PRT and prev_PRT.assigned_customer == target_c:
-            assert False
+        global IdleState_time
+        IdleState_time += cur_time - self.stateChangingPoint
         
         # State update
         self.state = ST_APPROACHING
+        self.stateChangingPoint = cur_time
         self.assigned_customer = target_c
         target_c.assigned_PRT = self
         
         # Set things for next state
         self.path_n, self.path_e = Algorithms.find_SP(self.arrived_n, self.assigned_customer.sn, Nodes)
         self.last_planed_time = cur_time
-        evt_change_point = cur_time + sum([e.distance for e in self.path_e]) / PRT_SPEED
+        evt_change_point = cur_time + sum(e.distance for e in self.path_e) / PRT_SPEED
         x = [evt_change_point, self.On_ApproachingToTransiting, target_c]
-        heappush(event_queue, x)
         self.event_seq.append(x)
+        heappush(event_queue, x)
+
+        logger('            path: %s' % (self.path_n))
+        
+        # Modify event of tager_c's previous assigned PRT which is already scheduled
+        self.modify_passed_assignedPRT_event(cur_time, prev_PRT, target_c)
+
+    def On_IdleToTransiting(self, cur_time, target_c):
+        logger('%.1f:    On_I2T - %s, picking up customer-%s' % (cur_time, self, target_c))
+        assert self.state == ST_IDLE
+        prev_PRT = target_c.assigned_PRT
+        
+        # Measure update
+        global IdleState_time, Total_empty_travel_distance, Total_travel_distance, Total_customers_flow_time, NumOfPickedUpCustomer, NumOfServicedCustomer
+        IdleState_time += cur_time - self.stateChangingPoint
+        NumOfPickedUpCustomer += 1
+        NumOfServicedCustomer += 1
+        Total_customers_flow_time += cur_time - target_c.arriving_time
+            
+        # State update
+        self.state = ST_TRANSITING
+        self.stateChangingPoint = cur_time
+        self.transporting_customer = remove_A_customerInWaitingList(target_c)
+        assert self.transporting_customer
+        self.transporting_customer.assigned_PRT= self
+        
+        # Set things for next state
+        self.path_n, self.path_e = Algorithms.find_SP(self.transporting_customer.sn, self.transporting_customer.dn, Nodes)
+        self.last_planed_time = cur_time
+        evt_change_point = cur_time + sum(e.distance for e in self.path_e) / PRT_SPEED
+        x = [evt_change_point, self.On_TransitingToIdle, target_c]
+        self.event_seq.append(x)
+        heappush(event_queue, x)
         
         logger('            path: %s' % (self.path_n))
         
+        # Modify event of tager_c's previous assigned PRT which is already scheduled
+        self.modify_passed_assignedPRT_event(cur_time, prev_PRT, target_c)
+
+    def On_ApproachingToApproaching(self, cur_time, target_c):
+        if self.state == ST_PARKING:
+            assert False
+            # This PRT temporally becomes parking state, but it is going to be approaching soon
+            # This situation can be happened, because an assignment is processed by step by step
+            assert self.event_seq[-2][1] == self.On_ParkingToIdle and self.event_seq[-3][1] == self.On_ApproachingToParking and cur_time == self.event_seq[-3][0]
+            self.event_seq[-2][1], self.event_seq[-3][1] = None, None
+            self.state = ST_APPROACHING
+        logger('%.1f:    On_A2A - %s, prev_c:%s - new_c:%s' % (cur_time, self, self.assigned_customer, target_c))
+        assert self.state == ST_APPROACHING
+        prev_customer = self.assigned_customer
+        prev_PRT = target_c.assigned_PRT
+        
+        # Measure update
+        global ApproachingState_time, NumOfPickedUpCustomer, Total_empty_travel_distance, Total_travel_distance
+        ApproachingState_time += cur_time - self.stateChangingPoint
+        
+        # State update
+        self.state == ST_APPROACHING
+        self.stateChangingPoint = cur_time
+        self.assigned_customer = target_c
+        
+        # Set things for next state
+        travel_distance = (cur_time - self.last_planed_time) * PRT_SPEED
+        _, next_n, xth = Algorithms.find_PRT_position_on_PATH(self.path_e, travel_distance)
+        remain_dis = sum(e.distance for e in self.path_e[:xth]) - travel_distance
+        
+        if next_n == target_c.sn:
+            # There is no need to change modification of path
+            evt_change_point = cur_time + remain_dis / PRT_SPEED
+        else:
+            path_n_Rerouted, path_e_Rerouted = Algorithms.find_SP(next_n, target_c.sn, Nodes)
+            self.path_n = self.path_n + path_n_Rerouted[1:]
+            self.path_e = self.path_e + path_e_Rerouted
+            evt_change_point = cur_time + (remain_dis + sum(e.distance for e in path_e_Rerouted)) / PRT_SPEED
+        x = [evt_change_point, self.On_ApproachingToTransiting, target_c]
+        self.event_seq.append(x)
+        heappush(event_queue, x)
+        logger('            path: %s' % (self.path_n))
+        logger('            now, around N%d' % (next_n.id))
+        
+        # Modify event of tager_c's previous assigned PRT which is already scheduled
+        self.modify_passed_assignedPRT_event(cur_time, prev_PRT, target_c)
+        
+        targetEvent = self.find_target_event_inEventSeq(cur_time, self.On_ApproachingToTransiting, prev_customer)        
+        targetEvent[1] = None        
+    
     def On_ApproachingToTransiting(self, cur_time, target_c):
         logger('%.1f:    On_A2T - %s, picking up customer - %s' % (cur_time, self, target_c))
         assert self.state == ST_APPROACHING and self.assigned_customer == target_c
         
         # Measure update
-        global ApproachingState_times, Total_empty_travel_distance, NumOfPickedUpCustomer, Total_travel_distance
-        time_duration = cur_time - self.last_planed_time
-        ApproachingState_times += time_duration 
-        travel_distance =  time_duration * PRT_SPEED
-        Total_empty_travel_distance = travel_distance 
+        global ApproachingState_time, NumOfPickedUpCustomer, Total_empty_travel_distance, Total_travel_distance
+        ApproachingState_time += cur_time - self.stateChangingPoint
         NumOfPickedUpCustomer += 1
-        Total_travel_distance = travel_distance
+        travel_distance =  (cur_time - self.last_planed_time) * PRT_SPEED
+        Total_empty_travel_distance += travel_distance 
+        Total_travel_distance += travel_distance
         
         # State update
         self.state = ST_TRANSITING
+        self.stateChangingPoint = cur_time
+        self.arrived_n = self.assigned_customer.sn
         self.transporting_customer = remove_A_customerInWaitingList(self.assigned_customer)
         assert self.transporting_customer
         self.assigned_customer = None
-        self.arrived_n = self.transporting_customer.sn
         
         # Set things for next state
         self.path_n, self.path_e = Algorithms.find_SP(self.transporting_customer.sn, self.transporting_customer.dn, Nodes)
         self.last_planed_time = cur_time
-        evt_change_point = cur_time + sum([e.distance for e in self.path_e]) / PRT_SPEED
+        evt_change_point = cur_time + sum(e.distance for e in self.path_e) / PRT_SPEED
         x = [evt_change_point, self.On_TransitingToIdle, target_c]
-        heappush(event_queue, x)
         self.event_seq.append(x)
+        heappush(event_queue, x)
         
         logger('            path: %s' % (self.path_n))
 
-def On_TransitingToIdle(self, cur_time, target_c):
+    def On_ApproachingToParking(self, cur_time, target_c):
+        logger('%.1f:    On_A2P - %s, lost %s, ori Path: %s' % (cur_time, self, target_c, self.path_n))
+        assert self.state == ST_APPROACHING and self.assigned_customer == target_c
+        
+        # Measure update
+        global ApproachingState_time 
+        ApproachingState_time += cur_time - self.stateChangingPoint
+        
+        # State update
+        self.state = ST_PARKING
+        self.stateChangingPoint = cur_time
+        self.assigned_customer = None
+        
+        # Set things for next state
+        travel_distance = (cur_time - self.last_planed_time) * PRT_SPEED
+        _, next_n, xth = Algorithms.find_PRT_position_on_PATH(self.path_e, travel_distance)
+        remain_dis = sum(e.distance for e in self.path_e[:xth]) - travel_distance
+        self.path_n, self.path_e = self.path_n[:xth + 1], self.path_e[:xth]
+        evt_change_point = cur_time + remain_dis / PRT_SPEED
+        x = [evt_change_point, self.On_ParkingToIdle, None]
+        self.event_seq.append(x)
+        heappush(event_queue, x)
+        
+        logger('            parking node: N%d' % (self.path_n[-1].id))
+
+    def On_TransitingToIdle(self, cur_time, target_c):
         logger('%.1f:    On_T2I - %s' % (cur_time, self))    
         assert self.state == ST_TRANSITING
         
-#         self.state = ST_IDLE
-#         self.arrived_n = self.transporting_customer.dn
-#         
-#         self.calc_customer_flow_time(cur_time)
-#         self.total_travel_distance += sum(e.distance for e in self.path_e)
-#         
-#         self.transporting_customer = None
-#         self.path_n, self.path_e = None, None
-#         dispatcher(cur_time, PRTs, waiting_customers, Nodes)
-#                 
-
-
+        # Measure update
+        global TransitingState_time, NumOfServicedCustomer, Total_travel_distance, Total_customers_flow_time
+        TransitingState_time += cur_time - self.stateChangingPoint
+        NumOfServicedCustomer += 1
+        travel_distance =  (cur_time - self.last_planed_time) * PRT_SPEED
+        Total_travel_distance += travel_distance
+        Total_customers_flow_time += cur_time - target_c.arriving_time
+        
+        # State update
+        self.state = ST_IDLE
+        self.stateChangingPoint = cur_time
+        self.arrived_n = self.transporting_customer.dn
+        self.transporting_customer = None
+        
+        # Set things for next state
+        self.path_n, self.path_e = None, None
+        self.last_planed_time = cur_time
+        dispatcher(cur_time, PRTs, waiting_customers, Nodes)
+        
+    def On_ParkingToIdle(self, cur_time, args=None):
+        logger('%.1f:    On_P2I - %s, arriving node: %d' % (cur_time, self, self.path_n[-1].id))
+        assert self.state == ST_PARKING
+        
+        # Measure update
+        global ParkingState_time, Total_travel_distance, Total_empty_travel_distance
+        ParkingState_time += cur_time - self.stateChangingPoint
+        travel_distance =  (cur_time - self.last_planed_time) * PRT_SPEED
+        Total_empty_travel_distance += travel_distance
+        Total_travel_distance += travel_distance
+        
+        # State update
+        self.state = ST_IDLE
+        self.stateChangingPoint = cur_time
+        self.arrived_n = self.path_n[-1]
+        
+        # Set things for next state
+        self.path_n, self.path_e = None, None
+        self.last_planed_time = cur_time
+        
+    def On_ParkingToApproaching(self, cur_time, target_c):
+        logger('%.1f:    On_P2A - %s, assigned customer %s' % (cur_time, self, target_c))
+        assert self.state == ST_PARKING
+        prev_PRT = target_c.assigned_PRT
+        
+        # Measure update
+        global ParkingState_time
+        ParkingState_time += cur_time - self.stateChangingPoint
+        
+        # State update
+        self.state = ST_APPROACHING
+        self.stateChangingPoint = cur_time
+        
+        # Set things for next state
+        travel_distance = (cur_time - self.last_planed_time) * PRT_SPEED
+        remain_dis = sum(e.distance for e in self.path_e) - travel_distance
+        next_n = self.path_n[-1]
+        if next_n == target_c.sn:
+            # There is no need to change modification of path
+            evt_change_point = cur_time + remain_dis / PRT_SPEED
+        else:
+            path_n_Rerouted, path_e_Rerouted = Algorithms.find_SP(next_n, target_c.sn, Nodes)
+            self.path_n = self.path_n + path_n_Rerouted[1:]
+            self.path_e = self.path_e + path_e_Rerouted
+            evt_change_point = cur_time + (remain_dis + sum(e.distance for e in path_e_Rerouted)) / PRT_SPEED
+        
+        x = [evt_change_point, self.On_ApproachingToTransiting, target_c]
+        self.event_seq.append(x)
+        heappush(event_queue, x)
+        
+        # Modify event of tager_c's previous assigned PRT which is already scheduled
+        self.modify_passed_assignedPRT_event(cur_time, prev_PRT, target_c)
 
 #---------------------------------------------------------------------
 # Generate things such as Network, PRT, Customer
@@ -268,15 +484,15 @@ def remove_A_customerInWaitingList(target_customer):
 def test():
     from time import sleep
     import Network
-    seed(0)
+    
     # Generage all inputs: Network, Arrivals of customers, PRTs
     Nodes, Edges = gen_Network(*Network.network0())
     Customers = gen_Customer(2.5, 2000, Nodes)
     PRTs = gen_PRT(10, Nodes)
     
     # Choose dispatcher
-    dispatcher = Algorithms.NN0
-#     dispatcher = Algorithms.NN1
+#     dispatcher = Algorithms.NN0
+    dispatcher = Algorithms.NN1
 #     dispatcher = Algorithms.NN2
 #     dispatcher = Algorithms.NN3
 #     dispatcher = Algorithms.NN4
@@ -288,10 +504,13 @@ def test():
     while process_events(now):
         now += 1
         sleep(0.0001)
+
+    print        
+    print 'Measure------------------------------------------------------------------------------------------------'
+    print 'T.TravedDist: %.1f, T.E.TravelDist: %.1f, A.FlowTime: %.1f, A.WaitTime: %.1f' % (Total_travel_distance, Total_empty_travel_distance, Total_customers_flow_time/ NumOfServicedCustomer, 0.0)
     
-    print IdleState_times
-    print ApproachingState_times
-    print ParkingState_times
+    print 'IdleState_time: %.1f, ApproachingState_time: %.1f, TransitingState_time: %.1f, ParkingState_time: %.1f' % (IdleState_time, ApproachingState_time, TransitingState_time, ParkingState_time)
     
 if __name__ == '__main__':
+    seed(0)
     test()

@@ -8,13 +8,20 @@ on_notify_assignmentment_point = lambda x: None
 # For using Hungarian method, give long distance(cost) to augmented cell
 Longest_dis = 100000000
 
+def on_notify_assignmentment_point(args = None):
+    print '-----------------------------------------------------------------------(Re)assignment!!' 
+
 def get_all_dispatchers():
     return {'NN0': NN0, 'NN1': NN1, 'NN2': NN2, 'NN3': NN3, 'NN4': NN4, 'NN5': NN5}
 
 def reassignment(event_time, target_PRTs, target_customers, Nodes):
     for prt_id, customer_id in find_opt_matching(event_time, target_PRTs, target_customers, Nodes):
+#         print prt_id, customer_id
+#         print target_PRTs
+#         print target_customers
         chosen_prt = target_PRTs[prt_id]
         target_c = target_customers[customer_id]
+#         if customer_id >= len(target_customers):
         chosen_prt.re_assign_customer(event_time, target_c)
 
 def NN0(event_time, PRTs, waiting_customers, Nodes):
@@ -65,16 +72,16 @@ def NN5(event_time, PRTs, waiting_customers, Nodes):
     target_customers = waiting_customers
     reassignment(event_time, target_PRTs, target_customers, Nodes)
 
-def find_opt_matching(cur_time, target_PRTs, Customers, Nodes):
+def find_opt_matching(cur_time, target_PRTs, target_customers, Nodes):
     from Dynamics import PRT_SPEED, ST_IDLE, ST_APPROACHING, ST_TRANSITING, ST_PARKING
     # Create_PRTbyCustomer_matrix
-    row_size, col_size = len(target_PRTs), len(Customers)
+    row_size, col_size = len(target_PRTs), len(target_customers)
     max_M_size = max(row_size, col_size)
     PRTbyCustomer_matrix = [[Longest_dis / PRT_SPEED] * max_M_size for _ in range(max_M_size)]
     
     for prt_id, prt in enumerate(target_PRTs):
         travel_distance = (cur_time - prt.last_planed_time) * PRT_SPEED
-        for i, cus in enumerate(Customers):
+        for i, cus in enumerate(target_customers):
             if prt.state == ST_IDLE:
                 # Calculate remain distance
                 remain_dis = 0
@@ -115,10 +122,12 @@ def find_opt_matching(cur_time, target_PRTs, Customers, Nodes):
     hungarian_algo = Munkres()
     assignment_results = []
     for prt_id, customer_id in hungarian_algo.compute(PRTbyCustomer_matrix):
-        if prt_id >= len(target_PRTs) or customer_id >= len(Customers):
+        if prt_id >= len(target_PRTs) or customer_id >= len(target_customers):
             continue 
         # (prt, customer)
+        assert target_PRTs[prt_id] and target_customers[customer_id]
         assignment_results.append((prt_id, customer_id))
+    
     return assignment_results
 
 def find_PRT_position_on_PATH(path_e, travel_distance):
