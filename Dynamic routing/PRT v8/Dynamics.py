@@ -4,7 +4,6 @@ from random import randrange, seed
 from numpy.random import poisson
 from heapq import heappush, heappop
 import Algorithms
-
 #---------------------------------------------------------------------
 # For calculating measure
 Total_empty_travel_distance = 0.0
@@ -99,13 +98,21 @@ class PRT():
     def __repr__(self):
         return 'PRT%d(S%d-N%d)' % (self.id, self.state, self.arrived_n.id)
     
-    def find_target_event_inEventSeq(self, cur_time, target_prt, event_name, target_c):
-        for evt in target_prt.event_seq:
-            if evt[1] == event_name and evt[2] == target_c:
-                assert evt[0] >= cur_time
-                return evt  
+    def find_target_event_inEventSeq(self, cur_time, target_prt, event_name, args=None):
+        if isinstance(args, Customer):
+            for evt in target_prt.event_seq[::-1]:
+                if evt[1] == event_name and evt[2] == args:
+                    assert evt[0] >= cur_time
+                    return evt  
+            else:
+                assert False
         else:
-            assert False
+            for i, evt in enumerate(target_prt.event_seq[::-1]):
+                if evt[1] == event_name:
+                    assert evt[0] >= cur_time and target_prt.event_seq[len(target_prt.event_seq) - 2 - i][1] == args
+                    return evt, target_prt.event_seq[len(target_prt.event_seq) - 2 - i]
+            else:
+                assert False
     
     def modify_passed_assignedPRT_event(self, cur_time, prev_PRT, target_c):
         # Modify event of tager_c's previous assigned PRT which is already scheduled
@@ -115,8 +122,9 @@ class PRT():
             logger('                    There is the prev PRT for the target customer: %s' % (prev_PRT))
             if prev_PRT.assigned_customer == target_c:
                 # Change event of On_ApproachingToTransiting on prev_PRT's event_seq
-                targetEvent = self.find_target_event_inEventSeq(cur_time, prev_PRT, prev_PRT.On_ApproachingToTransiting, target_c)
-                targetEvent[1] = None
+                A2T_EVT = self.find_target_event_inEventSeq(cur_time, prev_PRT, prev_PRT.On_ApproachingToTransiting, target_c)
+                assert A2T_EVT 
+                A2T_EVT[1] = None
                 x = [cur_time, prev_PRT.On_ApproachingToParking, target_c]
                 prev_PRT.event_seq.append(x)
                 prev_PRT.On_ApproachingToParking(cur_time, target_c)
@@ -151,15 +159,13 @@ class PRT():
             if self.event_seq[-1][1] == self.On_ParkingToIdle and self.event_seq[-2][1] == self.On_ApproachingToParking:
                 # This PRT temporally becomes parking state, but it is going to be approaching soon
                 # This situation can be happened, because an assignment is processed by step by step
-                assert cur_time == self.event_seq[-2][0]
                 x = [cur_time, self.On_ApproachingToApproaching, target_c]
                 self.event_seq.append(x)
                 self.On_ApproachingToApproaching(cur_time, target_c)
             else:
                 assert False
         else:
-            print self.state
-            assert False
+            assert self.state == ST_TRANSITING
     
     def On_IdleToApproaching(self, cur_time, target_c):
         logger('%.1f:    On_I2A - %s, assigned customer %s' % (cur_time, self, target_c))
@@ -206,7 +212,7 @@ class PRT():
         self.stateChangingPoint = cur_time
         self.transporting_customer = remove_A_customerInWaitingList(target_c)
         assert self.transporting_customer
-        self.transporting_customer.assigned_PRT= self
+        self.transporting_customer.assigned_PRT = self
         
         # Set things for next state
         self.path_n, self.path_e = Algorithms.find_SP(self.transporting_customer.sn, self.transporting_customer.dn, Nodes)
@@ -223,11 +229,10 @@ class PRT():
 
     def On_ApproachingToApproaching(self, cur_time, target_c):
         if self.state == ST_PARKING:
-            assert False
             # This PRT temporally becomes parking state, but it is going to be approaching soon
             # This situation can be happened, because an assignment is processed by step by step
-            assert self.event_seq[-2][1] == self.On_ParkingToIdle and self.event_seq[-3][1] == self.On_ApproachingToParking and cur_time == self.event_seq[-3][0]
-            self.event_seq[-2][1], self.event_seq[-3][1] = None, None
+            P2I_EVT, A2P_EVT = self.find_target_event_inEventSeq(cur_time, self, self.On_ParkingToIdle, self.On_ApproachingToParking)
+            P2I_EVT[1], A2P_EVT[1] = None, None
             self.state = ST_APPROACHING
         logger('%.1f:    On_A2A - %s, prev_c:%s - new_c:%s' % (cur_time, self, self.assigned_customer, target_c))
         assert self.state == ST_APPROACHING
@@ -242,6 +247,7 @@ class PRT():
         self.state == ST_APPROACHING
         self.stateChangingPoint = cur_time
         self.assigned_customer = target_c
+        target_c.assigned_PRT = self
         
         # Set things for next state
         travel_distance = (cur_time - self.last_planed_time) * PRT_SPEED
@@ -264,9 +270,9 @@ class PRT():
         
         # Modify event of tager_c's previous assigned PRT which is already scheduled
         self.modify_passed_assignedPRT_event(cur_time, prev_PRT, target_c)
-        
-        targetEvent = self.find_target_event_inEventSeq(cur_time, self.On_ApproachingToTransiting, prev_customer)        
-        targetEvent[1] = None        
+        if prev_customer:
+            A2T_EVT = self.find_target_event_inEventSeq(cur_time, self, self.On_ApproachingToTransiting, prev_customer)        
+            A2T_EVT[1] = None        
     
     def On_ApproachingToTransiting(self, cur_time, target_c):
         logger('%.1f:    On_A2T - %s, picking up customer - %s' % (cur_time, self, target_c))
@@ -276,7 +282,7 @@ class PRT():
         global ApproachingState_time, NumOfPickedUpCustomer, Total_empty_travel_distance, Total_travel_distance
         ApproachingState_time += cur_time - self.stateChangingPoint
         NumOfPickedUpCustomer += 1
-        travel_distance =  (cur_time - self.last_planed_time) * PRT_SPEED
+        travel_distance = (cur_time - self.last_planed_time) * PRT_SPEED
         Total_empty_travel_distance += travel_distance 
         Total_travel_distance += travel_distance
         
@@ -331,7 +337,7 @@ class PRT():
         global TransitingState_time, NumOfServicedCustomer, Total_travel_distance, Total_customers_flow_time
         TransitingState_time += cur_time - self.stateChangingPoint
         NumOfServicedCustomer += 1
-        travel_distance =  (cur_time - self.last_planed_time) * PRT_SPEED
+        travel_distance = (cur_time - self.last_planed_time) * PRT_SPEED
         Total_travel_distance += travel_distance
         Total_customers_flow_time += cur_time - target_c.arriving_time
         
@@ -353,7 +359,7 @@ class PRT():
         # Measure update
         global ParkingState_time, Total_travel_distance, Total_empty_travel_distance
         ParkingState_time += cur_time - self.stateChangingPoint
-        travel_distance =  (cur_time - self.last_planed_time) * PRT_SPEED
+        travel_distance = (cur_time - self.last_planed_time) * PRT_SPEED
         Total_empty_travel_distance += travel_distance
         Total_travel_distance += travel_distance
         
@@ -410,6 +416,7 @@ def gen_Network(ns, ns_connection):
     return Nodes, Edges
 
 def gen_Customer(average_arrival, num_customers, Nodes):
+#     seed(1)
     accu_pd = []
     mu_assi = 10000
     mu = average_arrival * mu_assi
@@ -492,11 +499,11 @@ def test():
     
     # Choose dispatcher
 #     dispatcher = Algorithms.NN0
-    dispatcher = Algorithms.NN1
+#     dispatcher = Algorithms.NN1
 #     dispatcher = Algorithms.NN2
 #     dispatcher = Algorithms.NN3
 #     dispatcher = Algorithms.NN4
-#     dispatcher = Algorithms.NN5
+    dispatcher = Algorithms.NN5
     
     init_dynamics(Nodes, PRTs, Customers, dispatcher)
     
@@ -507,10 +514,33 @@ def test():
 
     print        
     print 'Measure------------------------------------------------------------------------------------------------'
-    print 'T.TravedDist: %.1f, T.E.TravelDist: %.1f, A.FlowTime: %.1f, A.WaitTime: %.1f' % (Total_travel_distance, Total_empty_travel_distance, Total_customers_flow_time/ NumOfServicedCustomer, 0.0)
+    print 'T.TravedDist: %.1f, T.E.TravelDist: %.1f, A.FlowTime: %.1f, A.WaitTime: %.1f' % (Total_travel_distance, Total_empty_travel_distance, Total_customers_flow_time / NumOfServicedCustomer, 0.0)
     
     print 'IdleState_time: %.1f, ApproachingState_time: %.1f, TransitingState_time: %.1f, ParkingState_time: %.1f' % (IdleState_time, ApproachingState_time, TransitingState_time, ParkingState_time)
+
+def tests():
+    from time import sleep
+    import Network
     
+    # Generage all inputs: Network, Arrivals of customers, PRTs
+    Nodes, Edges = gen_Network(*Network.network0())
+    for meanArrival, numOfCustomer, numOfPRT in [(4.0, 2000, 11), (1.0, 4000, 12), (10.5, 2000, 6), (3.0, 2000, 20), ]:
+        for NN in [Algorithms.NN0, Algorithms.NN1, Algorithms.NN2, Algorithms.NN3, Algorithms.NN4, Algorithms.NN5]:
+            dispatcher = NN
+            Customers = gen_Customer(meanArrival, numOfCustomer, Nodes)
+            PRTs = gen_PRT(numOfPRT, Nodes)
+            
+            init_dynamics(Nodes, PRTs, Customers, dispatcher)
+            
+            now = 0.0
+            while process_events(now):
+                now += 1
+                
+            print        
+            print 'Measure------------------------------------------------------------------------------------------------'
+            print 'T.TravedDist: %.1f, T.E.TravelDist: %.1f, A.FlowTime: %.1f, A.WaitTime: %.1f' % (Total_travel_distance, Total_empty_travel_distance, Total_customers_flow_time / NumOfServicedCustomer, 0.0)
+            
+            print 'IdleState_time: %.1f, ApproachingState_time: %.1f, TransitingState_time: %.1f, ParkingState_time: %.1f' % (IdleState_time, ApproachingState_time, TransitingState_time, ParkingState_time)    
 if __name__ == '__main__':
-    seed(0)
-    test()
+#     test()
+    tests()

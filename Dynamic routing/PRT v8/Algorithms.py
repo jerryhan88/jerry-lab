@@ -15,12 +15,13 @@ def get_all_dispatchers():
     return {'NN0': NN0, 'NN1': NN1, 'NN2': NN2, 'NN3': NN3, 'NN4': NN4, 'NN5': NN5}
 
 def reassignment(event_time, target_PRTs, target_customers, Nodes):
-    for prt_id, customer_id in find_opt_matching(event_time, target_PRTs, target_customers, Nodes):
+    _target_customers = target_customers[:]
+    for prt_id, customer_id in find_opt_matching(event_time, target_PRTs, _target_customers, Nodes):
 #         print prt_id, customer_id
 #         print target_PRTs
 #         print target_customers
         chosen_prt = target_PRTs[prt_id]
-        target_c = target_customers[customer_id]
+        target_c = _target_customers[customer_id]
 #         if customer_id >= len(target_customers):
         chosen_prt.re_assign_customer(event_time, target_c)
 
