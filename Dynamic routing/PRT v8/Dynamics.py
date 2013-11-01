@@ -556,7 +556,7 @@ def tests():
                 
             print        
             print 'Measure------------------------------------------------------------------------------------------------'
-            print 'T.TravedDist: %.1f, T.E.TravelDist: %.1f, A.FlowTime: %.1f, A.WaitTime: %.1f' % (Total_travel_distance, Total_empty_travel_distance, Total_customers_flow_time / NumOfServicedCustomer, 0.0)
+            print 'T.TravedDist: %.1f, T.E.TravelDist: %.1f, A.FlowTime: %.1f, A.WaitTime: %.1f' % (Total_travel_distance, Total_empty_travel_distance, Total_customers_flow_time / NumOfServicedCustomer, Total_customers_waiting_time/now)
             
             print 'IdleState_time: %.1f, ApproachingState_time: %.1f, TransitingState_time: %.1f, ParkingState_time: %.1f' % (IdleState_time, ApproachingState_time, TransitingState_time, ParkingState_time)    
 if __name__ == '__main__':
