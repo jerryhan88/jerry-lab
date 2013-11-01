@@ -17,5 +17,24 @@ def network0():
     
     return ns, ns_connection  
 
+def network1():
+        
+    ns = [(0, 0, True), (0 + 50, 0, False), (450 - 50, 0, False), (450, 0, True), (450 + 50, 0, False), ((450 + 350) - 50, 0, False), (450 + 350, 0, True), (0, 0, False), (0, 0, False), (0, 0, False),
+          (0, 0, False), (450, 0, False), (0, 0, False), (0, 0, False), (0, 0, False),
+          (0, 0, False), (0, 0, False), (0, 0, False), (0, 0, False),
+          (0, 0, True), (0, 0, False), (0, 0, False), (450, 0, True), (0, 0, False), (0, 0, False), (450 + 350, 0, True), (0, 0, False), (0, 0, False), (450 + 350 + 500, 0, True),
+          (0, 0, False), (0, 0, False), (0, 0, False), (0, 0, False),
+          (0, 0, False), (0, 0, False), (0, 0, False), (0, 0, False),
+          (0, 0, True), (0, 0, False), (0, 0, False), (450, 0, True), (0, 0, False), (0, 0, False), (450 + 350, 0, True), (0, 0, False), (0, 0, False), (450 + 350 + 500, 0, True),
+          (0, 0, False), (0, 0, False), (0, 0, False), (0, 0, False),
+          (0, 0, False), (0, 0, False), (0, 0, False), (0, 0, False), (0, 0, False),
+          (0, 0, False), (0, 0, False), (0, 0, False), (450, 0, True), (0, 0, False), (0, 0, False), (450 + 350, 0, True), (0, 0, False), (0, 0, False), (450 + 350 + 500, 0, True)
+           ]
+    
+    ns_connection = [(1, 0), ]
+    
+    return ns, ns_connection
+
+
 if __name__ == '__main__':
     pass

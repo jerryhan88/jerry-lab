@@ -23,6 +23,8 @@ ApproachingState_time = 0.0
 TransitingState_time = 0.0
 ParkingState_time = 0.0
 
+NumOfCustomerArrivals = 0
+
 #---------------------------------------------------------------------
 # Classes
 
@@ -97,6 +99,9 @@ class PRT():
     
     def __repr__(self):
         return 'PRT%d(S%d-N%d)' % (self.id, self.state, self.arrived_n.id)
+    
+    def set_stateChange(self, state, cur_time):
+        self.state, self.stateChangingPoint = state, cur_time
     
     def find_target_event_inEventSeq(self, cur_time, target_prt, event_name, args=None):
         if isinstance(args, Customer):
@@ -177,8 +182,7 @@ class PRT():
         IdleState_time += cur_time - self.stateChangingPoint
         
         # State update
-        self.state = ST_APPROACHING
-        self.stateChangingPoint = cur_time
+        self.set_stateChange(ST_APPROACHING, cur_time)
         self.assigned_customer = target_c
         target_c.assigned_PRT = self
         
@@ -194,7 +198,7 @@ class PRT():
         
         # Modify event of tager_c's previous assigned PRT which is already scheduled
         self.modify_passed_assignedPRT_event(cur_time, prev_PRT, target_c)
-
+    
     def On_IdleToTransiting(self, cur_time, target_c):
         logger('%.1f:    On_I2T - %s, picking up customer-%s' % (cur_time, self, target_c))
         assert self.state == ST_IDLE
@@ -204,13 +208,10 @@ class PRT():
         global IdleState_time, Total_empty_travel_distance, Total_travel_distance, Total_customers_flow_time, NumOfPickedUpCustomer, NumOfServicedCustomer
         IdleState_time += cur_time - self.stateChangingPoint
         NumOfPickedUpCustomer += 1
-        NumOfServicedCustomer += 1
-        Total_customers_flow_time += cur_time - target_c.arriving_time
         update_customerWaitingTimeMeasure(cur_time, -1)
             
         # State update
-        self.state = ST_TRANSITING
-        self.stateChangingPoint = cur_time
+        self.set_stateChange(ST_TRANSITING, cur_time)
         self.transporting_customer = remove_A_customerInWaitingList(target_c)
         assert self.transporting_customer
         self.transporting_customer.assigned_PRT = self
@@ -241,12 +242,11 @@ class PRT():
         prev_PRT = target_c.assigned_PRT
         
         # Measure update
-        global ApproachingState_time, NumOfPickedUpCustomer, Total_empty_travel_distance, Total_travel_distance
+        global ApproachingState_time
         ApproachingState_time += cur_time - self.stateChangingPoint
         
         # State update
-        self.state == ST_APPROACHING
-        self.stateChangingPoint = cur_time
+        self.set_stateChange(ST_APPROACHING, cur_time)
         self.assigned_customer = target_c
         target_c.assigned_PRT = self
         
@@ -289,8 +289,7 @@ class PRT():
         update_customerWaitingTimeMeasure(cur_time, -1)
         
         # State update
-        self.state = ST_TRANSITING
-        self.stateChangingPoint = cur_time
+        self.set_stateChange(ST_TRANSITING, cur_time)
         self.arrived_n = self.assigned_customer.sn
         self.transporting_customer = remove_A_customerInWaitingList(self.assigned_customer)
         assert self.transporting_customer
@@ -315,8 +314,7 @@ class PRT():
         ApproachingState_time += cur_time - self.stateChangingPoint
         
         # State update
-        self.state = ST_PARKING
-        self.stateChangingPoint = cur_time
+        self.set_stateChange(ST_PARKING, cur_time)
         self.assigned_customer = None
         
         # Set things for next state
@@ -344,8 +342,7 @@ class PRT():
         Total_customers_flow_time += cur_time - target_c.arriving_time
         
         # State update
-        self.state = ST_IDLE
-        self.stateChangingPoint = cur_time
+        self.set_stateChange(ST_IDLE, cur_time)
         self.arrived_n = self.transporting_customer.dn
         self.transporting_customer = None
         
@@ -366,8 +363,7 @@ class PRT():
         Total_travel_distance += travel_distance
         
         # State update
-        self.state = ST_IDLE
-        self.stateChangingPoint = cur_time
+        self.set_stateChange(ST_IDLE, cur_time)
         self.arrived_n = self.path_n[-1]
         
         # Set things for next state
@@ -384,8 +380,7 @@ class PRT():
         ParkingState_time += cur_time - self.stateChangingPoint
         
         # State update
-        self.state = ST_APPROACHING
-        self.stateChangingPoint = cur_time
+        self.set_stateChange(ST_APPROACHING, cur_time)
         
         # Set things for next state
         travel_distance = (cur_time - self.last_planed_time) * PRT_SPEED
@@ -446,7 +441,13 @@ def gen_Customer(average_arrival, num_customers, Nodes):
     return Customers
 
 def gen_PRT(numOfPRT, Nodes):
-    return [PRT(Nodes[randrange(len(Nodes))]) for _ in range(numOfPRT)]
+    PRTs = []
+    for _ in range(numOfPRT):
+        target_n_id = randrange(len(Nodes)) 
+        while not Nodes[target_n_id].isStation:
+            target_n_id = randrange(len(Nodes)) 
+        PRTs.append(PRT(Nodes[target_n_id]))
+    return PRTs
 
 #---------------------------------------------------------------------
 # Prepare dynamics run
@@ -486,6 +487,8 @@ def On_CustomerArrival(cur_time, target_c):
     
     # Measure update
     update_customerWaitingTimeMeasure(cur_time, 1)
+    global NumOfCustomerArrivals
+    NumOfCustomerArrivals += 1
     
     dispatcher(cur_time, PRTs, waiting_customers, Nodes)
     on_notify_customer_arrival(customer)
@@ -510,7 +513,7 @@ def test():
     from time import sleep
     import Network
     
-    # Generage all inputs: Network, Arrivals of customers, PRTs
+    # Generate all inputs: Network, Arrivals of customers, PRTs
     Nodes, Edges = gen_Network(*Network.network0())
     Customers = gen_Customer(2.5, 2000, Nodes)
     PRTs = gen_PRT(10, Nodes)
@@ -532,7 +535,7 @@ def test():
 
     print        
     print 'Measure------------------------------------------------------------------------------------------------'
-    print 'T.TravedDist: %.1f, T.E.TravelDist: %.1f, A.FlowTime: %.1f, A.WaitTime: %.1f' % (Total_travel_distance, Total_empty_travel_distance, Total_customers_flow_time / NumOfServicedCustomer, Total_customers_waiting_time/now)
+    print 'T.TravedDist: %.1f, T.E.TravelDist: %.1f, T.FlowTime: %.1f, T.WaitTime: %.1f' % (Total_travel_distance, Total_empty_travel_distance, Total_customers_flow_time, Total_customers_waiting_time)
     
     print 'IdleState_time: %.1f, ApproachingState_time: %.1f, TransitingState_time: %.1f, ParkingState_time: %.1f' % (IdleState_time, ApproachingState_time, TransitingState_time, ParkingState_time)
 
@@ -556,7 +559,7 @@ def tests():
                 
             print        
             print 'Measure------------------------------------------------------------------------------------------------'
-            print 'T.TravedDist: %.1f, T.E.TravelDist: %.1f, A.FlowTime: %.1f, A.WaitTime: %.1f' % (Total_travel_distance, Total_empty_travel_distance, Total_customers_flow_time / NumOfServicedCustomer, Total_customers_waiting_time/now)
+            print 'T.TravedDist: %.1f, T.E.TravelDist: %.1f, T.FlowTime: %.1f, T.WaitTime: %.1f' % (Total_travel_distance, Total_empty_travel_distance, Total_customers_flow_time, Total_customers_waiting_time)
             
             print 'IdleState_time: %.1f, ApproachingState_time: %.1f, TransitingState_time: %.1f, ParkingState_time: %.1f' % (IdleState_time, ApproachingState_time, TransitingState_time, ParkingState_time)    
 if __name__ == '__main__':
