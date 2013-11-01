@@ -206,6 +206,7 @@ class PRT():
         NumOfPickedUpCustomer += 1
         NumOfServicedCustomer += 1
         Total_customers_flow_time += cur_time - target_c.arriving_time
+        update_customerWaitingTimeMeasure(cur_time, -1)
             
         # State update
         self.state = ST_TRANSITING
@@ -285,6 +286,7 @@ class PRT():
         travel_distance = (cur_time - self.last_planed_time) * PRT_SPEED
         Total_empty_travel_distance += travel_distance 
         Total_travel_distance += travel_distance
+        update_customerWaitingTimeMeasure(cur_time, -1)
         
         # State update
         self.state = ST_TRANSITING
@@ -464,11 +466,27 @@ def logger(s):
 
 on_notify_customer_arrival = lambda x: None
 
+def update_customerWaitingTimeMeasure(cur_time, numOfCustomerChange):
+    global Total_customers_waiting_time, NumOfWaitingCustomer, ChaningPointOfNWC, MaxCustomerWaitingTime  
+    # Update measure
+    customers_waiting_time = NumOfWaitingCustomer * (cur_time - ChaningPointOfNWC)
+    if customers_waiting_time > MaxCustomerWaitingTime:
+         MaxCustomerWaitingTime = customers_waiting_time
+    Total_customers_waiting_time += customers_waiting_time 
+    
+    # Memorize things for the next calculation
+    NumOfWaitingCustomer += numOfCustomerChange
+    ChaningPointOfNWC = cur_time
+
 def On_CustomerArrival(cur_time, target_c):
     logger('%.1f: On_CustomerArrival - %s' % (cur_time, target_c))
     customer = Customers.pop(0)
     assert customer == target_c
     waiting_customers.append(customer)
+    
+    # Measure update
+    update_customerWaitingTimeMeasure(cur_time, 1)
+    
     dispatcher(cur_time, PRTs, waiting_customers, Nodes)
     on_notify_customer_arrival(customer)
 
@@ -514,7 +532,7 @@ def test():
 
     print        
     print 'Measure------------------------------------------------------------------------------------------------'
-    print 'T.TravedDist: %.1f, T.E.TravelDist: %.1f, A.FlowTime: %.1f, A.WaitTime: %.1f' % (Total_travel_distance, Total_empty_travel_distance, Total_customers_flow_time / NumOfServicedCustomer, 0.0)
+    print 'T.TravedDist: %.1f, T.E.TravelDist: %.1f, A.FlowTime: %.1f, A.WaitTime: %.1f' % (Total_travel_distance, Total_empty_travel_distance, Total_customers_flow_time / NumOfServicedCustomer, Total_customers_waiting_time/now)
     
     print 'IdleState_time: %.1f, ApproachingState_time: %.1f, TransitingState_time: %.1f, ParkingState_time: %.1f' % (IdleState_time, ApproachingState_time, TransitingState_time, ParkingState_time)
 
@@ -542,5 +560,5 @@ def tests():
             
             print 'IdleState_time: %.1f, ApproachingState_time: %.1f, TransitingState_time: %.1f, ParkingState_time: %.1f' % (IdleState_time, ApproachingState_time, TransitingState_time, ParkingState_time)    
 if __name__ == '__main__':
-#     test()
-    tests()
+    test()
+#     tests()
