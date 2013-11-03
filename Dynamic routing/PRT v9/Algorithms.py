@@ -181,6 +181,10 @@ def find_SP(sn, en, Nodes):
             consi_n = None
     path_n.reverse()
     path_e.reverse()
+    
+    print sn, en
+    
+    print path_n
 
     assert sn == path_n[0]
     assert en == path_n[-1] 

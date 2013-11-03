@@ -1,6 +1,6 @@
 from __future__ import division
 from math import sqrt, pi, cos, sin
-from random import randrange, seed
+from random import randrange, seed, expovariate
 from numpy.random import poisson
 from heapq import heappush, heappop
 import Algorithms
@@ -190,7 +190,7 @@ class Customer():
         self.assigned_PRT = None
     
     def __repr__(self):
-        return '(C%d) %s->$s' % (self.id, self.sn.id, self.dn.id)
+        return '(C%d) %s->%s' % (self.id, self.sn.id, self.dn.id)
 
 ST_IDLE, ST_APPROACHING, ST_TRANSITING, ST_PARKING = 0, 1, 2, 3
 
@@ -212,7 +212,7 @@ class PRT():
         self.path_n, self.path_e = [], []
     
     def __repr__(self):
-        return 'PRT%d(S%d-N%d)' % (self.id, self.state, self.arrived_n.id)
+        return 'PRT%d(S%d-%s)' % (self.id, self.state, self.arrived_n.id)
     
     def set_stateChange(self, state, cur_time):
         self.state, self.stateChangingPoint = state, cur_time
@@ -527,11 +527,9 @@ def gen_Network(ns, ns_connection):
     return Nodes, Edges
 
 def gen_Customer(average_arrival, num_customers, Nodes):
-#     seed(1)
+    seed(1)
     accu_pd = []
-    mu_assi = 10000
-    mu = average_arrival * mu_assi
-    pd = poisson(mu, num_customers)
+    pd = [expovariate(1.0/average_arrival) for _ in range(num_customers)]
     for i, t in enumerate(pd):
         if i == 0:
             accu_pd.append(t)
@@ -541,16 +539,16 @@ def gen_Customer(average_arrival, num_customers, Nodes):
     Customers = []
     for t in accu_pd:
         sn, dn = 0, 0
-        while sn == dn:
+        while sn == dn or Nodes[sn].nodeType!=STATION or Nodes[dn].nodeType!=STATION:
             sn = randrange(len(Nodes))
             dn = randrange(len(Nodes))
-        Customers.append(Customer(t / mu_assi, Nodes[sn], Nodes[dn]))
+        Customers.append(Customer(t, Nodes[sn], Nodes[dn]))
         
-#     customerArrivals_txt = open('Info. Arrivals of customers.txt', 'w')
-#     for c in Customers:
-#         t, sn, dn = c.arriving_time, c.sn.id, c.dn.id 
-#         customerArrivals_txt.write('%f,%d-%d\n' % (t, sn, dn))
-#     customerArrivals_txt.close()
+    customerArrivals_txt = open('Info. Arrivals of customers.txt', 'w')
+    for c in Customers:
+        t, sn, dn = c.arriving_time, c.sn.id, c.dn.id 
+        customerArrivals_txt.write('%f,%s-%s\n' % (t, sn, dn))
+    customerArrivals_txt.close()
         
     return Customers
 
@@ -558,8 +556,8 @@ def gen_PRT(numOfPRT, Nodes):
     PRTs = []
     for _ in range(numOfPRT):
         target_n_id = randrange(len(Nodes)) 
-#         while not Nodes[target_n_id].isStation:
-        target_n_id = randrange(len(Nodes)) 
+        while Nodes[target_n_id].nodeType != STATION:
+            target_n_id = randrange(len(Nodes)) 
         PRTs.append(PRT(Nodes[target_n_id]))
     return PRTs
 
@@ -628,9 +626,14 @@ def test():
     import Network
     
     # Generate all inputs: Network, Arrivals of customers, PRTs
-    Nodes, Edges = gen_Network(*Network.network0())
-    Customers = gen_Customer(2.5, 2000, Nodes)
+#     Nodes, Edges = gen_Network(*Network.network0())
+    Nodes, Edges = Network1()
+    Customers = gen_Customer(10.5, 2000, Nodes)
     PRTs = gen_PRT(10, Nodes)
+    path_n, path_e = Algorithms.find_SP(findNode('5E'), findNode('14'), Nodes) 
+    
+    print path_n, path_e
+    assert False
     
     # Choose dispatcher
 #     dispatcher = Algorithms.NN0
