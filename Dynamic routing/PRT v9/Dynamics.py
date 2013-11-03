@@ -1,5 +1,5 @@
 from __future__ import division
-from math import sqrt
+from math import sqrt, pi, cos, sin
 from random import randrange, seed
 from numpy.random import poisson
 from heapq import heappush, heappop
@@ -7,6 +7,13 @@ import Algorithms
 #---------------------------------------------------------------------
 # Network example
 STATION, JUNCTION, DOT = 0, 1, 2
+
+def findNode(nID):
+    for n in Nodes:
+        if n.id == nID:
+            return n
+    else:
+        False
 
 def Network1():
     c0 = 0
@@ -21,39 +28,96 @@ def Network1():
     
     btwSJ = 70
     
-    
-        
-    Nodes = [('1', c0, r0, STATION), ('1E', c0 + btwSJ, r0, JUNCTION), ('1S', c0, r0 + btwSJ, JUNCTION),
-             ('2', c1, r0, STATION), ('2E', c1 + btwSJ, r0, JUNCTION), ('2W', c1 - btwSJ, r0, JUNCTION), ('2S', c1, r0 + btwSJ, JUNCTION),
-             ('3', c2, r0, STATION), ('3W', c2 - btwSJ, r0, JUNCTION), ('3S', c2, r0 + btwSJ, JUNCTION),
-             ('4', c0, r1, STATION), ('4E', c0 + btwSJ, r1, JUNCTION), ('4N', c0, r1 - btwSJ, JUNCTION), ('4S', c0, r1 + btwSJ, JUNCTION),
-             ('5', c1, r1, STATION), ('5E', c1 + btwSJ, r1, JUNCTION), ('5W', c1 - btwSJ, r1, JUNCTION), ('5N', c1, r1 - btwSJ, JUNCTION), ('5S', c1, r1 + btwSJ, JUNCTION),
-             ('6', c2, r1, STATION), ('6E', c2 + btwSJ, r1, JUNCTION), ('6W', c1 + btwSJ, r1, JUNCTION), ('6S', c2, r1 + btwSJ, JUNCTION), ('6N', c2, r1 - btwSJ, JUNCTION),
-             ('7', c3, r1, STATION), ('7W', c3 - btwSJ, r1, JUNCTION), ('7S', c3, r1 + btwSJ, JUNCTION),
-             ('8', c0, r2, STATION), ('8E', c0 + btwSJ, r2, JUNCTION), ('8N', c0, r2 - btwSJ, JUNCTION),
-             ('9', c1, r2, STATION), ('9E', c1 + btwSJ, r2, JUNCTION), ('9W', c1 - btwSJ, r2, JUNCTION), ('9S', c1, r2 + btwSJ, JUNCTION), ('9N', c1, r2 - btwSJ, JUNCTION),
-             ('10', c2, r2, STATION), ('10E', c2 + btwSJ, r2, JUNCTION), ('10W', c1 + btwSJ, r2, JUNCTION), ('10S', c2, r2 + btwSJ, JUNCTION), ('10N', c2, r2 - btwSJ, JUNCTION),
-             ('11', c3, r2, STATION), ('11W', c3 - btwSJ, r2, JUNCTION), ('11S', c3, r2 + btwSJ, JUNCTION), ('11N', c3, r2 - btwSJ, JUNCTION),
-             ('12', c1, r3, STATION), ('12E', c1 + btwSJ, r3, JUNCTION), ('12N', c0, r3 - btwSJ, JUNCTION),
-             ('13', c2, r3, STATION), ('13E', c2 + btwSJ, r3, JUNCTION), ('13W', c2 - btwSJ, r3, JUNCTION), ('13N', c1, r3 - btwSJ, JUNCTION),
-             ('14', c3, r3, STATION), ('14W', c3 - btwSJ, r3, JUNCTION), ('14N', c3, r3 - btwSJ, JUNCTION),
+    global Nodes
+    Nodes = [
+             Node('1', c0, r0, STATION), Node('1E', c0 + btwSJ, r0, JUNCTION), Node('1S', c0, r0 + btwSJ, JUNCTION),
+             Node('2', c1, r0, STATION), Node('2E', c1 + btwSJ, r0, JUNCTION), Node('2W', c1 - btwSJ, r0, JUNCTION), Node('2S', c1, r0 + btwSJ, JUNCTION),
+             Node('3', c2, r0, STATION), Node('3W', c2 - btwSJ, r0, JUNCTION), Node('3S', c2, r0 + btwSJ, JUNCTION),
+             Node('4', c0, r1, STATION), Node('4E', c0 + btwSJ, r1, JUNCTION), Node('4N', c0, r1 - btwSJ, JUNCTION), Node('4S', c0, r1 + btwSJ, JUNCTION),
+             Node('5', c1, r1, STATION), Node('5E', c1 + btwSJ, r1, JUNCTION), Node('5W', c1 - btwSJ, r1, JUNCTION), Node('5N', c1, r1 - btwSJ, JUNCTION), Node('5S', c1, r1 + btwSJ, JUNCTION),
+             Node('6', c2, r1, STATION), Node('6E', c2 + btwSJ, r1, JUNCTION), Node('6W', c2 - btwSJ, r1, JUNCTION), Node('6S', c2, r1 + btwSJ, JUNCTION), Node('6N', c2, r1 - btwSJ, JUNCTION),
+             Node('7', c3, r1, STATION), Node('7W', c3 - btwSJ, r1, JUNCTION), Node('7S', c3, r1 + btwSJ, JUNCTION),
+             Node('8', c0, r2, STATION), Node('8E', c0 + btwSJ, r2, JUNCTION), Node('8N', c0, r2 - btwSJ, JUNCTION),
+             Node('9', c1, r2, STATION), Node('9E', c1 + btwSJ, r2, JUNCTION), Node('9W', c1 - btwSJ, r2, JUNCTION), Node('9S', c1, r2 + btwSJ, JUNCTION), Node('9N', c1, r2 - btwSJ, JUNCTION),
+             Node('10', c2, r2, STATION), Node('10E', c2 + btwSJ, r2, JUNCTION), Node('10W', c2 - btwSJ, r2, JUNCTION), Node('10S', c2, r2 + btwSJ, JUNCTION), Node('10N', c2, r2 - btwSJ, JUNCTION),
+             Node('11', c3, r2, STATION), Node('11W', c3 - btwSJ, r2, JUNCTION), Node('11S', c3, r2 + btwSJ, JUNCTION), Node('11N', c3, r2 - btwSJ, JUNCTION),
+             Node('12', c1, r3, STATION), Node('12E', c1 + btwSJ, r3, JUNCTION), Node('12N', c1, r3 - btwSJ, JUNCTION),
+             Node('13', c2, r3, STATION), Node('13E', c2 + btwSJ, r3, JUNCTION), Node('13W', c2 - btwSJ, r3, JUNCTION), Node('13N', c2, r3 - btwSJ, JUNCTION),
+             Node('14', c3, r3, STATION), Node('14W', c3 - btwSJ, r3, JUNCTION), Node('14N', c3, r3 - btwSJ, JUNCTION),
              
-             ('3E', c2 + (c3 - c2) * cos((pi / 180) * 90 * (6 / 7)), r1 + (r1 - r0) * sin((pi / 180) * 90 * (6 / 7)), JUNCTION),
-             ('3-7.D1', c2 + (c3 - c2) * cos((pi / 180) * 90 * (5 / 7)), r1 + (r1 - r0) * sin((pi / 180) * 90 * (5 / 7)), DOT),
-             ('3-7.D2', c2 + (c3 - c2) * cos((pi / 180) * 90 * (4 / 7)), r1 + (r1 - r0) * sin((pi / 180) * 90 * (4 / 7)), DOT),
-             ('3-7.D3', c2 + (c3 - c2) * cos((pi / 180) * 90 * (3 / 7)), r1 + (r1 - r0) * sin((pi / 180) * 90 * (3 / 7)), DOT),
-             ('3-7.D4', c2 + (c3 - c2) * cos((pi / 180) * 90 * (2 / 7)), r1 + (r1 - r0) * sin((pi / 180) * 90 * (2 / 7)), DOT),
-             ('7N', c2 + (c3 - c2) * cos((pi / 180) * 90 * (1 / 7)), r1 + (r1 - r0) * sin((pi / 180) * 90 * (1 / 7)), JUNCTION),
+            Node('3E', c2 + (c3 - c2) * cos((pi / 180) * -90 * (10 / 11)), r1 + (r1 - r0) * sin((pi / 180) * -90 * (10 / 11)), JUNCTION),
+            Node('3-7.D1', c2 + (c3 - c2) * cos((pi / 180) * -90 * (9 / 11)), r1 + (r1 - r0) * sin((pi / 180) * -90 * (9 / 11)), DOT),
+            Node('3-7.D2', c2 + (c3 - c2) * cos((pi / 180) * -90 * (8 / 11)), r1 + (r1 - r0) * sin((pi / 180) * -90 * (8 / 11)), DOT),
+            Node('3-7.D3', c2 + (c3 - c2) * cos((pi / 180) * -90 * (7 / 11)), r1 + (r1 - r0) * sin((pi / 180) * -90 * (7 / 11)), DOT),
+            Node('3-7.D4', c2 + (c3 - c2) * cos((pi / 180) * -90 * (6 / 11)), r1 + (r1 - r0) * sin((pi / 180) * -90 * (6 / 11)), DOT),
+            Node('3-7.D5', c2 + (c3 - c2) * cos((pi / 180) * -90 * (5 / 11)), r1 + (r1 - r0) * sin((pi / 180) * -90 * (5 / 11)), DOT),
+            Node('3-7.D6', c2 + (c3 - c2) * cos((pi / 180) * -90 * (4 / 11)), r1 + (r1 - r0) * sin((pi / 180) * -90 * (4 / 11)), DOT),
+            Node('3-7.D7', c2 + (c3 - c2) * cos((pi / 180) * -90 * (3 / 11)), r1 + (r1 - r0) * sin((pi / 180) * -90 * (3 / 11)), DOT),
+            Node('3-7.D8', c2 + (c3 - c2) * cos((pi / 180) * -90 * (2 / 11)), r1 + (r1 - r0) * sin((pi / 180) * -90 * (2 / 11)), DOT),
+            Node('7N', c2 + (c3 - c2) * cos((pi / 180) * -90 * (1 / 11)), r1 + (r1 - r0) * sin((pi / 180) * -90 * (1 / 11)), JUNCTION),
 
-             ('8S', c1 + (c1 - c0) * cos((pi / 180) * (180 + 90 * (1 / 7))), r2 + (r3 - r2) * sin((pi / 180) * (180 + 90 * (1 / 7))), JUNCTION),
-             ('8-12.D1', c1 + (c1 - c0) * cos((pi / 180) * (180 + 90 * (2 / 7))), r2 + (r3 - r2) * sin((pi / 180) * (180 + 90 * (2 / 7))), DOT),
-             ('8-12.D2', c1 + (c1 - c0) * cos((pi / 180) * (180 + 90 * (3 / 7))), r2 + (r3 - r2) * sin((pi / 180) * (180 + 90 * (3 / 7))), DOT),
-             ('8-12.D3', c1 + (c1 - c0) * cos((pi / 180) * (180 + 90 * (4 / 7))), r2 + (r3 - r2) * sin((pi / 180) * (180 + 90 * (4 / 7))), DOT),
-             ('8-12.D4', c1 + (c1 - c0) * cos((pi / 180) * (180 + 90 * (5 / 7))), r2 + (r3 - r2) * sin((pi / 180) * (180 + 90 * (5 / 7))), DOT),
-             ('12W', c1 + (c1 - c0) * cos((pi / 180) * (180 + 90 * (6 / 7))), r2 + (r3 - r2) * sin((pi / 180) * (180 + 90 * (6 / 7))), JUNCTION),
-           ]    
+            Node('12W', c1 + (c1 - c0) * cos((pi / 180) * (-180 + -90 * (9 / 10))), r2 + (r3 - r2) * sin((pi / 180) * (-180 + -90 * (9 / 10))), JUNCTION),
+            Node('12-8.D1', c1 + (c1 - c0) * cos((pi / 180) * (-180 + -90 * (8 / 10))), r2 + (r3 - r2) * sin((pi / 180) * (-180 + -90 * (8 / 10))), DOT),
+            Node('12-8.D2', c1 + (c1 - c0) * cos((pi / 180) * (-180 + -90 * (7 / 10))), r2 + (r3 - r2) * sin((pi / 180) * (-180 + -90 * (7 / 10))), DOT),
+            Node('12-8.D3', c1 + (c1 - c0) * cos((pi / 180) * (-180 + -90 * (6 / 10))), r2 + (r3 - r2) * sin((pi / 180) * (-180 + -90 * (6 / 10))), DOT),
+            Node('12-8.D4', c1 + (c1 - c0) * cos((pi / 180) * (-180 + -90 * (5 / 10))), r2 + (r3 - r2) * sin((pi / 180) * (-180 + -90 * (5 / 10))), DOT),
+            Node('12-8.D5', c1 + (c1 - c0) * cos((pi / 180) * (-180 + -90 * (4 / 10))), r2 + (r3 - r2) * sin((pi / 180) * (-180 + -90 * (4 / 10))), DOT),
+            Node('12-8.D6', c1 + (c1 - c0) * cos((pi / 180) * (-180 + -90 * (3 / 10))), r2 + (r3 - r2) * sin((pi / 180) * (-180 + -90 * (3 / 10))), DOT),
+            Node('12-8.D7', c1 + (c1 - c0) * cos((pi / 180) * (-180 + -90 * (2 / 10))), r2 + (r3 - r2) * sin((pi / 180) * (-180 + -90 * (2 / 10))), DOT),
+            Node('8S', c1 + (c1 - c0) * cos((pi / 180) * (-180 + -90 * (1 / 10))), r2 + (r3 - r2) * sin((pi / 180) * (-180 + -90 * (1 / 10))), JUNCTION),
+           ]
+    
+    Edges = [Edge(findNode('1'), findNode('1E')), Edge(findNode('1S'), findNode('1')),
+            Edge(findNode('2W'), findNode('2')), Edge(findNode('2E'), findNode('2')), Edge(findNode('2'), findNode('2S')),
+            Edge(findNode('3'), findNode('3W')), Edge(findNode('3'), findNode('3E')), Edge(findNode('3S'), findNode('3')),
+            Edge(findNode('4E'), findNode('4')), Edge(findNode('4'), findNode('4S')), Edge(findNode('4'), findNode('4N')),
+            Edge(findNode('5'), findNode('5E')), Edge(findNode('5'), findNode('5W')), Edge(findNode('5S'), findNode('5')), Edge(findNode('5N'), findNode('5')),
+            Edge(findNode('6E'), findNode('6')), Edge(findNode('6W'), findNode('6')), Edge(findNode('6'), findNode('6S')), Edge(findNode('6'), findNode('6N')),
+            Edge(findNode('7'), findNode('7W')), Edge(findNode('7S'), findNode('7')), Edge(findNode('7N'), findNode('7')),
+            Edge(findNode('8'), findNode('8E')), Edge(findNode('8S'), findNode('8')), Edge(findNode('8N'), findNode('8')),
+            Edge(findNode('9E'), findNode('9')), Edge(findNode('9W'), findNode('9')), Edge(findNode('9'), findNode('9S')), Edge(findNode('9'), findNode('9N')),
+            Edge(findNode('10'), findNode('10E')), Edge(findNode('10'), findNode('10W')), Edge(findNode('10S'), findNode('10')), Edge(findNode('10N'), findNode('10')),
+            Edge(findNode('11W'), findNode('11')), Edge(findNode('11'), findNode('11S')), Edge(findNode('11'), findNode('11N')),
+            Edge(findNode('12'), findNode('12E')), Edge(findNode('12'), findNode('12W')), Edge(findNode('12N'), findNode('12')),
+            Edge(findNode('13W'), findNode('13')), Edge(findNode('13E'), findNode('13')), Edge(findNode('13'), findNode('13N')),
+            Edge(findNode('14'), findNode('14W')), Edge(findNode('14N'), findNode('14')),
+              
+            Edge(findNode('1E'), findNode('2W')), Edge(findNode('3W'), findNode('2E')),
+            Edge(findNode('4N'), findNode('1S')), Edge(findNode('2S'), findNode('5N')), Edge(findNode('6N'), findNode('3S')),
+            Edge(findNode('5W'), findNode('4E')), Edge(findNode('5E'), findNode('6W')), Edge(findNode('7W'), findNode('6E')),
+            Edge(findNode('4S'), findNode('8N')), Edge(findNode('9N'), findNode('5S')), Edge(findNode('6S'), findNode('10N')), Edge(findNode('11N'), findNode('7S')),
+            Edge(findNode('8E'), findNode('9W')), Edge(findNode('10W'), findNode('9E')), Edge(findNode('10E'), findNode('11W')),
+            Edge(findNode('9S'), findNode('12N')), Edge(findNode('13N'), findNode('10S')), Edge(findNode('11S'), findNode('14N')),
+            Edge(findNode('12E'), findNode('13W')), Edge(findNode('14W'), findNode('13E')),
+            
+            
+            Edge(findNode('1S'), findNode('1E')),
+            Edge(findNode('2E'), findNode('2S')), Edge(findNode('2W'), findNode('2S')),
+            Edge(findNode('3S'), findNode('3E')), Edge(findNode('3S'), findNode('3W')),
+            Edge(findNode('4E'), findNode('4S')), Edge(findNode('4E'), findNode('4N')),
+            Edge(findNode('5S'), findNode('5E')), Edge(findNode('5S'), findNode('5W')), Edge(findNode('5N'), findNode('5E')), Edge(findNode('5N'), findNode('5W')),
+            Edge(findNode('6E'), findNode('6S')), Edge(findNode('6W'), findNode('6S')), Edge(findNode('6E'), findNode('6N')), Edge(findNode('6W'), findNode('6N')),
+            Edge(findNode('7S'), findNode('7W')), Edge(findNode('7N'), findNode('7W')),
+            Edge(findNode('8S'), findNode('8E')), Edge(findNode('8N'), findNode('8E')),
+            Edge(findNode('9E'), findNode('9S')), Edge(findNode('9W'), findNode('9S')), Edge(findNode('9E'), findNode('9N')), Edge(findNode('9W'), findNode('9N')),
+            Edge(findNode('10S'), findNode('10E')), Edge(findNode('10S'), findNode('10W')), Edge(findNode('10N'), findNode('10E')), Edge(findNode('10N'), findNode('10W')),
+            Edge(findNode('11W'), findNode('11S')), Edge(findNode('11W'), findNode('11N')),
+            Edge(findNode('12N'), findNode('12E')), Edge(findNode('12N'), findNode('12W')),
+            Edge(findNode('13E'), findNode('13N')), Edge(findNode('13W'), findNode('13N')),
+            Edge(findNode('14N'), findNode('14W')),
+            
+            Edge(findNode('3E'), findNode('3-7.D1')), Edge(findNode('3-7.D1'), findNode('3-7.D2')), Edge(findNode('3-7.D2'), findNode('3-7.D3')),
+            Edge(findNode('3-7.D3'), findNode('3-7.D4')), Edge(findNode('3-7.D4'), findNode('3-7.D5')), Edge(findNode('3-7.D5'), findNode('3-7.D6')),
+            Edge(findNode('3-7.D6'), findNode('3-7.D7')), Edge(findNode('3-7.D7'), findNode('3-7.D8')), Edge(findNode('3-7.D8'), findNode('7N')),
+            
+            Edge(findNode('12W'), findNode('12-8.D1')), Edge(findNode('12-8.D1'), findNode('12-8.D2')), Edge(findNode('12-8.D2'), findNode('12-8.D3')),
+            Edge(findNode('12-8.D3'), findNode('12-8.D4')), Edge(findNode('12-8.D4'), findNode('12-8.D5')), Edge(findNode('12-8.D5'), findNode('12-8.D6')),
+            Edge(findNode('12-8.D6'), findNode('12-8.D7')), Edge(findNode('12-8.D7'), findNode('8S')),
+            
+            
+             ]    
 
-    return Nodes
+    return Nodes, Edges
 
 
 #---------------------------------------------------------------------
@@ -81,13 +145,11 @@ NumOfCustomerArrivals = 0
 # Classes
 
 class Node():
-    _id = 0
     BIG_NUM = 1000000
-    def __init__(self, px, py, isStation):
-        self.id = Node._id
-        self.isStation = isStation
-        Node._id += 1
+    def __init__(self, _id, px, py, nodeType):
+        self.id = _id
         self.px, self.py = px, py
+        self.nodeType = nodeType
         
         self.edges_inward = []
         self.edges_outward = []
@@ -98,11 +160,11 @@ class Node():
         self.min_d = Node.BIG_NUM
     
     def __repr__(self):
-        return 'N%d(%s)' % (self.id, 'O' if self.isStation else 'X')
+        return '%s' % (self.id)
     
 class Edge():
     _id = 0
-    def __init__(self, _from, _to):
+    def __init__(self, _from, _to, maxSpeed=6):
         self.id = Edge._id
         Edge._id += 1
         self._from, self._to = _from, _to
@@ -128,7 +190,7 @@ class Customer():
         self.assigned_PRT = None
     
     def __repr__(self):
-        return '(C%d) N%d->N%d' % (self.id, self.sn.id, self.dn.id)
+        return '(C%d) %s->$s' % (self.id, self.sn.id, self.dn.id)
 
 ST_IDLE, ST_APPROACHING, ST_TRANSITING, ST_PARKING = 0, 1, 2, 3
 
@@ -479,16 +541,16 @@ def gen_Customer(average_arrival, num_customers, Nodes):
     Customers = []
     for t in accu_pd:
         sn, dn = 0, 0
-        while sn == dn or not Nodes[sn].isStation or not Nodes[dn].isStation:
+        while sn == dn:
             sn = randrange(len(Nodes))
             dn = randrange(len(Nodes))
         Customers.append(Customer(t / mu_assi, Nodes[sn], Nodes[dn]))
         
-    customerArrivals_txt = open('Info. Arrivals of customers.txt', 'w')
-    for c in Customers:
-        t, sn, dn = c.arriving_time, c.sn.id, c.dn.id 
-        customerArrivals_txt.write('%f,%d-%d\n' % (t, sn, dn))
-    customerArrivals_txt.close()
+#     customerArrivals_txt = open('Info. Arrivals of customers.txt', 'w')
+#     for c in Customers:
+#         t, sn, dn = c.arriving_time, c.sn.id, c.dn.id 
+#         customerArrivals_txt.write('%f,%d-%d\n' % (t, sn, dn))
+#     customerArrivals_txt.close()
         
     return Customers
 
@@ -496,8 +558,8 @@ def gen_PRT(numOfPRT, Nodes):
     PRTs = []
     for _ in range(numOfPRT):
         target_n_id = randrange(len(Nodes)) 
-        while not Nodes[target_n_id].isStation:
-            target_n_id = randrange(len(Nodes)) 
+#         while not Nodes[target_n_id].isStation:
+        target_n_id = randrange(len(Nodes)) 
         PRTs.append(PRT(Nodes[target_n_id]))
     return PRTs
 

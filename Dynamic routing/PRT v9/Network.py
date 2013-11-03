@@ -1,5 +1,4 @@
 from __future__ import division
-from Dynamics import Node, Edges
 
 def network0():
     sx, sy = 800, 800

@@ -9,8 +9,10 @@ TIMER_INTERVAL = 100
 CLOCK_INCREMENT = 100
 CLOCK_INCR_DIFF = sqrt(2)
 
-NODE_DIAMETER = 40
-CUSTOMER_RADIUS = NODE_DIAMETER / 3
+STATION_DIAMETER = 40
+JUNCTION_DIAMETER = STATION_DIAMETER / 3
+DOT_DIAMETER = STATION_DIAMETER / 20  
+CUSTOMER_RADIUS = STATION_DIAMETER / 3
 PRT_SIZE = 20
 
 waiting_customers = []
@@ -23,7 +25,10 @@ class MainFrame(wx.Frame):
 #         wx.Frame.__init__(self, None, -1, TITLE, size=(1024, 768), pos=(20, 20))
         wx.Frame.__init__(self, None, -1, TITLE, size=(1920, 960), pos=(0, 0))
         # Every resources are accessible
-        self.Nodes, self.Edges = Dynamics.gen_Network(*Network.network0())
+        self.Nodes, self.Edges = Dynamics.Network1()
+#         gen_Network(*Network.network0())
+        
+        
         self.Customers = Dynamics.gen_Customer(2.5, 2000, self.Nodes)
         self.NumOfTotalCustomer = len(self.Customers)
         self.PRTs = Dynamics.gen_PRT(10, self.Nodes)
@@ -134,7 +139,7 @@ class MainFrame(wx.Frame):
         
         if self.onTimer_counter == 10:
             self.onTimer_counter = 0
-            self.mp.update_stat(self.now)
+#             self.mp.update_stat(self.now)
                 
     def OnPlay(self, _):
         self.timer.Start(TIMER_INTERVAL)
@@ -187,76 +192,76 @@ class MeasurePanel(wx.ListCtrl):
         self.SetColumnWidth(0, 90)
         self.SetColumnWidth(1, 90)
         
-        self.InsertStringItem(NumOfStations, 'Stations')
-        self.SetStringItem(NumOfStations, 1, '%d' % len([n for n in self.Parent.Parent.Parent.Nodes if n.isStation]))
+#         self.InsertStringItem(NumOfStations, 'Stations')
+#         self.SetStringItem(NumOfStations, 1, '%d' % len([n for n in self.Parent.Parent.Parent.Nodes if n.isStation]))
         
-        self.InsertStringItem(NumOfPRTs, 'PRTs')
-        self.SetStringItem(NumOfPRTs, 1, '%d' % len(self.Parent.Parent.Parent.PRTs))
-        
-        self.InsertStringItem(TotalCustomer, 'T. Customers')
-        self.SetStringItem(TotalCustomer, 1, '%d' % self.Parent.Parent.Parent.NumOfTotalCustomer)
-        
-        self.InsertStringItem(B1, '  ')
-        self.SetStringItem(B1, 1, '   ')
-        self.InsertStringItem(CustomerArrivals, 'C. Arrivals')
-        self.SetStringItem(CustomerArrivals, 1, '%d' % Dynamics.NumOfCustomerArrivals)
-        self.InsertStringItem(WaitingCustomers, 'Waiting Customers')
-        self.SetStringItem(WaitingCustomers, 1, '%d' % len(Dynamics.waiting_customers))
-        self.InsertStringItem(PickedUpCustomers, 'PickedUp Customers')
-        self.SetStringItem(PickedUpCustomers, 1, '%d' % Dynamics.NumOfPickedUpCustomer)
-        self.InsertStringItem(ServicedCustomers, 'Serviced Customers')
-        self.SetStringItem(ServicedCustomers, 1, '%d' % Dynamics.NumOfServicedCustomer)
-        
-        self.InsertStringItem(B2, '  ')
-        self.SetStringItem(B2, 1, '   ')
-        self.InsertStringItem(WaitingTime, 'Waiting Time')
-        self.SetStringItem(WaitingTime, 1, '   ')
-        self.InsertStringItem(WTTotal, 'Total')
-        self.SetStringItem(WTTotal, 1, '%.1f' % Dynamics.Total_customers_waiting_time)
-        self.InsertStringItem(WTAverage, 'Average')
-        self.SetStringItem(WTAverage, 1, '%.1f' % 0.0)
-        self.InsertStringItem(WTMaximum, 'Maximum')
-        self.SetStringItem(WTMaximum, 1, '%.1f' % Dynamics.MaxCustomerWaitingTime)
-        
-        self.InsertStringItem(B3, '  ')
-        self.SetStringItem(B3, 1, '   ')
-        self.InsertStringItem(FlowTime, 'Flow Time')
-        self.SetStringItem(FlowTime, 1, '   ')
-        self.InsertStringItem(FTTotal, 'Total')
-        self.SetStringItem(FTTotal, 1, '%.1f' % Dynamics.Total_customers_flow_time)
-        self.InsertStringItem(FTAverage, 'Average')
-        self.SetStringItem(FTAverage, 1, '%.1f' % 0.0)
-        
-        self.InsertStringItem(B4, '  ')
-        self.SetStringItem(B4, 1, '   ')
-        self.InsertStringItem(TravelDistance, 'Travel Distance')
-        self.SetStringItem(TravelDistance, 1, '   ')
-        self.InsertStringItem(TDTotal, 'Total')
-        self.SetStringItem(TDTotal, 1, '%.1f' % Dynamics.Total_travel_distance)
-        self.InsertStringItem(TDAverage, 'Average')
-        self.SetStringItem(TDAverage, 1, '%.1f' % 0.0)
-        
-        self.InsertStringItem(B5, '  ')
-        self.SetStringItem(B5, 1, '   ')
-        self.InsertStringItem(EmptyTravelDistance, 'E. T. Distance')
-        self.SetStringItem(EmptyTravelDistance, 1, '   ')
-        self.InsertStringItem(ETDTotal, 'Total')
-        self.SetStringItem(ETDTotal, 1, '%.1f' % Dynamics.Total_empty_travel_distance)
-        self.InsertStringItem(ETDAverage, 'Average')
-        self.SetStringItem(ETDAverage, 1, '%.1f' % 0.0)
-        
-        self.InsertStringItem(B6, '  ')
-        self.SetStringItem(B6, 1, '   ')
-        self.InsertStringItem(StateDuration, 'State Duration')
-        self.SetStringItem(StateDuration, 1, '   ')
-        self.InsertStringItem(Idle, 'Idle')
-        self.SetStringItem(Idle, 1, '%.1f' % Dynamics.IdleState_time)
-        self.InsertStringItem(Approaching, 'Approaching')
-        self.SetStringItem(Approaching, 1, '%.1f' % Dynamics.ApproachingState_time)
-        self.InsertStringItem(Transiting, 'Transiting')
-        self.SetStringItem(Transiting, 1, '%.1f' % Dynamics.TransitingState_time)
-        self.InsertStringItem(Parking, 'Parking')
-        self.SetStringItem(Parking, 1, '%.1f' % Dynamics.ParkingState_time)
+#         self.InsertStringItem(NumOfPRTs, 'PRTs')
+#         self.SetStringItem(NumOfPRTs, 1, '%d' % len(self.Parent.Parent.Parent.PRTs))
+#         
+#         self.InsertStringItem(TotalCustomer, 'T. Customers')
+#         self.SetStringItem(TotalCustomer, 1, '%d' % self.Parent.Parent.Parent.NumOfTotalCustomer)
+#         
+#         self.InsertStringItem(B1, '  ')
+#         self.SetStringItem(B1, 1, '   ')
+#         self.InsertStringItem(CustomerArrivals, 'C. Arrivals')
+#         self.SetStringItem(CustomerArrivals, 1, '%d' % Dynamics.NumOfCustomerArrivals)
+#         self.InsertStringItem(WaitingCustomers, 'Waiting Customers')
+#         self.SetStringItem(WaitingCustomers, 1, '%d' % len(Dynamics.waiting_customers))
+#         self.InsertStringItem(PickedUpCustomers, 'PickedUp Customers')
+#         self.SetStringItem(PickedUpCustomers, 1, '%d' % Dynamics.NumOfPickedUpCustomer)
+#         self.InsertStringItem(ServicedCustomers, 'Serviced Customers')
+#         self.SetStringItem(ServicedCustomers, 1, '%d' % Dynamics.NumOfServicedCustomer)
+#         
+#         self.InsertStringItem(B2, '  ')
+#         self.SetStringItem(B2, 1, '   ')
+#         self.InsertStringItem(WaitingTime, 'Waiting Time')
+#         self.SetStringItem(WaitingTime, 1, '   ')
+#         self.InsertStringItem(WTTotal, 'Total')
+#         self.SetStringItem(WTTotal, 1, '%.1f' % Dynamics.Total_customers_waiting_time)
+#         self.InsertStringItem(WTAverage, 'Average')
+#         self.SetStringItem(WTAverage, 1, '%.1f' % 0.0)
+#         self.InsertStringItem(WTMaximum, 'Maximum')
+#         self.SetStringItem(WTMaximum, 1, '%.1f' % Dynamics.MaxCustomerWaitingTime)
+#         
+#         self.InsertStringItem(B3, '  ')
+#         self.SetStringItem(B3, 1, '   ')
+#         self.InsertStringItem(FlowTime, 'Flow Time')
+#         self.SetStringItem(FlowTime, 1, '   ')
+#         self.InsertStringItem(FTTotal, 'Total')
+#         self.SetStringItem(FTTotal, 1, '%.1f' % Dynamics.Total_customers_flow_time)
+#         self.InsertStringItem(FTAverage, 'Average')
+#         self.SetStringItem(FTAverage, 1, '%.1f' % 0.0)
+#         
+#         self.InsertStringItem(B4, '  ')
+#         self.SetStringItem(B4, 1, '   ')
+#         self.InsertStringItem(TravelDistance, 'Travel Distance')
+#         self.SetStringItem(TravelDistance, 1, '   ')
+#         self.InsertStringItem(TDTotal, 'Total')
+#         self.SetStringItem(TDTotal, 1, '%.1f' % Dynamics.Total_travel_distance)
+#         self.InsertStringItem(TDAverage, 'Average')
+#         self.SetStringItem(TDAverage, 1, '%.1f' % 0.0)
+#         
+#         self.InsertStringItem(B5, '  ')
+#         self.SetStringItem(B5, 1, '   ')
+#         self.InsertStringItem(EmptyTravelDistance, 'E. T. Distance')
+#         self.SetStringItem(EmptyTravelDistance, 1, '   ')
+#         self.InsertStringItem(ETDTotal, 'Total')
+#         self.SetStringItem(ETDTotal, 1, '%.1f' % Dynamics.Total_empty_travel_distance)
+#         self.InsertStringItem(ETDAverage, 'Average')
+#         self.SetStringItem(ETDAverage, 1, '%.1f' % 0.0)
+#         
+#         self.InsertStringItem(B6, '  ')
+#         self.SetStringItem(B6, 1, '   ')
+#         self.InsertStringItem(StateDuration, 'State Duration')
+#         self.SetStringItem(StateDuration, 1, '   ')
+#         self.InsertStringItem(Idle, 'Idle')
+#         self.SetStringItem(Idle, 1, '%.1f' % Dynamics.IdleState_time)
+#         self.InsertStringItem(Approaching, 'Approaching')
+#         self.SetStringItem(Approaching, 1, '%.1f' % Dynamics.ApproachingState_time)
+#         self.InsertStringItem(Transiting, 'Transiting')
+#         self.SetStringItem(Transiting, 1, '%.1f' % Dynamics.TransitingState_time)
+#         self.InsertStringItem(Parking, 'Parking')
+#         self.SetStringItem(Parking, 1, '%.1f' % Dynamics.ParkingState_time)
                 
     def update_stat(self, cur_time):
         self.SetStringItem(CustomerArrivals, 1, '%d' % Dynamics.NumOfCustomerArrivals)
@@ -333,6 +338,8 @@ class ViewPanel(DragZoomPanel):
         self.SetBackgroundColour(wx.WHITE)
         self.Bind(wx.EVT_PAINT, self.OnPaint)
         self.Bind(wx.EVT_SIZE, self.OnSize)
+        from Dynamics import STATION, JUNCTION, DOT
+        global STATION, JUNCTION, DOT
     
     def OnMouseWheel(self, e):
         if e.ControlDown():
@@ -350,104 +357,83 @@ class ViewPanel(DragZoomPanel):
         old_tr = gc.GetTransform()
         
         for n in self.Parent.Parent.Parent.Parent.Nodes:
-            if not n.isStation:
-                continue
             gc.Translate(n.px, n.py)
-            
-            gc.SetPen(wx.Pen(wx.Colour(0, 0, 0), 1))
-            gc.SetBrush(wx.Brush(wx.Colour(255, 255, 255)))
-            gc.SetFont(wx.Font(10, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-            
-            gc.DrawEllipse(-NODE_DIAMETER / 2, -NODE_DIAMETER / 2, NODE_DIAMETER, NODE_DIAMETER)
-            if n.isStation:
-                gc.DrawText('N%d' % n.id, -7, -7)
+            if n.nodeType == STATION:
+                gc.SetBrush(wx.Brush(wx.Colour(255, 255, 255)))
+                gc.SetPen(wx.Pen(wx.Colour(0, 0, 0), 1))
+                gc.DrawEllipse(-STATION_DIAMETER / 2, -STATION_DIAMETER / 2, STATION_DIAMETER, STATION_DIAMETER)
+                gc.SetFont(wx.Font(10, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+                if len(n.id) > 1:
+                    gc.DrawText('%s' % n.id, -7, -8)
+                else:
+                    gc.DrawText('%s' % n.id, -3, -8)
+            elif n.nodeType == JUNCTION:
+                gc.SetBrush(wx.Brush(wx.Colour(255, 255, 255)))
+                gc.SetPen(wx.Pen(wx.Colour(0, 0, 0), 0.01))
+                gc.DrawEllipse(-JUNCTION_DIAMETER / 2, -JUNCTION_DIAMETER / 2, JUNCTION_DIAMETER, JUNCTION_DIAMETER)
+            else:
+                assert n.nodeType == DOT
+                gc.SetBrush(wx.Brush(wx.Colour(0, 0, 0)))
+                gc.SetPen(wx.Pen(wx.Colour(0, 0, 0), 0.01))
+                gc.DrawEllipse(-DOT_DIAMETER / 2, -DOT_DIAMETER / 2, DOT_DIAMETER, DOT_DIAMETER)
             gc.SetTransform(old_tr)
             
         for i, waiting_c_in_node in enumerate(self.Parent.Parent.Parent.Parent.waiting_customers_in_node):
             if waiting_c_in_node:
                 waiting_c_str = '[' + ':'.join(('C%d' % c_id) for c_id in waiting_c_in_node) + ']'
                 gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-                gc.DrawText(waiting_c_str, self.Parent.Parent.Parent.Parent.Nodes[i].px + NODE_DIAMETER / 2, self.Parent.Parent.Parent.Parent.Nodes[i].py - NODE_DIAMETER / 2)
+                gc.DrawText(waiting_c_str, self.Parent.Parent.Parent.Parent.Nodes[i].px + STATION_DIAMETER / 2, self.Parent.Parent.Parent.Parent.Nodes[i].py - STATION_DIAMETER / 2)
         
         for e in self.Parent.Parent.Parent.Parent.Edges:
             prev_n, next_n = e._from, e._to
             
-            if prev_n.isStation and not next_n.isStation:
-                ax = next_n.px - prev_n.px
-                ay = next_n.py - prev_n.py
-                
-                la = sqrt(ax * ax + ay * ay)
-                ux = ax / la
-                uy = ay / la
-                 
-                sx = prev_n.px + ux * NODE_DIAMETER / 2
-                sy = prev_n.py + uy * NODE_DIAMETER / 2
-                ex = next_n.px
-                ey = next_n.py
-                            
+            ax, ay = next_n.px - prev_n.px, next_n.py - prev_n.py
+            la = sqrt(ax * ax + ay * ay)
+            ux, uy = ax / la, ay / la
+            px, py = -uy, ux
+            if prev_n.nodeType == STATION and next_n.nodeType == JUNCTION:
+                sx = prev_n.px + ux * STATION_DIAMETER / 2
+                sy = prev_n.py + uy * STATION_DIAMETER / 2
+                ex = next_n.px - ux * JUNCTION_DIAMETER / 2
+                ey = next_n.py - uy * JUNCTION_DIAMETER / 2  
+            elif prev_n.nodeType == JUNCTION and next_n.nodeType == STATION:
+                sx = prev_n.px + ux * JUNCTION_DIAMETER / 2
+                sy = prev_n.py + uy * JUNCTION_DIAMETER / 2
+                ex = next_n.px - ux * STATION_DIAMETER / 2
+                ey = next_n.py - uy * STATION_DIAMETER / 2
+            elif prev_n.nodeType == JUNCTION and next_n.nodeType == JUNCTION:
+                sx = prev_n.px + ux * JUNCTION_DIAMETER / 2
+                sy = prev_n.py + uy * JUNCTION_DIAMETER / 2
+                ex = next_n.px - ux * JUNCTION_DIAMETER / 2
+                ey = next_n.py - uy * JUNCTION_DIAMETER / 2
+            elif prev_n.nodeType == DOT and next_n.nodeType == JUNCTION:
+                sx = prev_n.px + ux * DOT_DIAMETER / 2
+                sy = prev_n.py + uy * DOT_DIAMETER / 2
+                ex = next_n.px - ux * JUNCTION_DIAMETER / 2
+                ey = next_n.py - uy * JUNCTION_DIAMETER / 2
+            elif prev_n.nodeType == JUNCTION and next_n.nodeType == DOT :
+                sx = prev_n.px + ux * JUNCTION_DIAMETER / 2
+                sy = prev_n.py + uy * JUNCTION_DIAMETER / 2
+                ex = next_n.px - ux * DOT_DIAMETER / 2
+                ey = next_n.py - uy * DOT_DIAMETER / 2
+            elif prev_n.nodeType == DOT and next_n.nodeType == DOT :
+                sx = prev_n.px + ux * DOT_DIAMETER / 2
+                sy = prev_n.py + uy * DOT_DIAMETER / 2
+                ex = next_n.px - ux * DOT_DIAMETER / 2
+                ey = next_n.py - uy * DOT_DIAMETER / 2
                 gc.DrawLines([(sx, sy), (ex, ey)])
                 gc.SetFont(wx.Font(5, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
                 gc.DrawText('%d' % int(round(e.distance, 1)), (prev_n.px + next_n.px) / 2, (prev_n.py + next_n.py) / 2)
-                
-            elif not prev_n.isStation and not next_n.isStation:
-                sx = prev_n.px
-                sy = prev_n.py
-                ex = next_n.px
-                ey = next_n.py
-                gc.DrawLines([(sx, sy), (ex, ey)])
-                gc.SetFont(wx.Font(5, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-                gc.DrawText('%d' % int(round(e.distance, 1)), (prev_n.px + next_n.px) / 2, (prev_n.py + next_n.py) / 2)
-                    
-            elif not prev_n.isStation and next_n.isStation:
-                ax = next_n.px - prev_n.px
-                ay = next_n.py - prev_n.py
-                
-                la = sqrt(ax * ax + ay * ay)
-                ux = ax / la
-                uy = ay / la
-                
-                sx = prev_n.px
-                sy = prev_n.py
-                ex = next_n.px - ux * NODE_DIAMETER / 2
-                ey = next_n.py - uy * NODE_DIAMETER / 2
-                
-                px = -uy
-                py = ux
-                            
-                gc.DrawLines([(sx, sy), (ex, ey)])
-                gc.DrawLines([(ex, ey), (ex - int((ux * 5)) + int(px * 3), ey
-                            - int(uy * 5) + int(py * 3))])
-                
-                gc.DrawLines([(ex, ey), (ex - int(ux * 5) - int(px * 3), ey
-                            - int(uy * 5) - int(py * 3))])
-                gc.SetFont(wx.Font(5, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-                gc.DrawText('%d' % int(round(e.distance, 1)), (prev_n.px + next_n.px) / 2, (prev_n.py + next_n.py) / 2)
+                continue
+            else:
+                assert False 
             
-            if prev_n.isStation and next_n.isStation: 
-                ax = next_n.px - prev_n.px
-                ay = next_n.py - prev_n.py
-                
-                la = sqrt(ax * ax + ay * ay)
-                ux = ax / la
-                uy = ay / la
-                 
-                sx = prev_n.px + ux * NODE_DIAMETER / 2
-                sy = prev_n.py + uy * NODE_DIAMETER / 2
-                ex = next_n.px - ux * NODE_DIAMETER / 2
-                ey = next_n.py - uy * NODE_DIAMETER / 2
-                
-                px = -uy
-                py = ux
-                            
-                gc.DrawLines([(sx, sy), (ex, ey)])
-                gc.DrawLines([(ex, ey), (ex - int((ux * 5)) + int(px * 3), ey
-                            - int(uy * 5) + int(py * 3))])
-                
-                gc.DrawLines([(ex, ey), (ex - int(ux * 5) - int(px * 3), ey
-                            - int(uy * 5) - int(py * 3))])           
-                
-                gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-                gc.DrawText('%d' % int(round(e.distance, 1)), (prev_n.px + next_n.px) / 2, (prev_n.py + next_n.py) / 2)
+            gc.DrawLines([(ex, ey), (ex - int((ux * 5)) + int(px * 3), ey - int(uy * 5) + int(py * 3))])
+            gc.DrawLines([(ex, ey), (ex - int(ux * 5) - int(px * 3), ey - int(uy * 5) - int(py * 3))])
+            gc.DrawLines([(sx, sy), (ex, ey)])
+                       
+            gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+            gc.DrawText('%d' % int(round(e.distance, 1)), (prev_n.px + next_n.px) / 2, (prev_n.py + next_n.py) / 2)
             
         for v in self.Parent.Parent.Parent.Parent.PRTs:
             gc.Translate(v.px, v.py)
