@@ -2,6 +2,7 @@ from __future__ import division
 from math import sqrt
 from munkres import Munkres
 
+check_path = lambda x: None
 
 on_notify_assignmentment_point = lambda x: None
 
@@ -149,22 +150,23 @@ def find_SP(sn, en, Nodes):
     
     # Update minimum distance
     sn.min_d = 0
+    sn.visited = True
     todo = [sn]
     while todo:
         n = todo.pop()
-        n.visitiedCount += 1
-        n.visited = True if n.visitiedCount == len(n.edges_inward) else False
-                
+        if not n.visited:
+            for e in n.edges_inward:
+                if not e._from.visited:
+                    break
+            else:
+                n.visited = True
         for e in n.edges_outward:
             consi_n = e._to
             dist = n.min_d + e.distance
             if consi_n.min_d >= dist:
                 consi_n.min_d = dist
-            if n.visitiedCount == 1:
-                todo.append(consi_n)
-        
-        if en.visited:
-            break
+                if not consi_n.visited and consi_n not in todo:
+                    todo.append(consi_n)
                 
     # Find Path
     path_n = []
@@ -182,10 +184,6 @@ def find_SP(sn, en, Nodes):
     path_n.reverse()
     path_e.reverse()
     
-    print sn, en
-    
-    print path_n
-
     assert sn == path_n[0]
     assert en == path_n[-1] 
     

@@ -441,7 +441,7 @@ class PRT():
         self.event_seq.append(x)
         heappush(event_queue, x)
         
-        logger('            parking node: N%d' % (self.path_n[-1].id))
+        logger('            parking node: %s' % (self.path_n[-1].id))
 
     def On_TransitingToIdle(self, cur_time, target_c):
         logger('%.1f:    On_T2I - %s' % (cur_time, self))    
@@ -630,10 +630,10 @@ def test():
     Nodes, Edges = Network1()
     Customers = gen_Customer(10.5, 2000, Nodes)
     PRTs = gen_PRT(10, Nodes)
-    path_n, path_e = Algorithms.find_SP(findNode('5E'), findNode('14'), Nodes) 
+#     path_n, path_e = Algorithms.find_SP(findNode('5E'), findNode('14'), Nodes) 
     
-    print path_n, path_e
-    assert False
+#     print path_n, path_e
+#     assert False
     
     # Choose dispatcher
 #     dispatcher = Algorithms.NN0
