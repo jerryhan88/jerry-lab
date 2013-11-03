@@ -126,7 +126,6 @@ def Network1():
             Edge(findNode('12-8.D6'), findNode('12-8.D7')), Edge(findNode('12-8.D7'), findNode('12-8.D8')),Edge(findNode('12-8.D8'), findNode('12-8.D9')),
             Edge(findNode('12-8.D9'), findNode('12-8.D10')),Edge(findNode('12-8.D10'), findNode('8S')),
             
-            
              ]    
 
     return Nodes, Edges
@@ -189,7 +188,7 @@ class Edge():
         self._to.edges_inward.append(self)
         
     def __repr__(self):
-        return 'N%d->N%d' % (self._from.id, self._to.id)
+        return '%s->%s' % (self._from.id, self._to.id)
 
 class Customer():
     _id = 0
