@@ -1,12 +1,13 @@
 from __future__ import division
 from math import sqrt, pi, cos, sin
-from random import randrange, seed, expovariate
+from random import randrange, seed, expovariate, random, choice
 from numpy.random import poisson
 from heapq import heappush, heappop
 import Algorithms
 #---------------------------------------------------------------------
 # Network example
-STATION, JUNCTION, DOT = 0, 1, 2
+TRANSFER, STATION, JUNCTION, DOT = range(4)
+S2J_SPEED = 6
 
 def findNode(nID):
     for n in Nodes:
@@ -34,7 +35,7 @@ def Network1():
                 Node('2', c1, r0, STATION), Node('2E', c1 + btwSJ, r0, JUNCTION), Node('2W', c1 - btwSJ, r0, JUNCTION), Node('2S', c1, r0 + btwSJ, JUNCTION),
                 Node('3', c2, r0, STATION), Node('3W', c2 - btwSJ, r0, JUNCTION), Node('3S', c2, r0 + btwSJ, JUNCTION),
                 Node('4', c0, r1, STATION), Node('4E', c0 + btwSJ, r1, JUNCTION), Node('4N', c0, r1 - btwSJ, JUNCTION), Node('4S', c0, r1 + btwSJ, JUNCTION),
-                Node('5', c1, r1, STATION), Node('5E', c1 + btwSJ, r1, JUNCTION), Node('5W', c1 - btwSJ, r1, JUNCTION), Node('5N', c1, r1 - btwSJ, JUNCTION), Node('5S', c1, r1 + btwSJ, JUNCTION),
+                Node('5', c1, r1, TRANSFER), Node('5E', c1 + btwSJ, r1, JUNCTION), Node('5W', c1 - btwSJ, r1, JUNCTION), Node('5N', c1, r1 - btwSJ, JUNCTION), Node('5S', c1, r1 + btwSJ, JUNCTION),
                 Node('6', c2, r1, STATION), Node('6E', c2 + btwSJ, r1, JUNCTION), Node('6W', c2 - btwSJ, r1, JUNCTION), Node('6S', c2, r1 + btwSJ, JUNCTION), Node('6N', c2, r1 - btwSJ, JUNCTION),
                 Node('7', c3, r1, STATION), Node('7W', c3 - btwSJ, r1, JUNCTION), Node('7S', c3, r1 + btwSJ, JUNCTION),
                 Node('8', c0, r2, STATION), Node('8E', c0 + btwSJ, r2, JUNCTION), Node('8N', c0, r2 - btwSJ, JUNCTION),
@@ -42,7 +43,7 @@ def Network1():
                 Node('10', c2, r2, STATION), Node('10E', c2 + btwSJ, r2, JUNCTION), Node('10W', c2 - btwSJ, r2, JUNCTION), Node('10S', c2, r2 + btwSJ, JUNCTION), Node('10N', c2, r2 - btwSJ, JUNCTION),
                 Node('11', c3, r2, STATION), Node('11W', c3 - btwSJ, r2, JUNCTION), Node('11S', c3, r2 + btwSJ, JUNCTION), Node('11N', c3, r2 - btwSJ, JUNCTION),
                 Node('12', c1, r3, STATION), Node('12E', c1 + btwSJ, r3, JUNCTION), Node('12N', c1, r3 - btwSJ, JUNCTION),
-                Node('13', c2, r3, STATION), Node('13E', c2 + btwSJ, r3, JUNCTION), Node('13W', c2 - btwSJ, r3, JUNCTION), Node('13N', c2, r3 - btwSJ, JUNCTION),
+                Node('13', c2, r3, TRANSFER), Node('13E', c2 + btwSJ, r3, JUNCTION), Node('13W', c2 - btwSJ, r3, JUNCTION), Node('13N', c2, r3 - btwSJ, JUNCTION),
                 Node('14', c3, r3, STATION), Node('14W', c3 - btwSJ, r3, JUNCTION), Node('14N', c3, r3 - btwSJ, JUNCTION),
                 
                 Node('3E', c2 + btwSJ, r0, JUNCTION),
@@ -73,54 +74,54 @@ def Network1():
                 Node('8S', c0, r2 + btwSJ, JUNCTION),
            ]
     
-    Edges = [Edge(findNode('1'), findNode('1E')), Edge(findNode('1S'), findNode('1')),
-            Edge(findNode('2W'), findNode('2')), Edge(findNode('2E'), findNode('2')), Edge(findNode('2'), findNode('2S')),
-            Edge(findNode('3'), findNode('3W')), Edge(findNode('3'), findNode('3E')), Edge(findNode('3S'), findNode('3')),
-            Edge(findNode('4E'), findNode('4')), Edge(findNode('4'), findNode('4S')), Edge(findNode('4'), findNode('4N')),
-            Edge(findNode('5'), findNode('5E')), Edge(findNode('5'), findNode('5W')), Edge(findNode('5S'), findNode('5')), Edge(findNode('5N'), findNode('5')),
-            Edge(findNode('6E'), findNode('6')), Edge(findNode('6W'), findNode('6')), Edge(findNode('6'), findNode('6S')), Edge(findNode('6'), findNode('6N')),
-            Edge(findNode('7'), findNode('7W')), Edge(findNode('7S'), findNode('7')), Edge(findNode('7N'), findNode('7')),
-            Edge(findNode('8'), findNode('8E')), Edge(findNode('8S'), findNode('8')), Edge(findNode('8N'), findNode('8')),
-            Edge(findNode('9E'), findNode('9')), Edge(findNode('9W'), findNode('9')), Edge(findNode('9'), findNode('9S')), Edge(findNode('9'), findNode('9N')),
-            Edge(findNode('10'), findNode('10E')), Edge(findNode('10'), findNode('10W')), Edge(findNode('10S'), findNode('10')), Edge(findNode('10N'), findNode('10')),
-            Edge(findNode('11W'), findNode('11')), Edge(findNode('11'), findNode('11S')), Edge(findNode('11'), findNode('11N')),
-            Edge(findNode('12'), findNode('12E')), Edge(findNode('12'), findNode('12W')), Edge(findNode('12N'), findNode('12')),
-            Edge(findNode('13W'), findNode('13')), Edge(findNode('13E'), findNode('13')), Edge(findNode('13'), findNode('13N')),
-            Edge(findNode('14'), findNode('14W')), Edge(findNode('14N'), findNode('14')),
-              
-            Edge(findNode('1E'), findNode('2W')), Edge(findNode('3W'), findNode('2E')),
-            Edge(findNode('4N'), findNode('1S')), Edge(findNode('2S'), findNode('5N')), Edge(findNode('6N'), findNode('3S')),
-            Edge(findNode('5W'), findNode('4E')), Edge(findNode('5E'), findNode('6W')), Edge(findNode('7W'), findNode('6E')),
-            Edge(findNode('4S'), findNode('8N')), Edge(findNode('9N'), findNode('5S')), Edge(findNode('6S'), findNode('10N')), Edge(findNode('11N'), findNode('7S')),
-            Edge(findNode('8E'), findNode('9W')), Edge(findNode('10W'), findNode('9E')), Edge(findNode('10E'), findNode('11W')),
-            Edge(findNode('9S'), findNode('12N')), Edge(findNode('13N'), findNode('10S')), Edge(findNode('11S'), findNode('14N')),
-            Edge(findNode('12E'), findNode('13W')), Edge(findNode('14W'), findNode('13E')),
-            
-            
-            Edge(findNode('1S'), findNode('1E')),
-            Edge(findNode('2E'), findNode('2S')), Edge(findNode('2W'), findNode('2S')),
-            Edge(findNode('3S'), findNode('3E')), Edge(findNode('3S'), findNode('3W')),
-            Edge(findNode('4E'), findNode('4S')), Edge(findNode('4E'), findNode('4N')),
-            Edge(findNode('5S'), findNode('5E')), Edge(findNode('5S'), findNode('5W')), Edge(findNode('5N'), findNode('5E')), Edge(findNode('5N'), findNode('5W')),
-            Edge(findNode('6E'), findNode('6S')), Edge(findNode('6W'), findNode('6S')), Edge(findNode('6E'), findNode('6N')), Edge(findNode('6W'), findNode('6N')),
-            Edge(findNode('7S'), findNode('7W')), Edge(findNode('7N'), findNode('7W')),
-            Edge(findNode('8S'), findNode('8E')), Edge(findNode('8N'), findNode('8E')),
-            Edge(findNode('9E'), findNode('9S')), Edge(findNode('9W'), findNode('9S')), Edge(findNode('9E'), findNode('9N')), Edge(findNode('9W'), findNode('9N')),
-            Edge(findNode('10S'), findNode('10E')), Edge(findNode('10S'), findNode('10W')), Edge(findNode('10N'), findNode('10E')), Edge(findNode('10N'), findNode('10W')),
-            Edge(findNode('11W'), findNode('11S')), Edge(findNode('11W'), findNode('11N')),
-            Edge(findNode('12N'), findNode('12E')), Edge(findNode('12N'), findNode('12W')),
-            Edge(findNode('13E'), findNode('13N')), Edge(findNode('13W'), findNode('13N')),
-            Edge(findNode('14N'), findNode('14W')),
-            
-            Edge(findNode('3E'), findNode('3-7.D1')), Edge(findNode('3-7.D1'), findNode('3-7.D2')), Edge(findNode('3-7.D2'), findNode('3-7.D3')),
-            Edge(findNode('3-7.D3'), findNode('3-7.D4')), Edge(findNode('3-7.D4'), findNode('3-7.D5')), Edge(findNode('3-7.D5'), findNode('3-7.D6')),
-            Edge(findNode('3-7.D6'), findNode('3-7.D7')), Edge(findNode('3-7.D7'), findNode('3-7.D8')), Edge(findNode('3-7.D8'), findNode('3-7.D9')),
-            Edge(findNode('3-7.D9'), findNode('3-7.D10')), Edge(findNode('3-7.D10'), findNode('3-7.D11')), Edge(findNode('3-7.D11'), findNode('7N')),
-            
-            Edge(findNode('12W'), findNode('12-8.D1')), Edge(findNode('12-8.D1'), findNode('12-8.D2')), Edge(findNode('12-8.D2'), findNode('12-8.D3')),
-            Edge(findNode('12-8.D3'), findNode('12-8.D4')), Edge(findNode('12-8.D4'), findNode('12-8.D5')), Edge(findNode('12-8.D5'), findNode('12-8.D6')),
-            Edge(findNode('12-8.D6'), findNode('12-8.D7')), Edge(findNode('12-8.D7'), findNode('12-8.D8')),Edge(findNode('12-8.D8'), findNode('12-8.D9')),
-            Edge(findNode('12-8.D9'), findNode('12-8.D10')),Edge(findNode('12-8.D10'), findNode('8S')),
+    Edges = [
+                Edge(findNode('1'), findNode('1E'), S2J_SPEED), Edge(findNode('1S'), findNode('1'), S2J_SPEED),
+                Edge(findNode('2W'), findNode('2'), S2J_SPEED), Edge(findNode('2E'), findNode('2'), S2J_SPEED), Edge(findNode('2'), findNode('2S'), S2J_SPEED),
+                Edge(findNode('3'), findNode('3W'), S2J_SPEED), Edge(findNode('3'), findNode('3E'), S2J_SPEED), Edge(findNode('3S'), findNode('3'), S2J_SPEED),
+                Edge(findNode('4E'), findNode('4'), S2J_SPEED), Edge(findNode('4'), findNode('4S'), S2J_SPEED), Edge(findNode('4'), findNode('4N'), S2J_SPEED),
+                Edge(findNode('5'), findNode('5E'), S2J_SPEED), Edge(findNode('5'), findNode('5W'), S2J_SPEED), Edge(findNode('5S'), findNode('5'), S2J_SPEED), Edge(findNode('5N'), findNode('5'), S2J_SPEED),
+                Edge(findNode('6E'), findNode('6'), S2J_SPEED), Edge(findNode('6W'), findNode('6'), S2J_SPEED), Edge(findNode('6'), findNode('6S'), S2J_SPEED), Edge(findNode('6'), findNode('6N'), S2J_SPEED),
+                Edge(findNode('7'), findNode('7W'), S2J_SPEED), Edge(findNode('7S'), findNode('7'), S2J_SPEED), Edge(findNode('7N'), findNode('7'), S2J_SPEED),
+                Edge(findNode('8'), findNode('8E'), S2J_SPEED), Edge(findNode('8S'), findNode('8'), S2J_SPEED), Edge(findNode('8N'), findNode('8'), S2J_SPEED),
+                Edge(findNode('9E'), findNode('9'), S2J_SPEED), Edge(findNode('9W'), findNode('9'), S2J_SPEED), Edge(findNode('9'), findNode('9S'), S2J_SPEED), Edge(findNode('9'), findNode('9N'), S2J_SPEED),
+                Edge(findNode('10'), findNode('10E'), S2J_SPEED), Edge(findNode('10'), findNode('10W'), S2J_SPEED), Edge(findNode('10S'), findNode('10'), S2J_SPEED), Edge(findNode('10N'), findNode('10'), S2J_SPEED),
+                Edge(findNode('11W'), findNode('11'), S2J_SPEED), Edge(findNode('11'), findNode('11S'), S2J_SPEED), Edge(findNode('11'), findNode('11N'), S2J_SPEED),
+                Edge(findNode('12'), findNode('12E'), S2J_SPEED), Edge(findNode('12'), findNode('12W'), S2J_SPEED), Edge(findNode('12N'), findNode('12'), S2J_SPEED),
+                Edge(findNode('13W'), findNode('13'), S2J_SPEED), Edge(findNode('13E'), findNode('13'), S2J_SPEED), Edge(findNode('13'), findNode('13N'), S2J_SPEED),
+                Edge(findNode('14'), findNode('14W'), S2J_SPEED), Edge(findNode('14N'), findNode('14'), S2J_SPEED),
+                
+                Edge(findNode('1E'), findNode('2W')), Edge(findNode('3W'), findNode('2E')),
+                Edge(findNode('4N'), findNode('1S')), Edge(findNode('2S'), findNode('5N')), Edge(findNode('6N'), findNode('3S')),
+                Edge(findNode('5W'), findNode('4E')), Edge(findNode('5E'), findNode('6W')), Edge(findNode('7W'), findNode('6E')),
+                Edge(findNode('4S'), findNode('8N')), Edge(findNode('9N'), findNode('5S')), Edge(findNode('6S'), findNode('10N')), Edge(findNode('11N'), findNode('7S')),
+                Edge(findNode('8E'), findNode('9W')), Edge(findNode('10W'), findNode('9E')), Edge(findNode('10E'), findNode('11W')),
+                Edge(findNode('9S'), findNode('12N')), Edge(findNode('13N'), findNode('10S')), Edge(findNode('11S'), findNode('14N')),
+                Edge(findNode('12E'), findNode('13W')), Edge(findNode('14W'), findNode('13E')),
+                
+                Edge(findNode('1S'), findNode('1E')),
+                Edge(findNode('2E'), findNode('2S')), Edge(findNode('2W'), findNode('2S')),
+                Edge(findNode('3S'), findNode('3E')), Edge(findNode('3S'), findNode('3W')),
+                Edge(findNode('4E'), findNode('4S')), Edge(findNode('4E'), findNode('4N')),
+                Edge(findNode('5S'), findNode('5E')), Edge(findNode('5S'), findNode('5W')), Edge(findNode('5N'), findNode('5E')), Edge(findNode('5N'), findNode('5W')),
+                Edge(findNode('6E'), findNode('6S')), Edge(findNode('6W'), findNode('6S')), Edge(findNode('6E'), findNode('6N')), Edge(findNode('6W'), findNode('6N')),
+                Edge(findNode('7S'), findNode('7W')), Edge(findNode('7N'), findNode('7W')),
+                Edge(findNode('8S'), findNode('8E')), Edge(findNode('8N'), findNode('8E')),
+                Edge(findNode('9E'), findNode('9S')), Edge(findNode('9W'), findNode('9S')), Edge(findNode('9E'), findNode('9N')), Edge(findNode('9W'), findNode('9N')),
+                Edge(findNode('10S'), findNode('10E')), Edge(findNode('10S'), findNode('10W')), Edge(findNode('10N'), findNode('10E')), Edge(findNode('10N'), findNode('10W')),
+                Edge(findNode('11W'), findNode('11S')), Edge(findNode('11W'), findNode('11N')),
+                Edge(findNode('12N'), findNode('12E')), Edge(findNode('12N'), findNode('12W')),
+                Edge(findNode('13E'), findNode('13N')), Edge(findNode('13W'), findNode('13N')),
+                Edge(findNode('14N'), findNode('14W')),
+                
+                Edge(findNode('3E'), findNode('3-7.D1')), Edge(findNode('3-7.D1'), findNode('3-7.D2')), Edge(findNode('3-7.D2'), findNode('3-7.D3')),
+                Edge(findNode('3-7.D3'), findNode('3-7.D4')), Edge(findNode('3-7.D4'), findNode('3-7.D5')), Edge(findNode('3-7.D5'), findNode('3-7.D6')),
+                Edge(findNode('3-7.D6'), findNode('3-7.D7')), Edge(findNode('3-7.D7'), findNode('3-7.D8')), Edge(findNode('3-7.D8'), findNode('3-7.D9')),
+                Edge(findNode('3-7.D9'), findNode('3-7.D10')), Edge(findNode('3-7.D10'), findNode('3-7.D11')), Edge(findNode('3-7.D11'), findNode('7N')),
+                
+                Edge(findNode('12W'), findNode('12-8.D1')), Edge(findNode('12-8.D1'), findNode('12-8.D2')), Edge(findNode('12-8.D2'), findNode('12-8.D3')),
+                Edge(findNode('12-8.D3'), findNode('12-8.D4')), Edge(findNode('12-8.D4'), findNode('12-8.D5')), Edge(findNode('12-8.D5'), findNode('12-8.D6')),
+                Edge(findNode('12-8.D6'), findNode('12-8.D7')), Edge(findNode('12-8.D7'), findNode('12-8.D8')), Edge(findNode('12-8.D8'), findNode('12-8.D9')),
+                Edge(findNode('12-8.D9'), findNode('12-8.D10')), Edge(findNode('12-8.D10'), findNode('8S')),
             
              ]    
 
@@ -164,17 +165,18 @@ class Node():
     def init_node(self):
         self.visited = False
         self.visitiedCount = 0
-        self.min_d = Node.BIG_NUM
+        self.minTime = Node.BIG_NUM
     
     def __repr__(self):
         return '%s' % (self.id)
     
 class Edge():
     _id = 0
-    def __init__(self, _from, _to, maxSpeed=6):
+    def __init__(self, _from, _to, maxSpeed=12):
         self.id = Edge._id
         Edge._id += 1
         self._from, self._to = _from, _to
+        self.maxSpeed = maxSpeed
         
         delX = self._from.px - self._to.px
         delY = self._from.py - self._to.py
@@ -310,7 +312,7 @@ class PRT():
         # Set things for next state
         self.path_n, self.path_e = Algorithms.find_SP(self.arrived_n, self.assigned_customer.sn, Nodes)
         self.last_planed_time = cur_time
-        evt_change_point = cur_time + sum(e.distance for e in self.path_e) / PRT_SPEED
+        evt_change_point = cur_time + sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in self.path_e)
         x = [evt_change_point, self.On_ApproachingToTransiting, target_c]
         self.event_seq.append(x)
         heappush(event_queue, x)
@@ -340,7 +342,7 @@ class PRT():
         # Set things for next state
         self.path_n, self.path_e = Algorithms.find_SP(self.transporting_customer.sn, self.transporting_customer.dn, Nodes)
         self.last_planed_time = cur_time
-        evt_change_point = cur_time + sum(e.distance for e in self.path_e) / PRT_SPEED
+        evt_change_point = cur_time + sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in self.path_e)
         x = [evt_change_point, self.On_TransitingToIdle, target_c]
         self.event_seq.append(x)
         heappush(event_queue, x)
@@ -372,18 +374,19 @@ class PRT():
         target_c.assigned_PRT = self
         
         # Set things for next state
-        travel_distance = (cur_time - self.last_planed_time) * PRT_SPEED
-        _, next_n, xth = Algorithms.find_PRT_position_on_PATH(self.path_e, travel_distance)
-        remain_dis = sum(e.distance for e in self.path_e[:xth]) - travel_distance
+        path_travel_time = cur_time - self.last_planed_time
+        _, next_n, xth = Algorithms.find_PRT_position_on_PATH(self.path_e, path_travel_time)
+        remain_travel_time = sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in self.path_e[:xth]) - path_travel_time
+        
         
         if next_n == target_c.sn:
             # There is no need to change modification of path
-            evt_change_point = cur_time + remain_dis / PRT_SPEED
+            evt_change_point = cur_time + remain_travel_time
         else:
             path_n_Rerouted, path_e_Rerouted = Algorithms.find_SP(next_n, target_c.sn, Nodes)
             self.path_n = self.path_n + path_n_Rerouted[1:]
             self.path_e = self.path_e + path_e_Rerouted
-            evt_change_point = cur_time + (remain_dis + sum(e.distance for e in path_e_Rerouted)) / PRT_SPEED
+            evt_change_point = cur_time + remain_travel_time + sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in path_e_Rerouted)
         x = [evt_change_point, self.On_ApproachingToTransiting, target_c]
         self.event_seq.append(x)
         heappush(event_queue, x)
@@ -419,7 +422,7 @@ class PRT():
         # Set things for next state
         self.path_n, self.path_e = Algorithms.find_SP(self.transporting_customer.sn, self.transporting_customer.dn, Nodes)
         self.last_planed_time = cur_time
-        evt_change_point = cur_time + sum(e.distance for e in self.path_e) / PRT_SPEED
+        evt_change_point = cur_time + sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in self.path_e)
         x = [evt_change_point, self.On_TransitingToIdle, target_c]
         self.event_seq.append(x)
         heappush(event_queue, x)
@@ -439,11 +442,28 @@ class PRT():
         self.assigned_customer = None
         
         # Set things for next state
-        travel_distance = (cur_time - self.last_planed_time) * PRT_SPEED
-        _, next_n, xth = Algorithms.find_PRT_position_on_PATH(self.path_e, travel_distance)
-        remain_dis = sum(e.distance for e in self.path_e[:xth]) - travel_distance
-        self.path_n, self.path_e = self.path_n[:xth + 1], self.path_e[:xth]
-        evt_change_point = cur_time + remain_dis / PRT_SPEED
+        path_travel_time = cur_time - self.last_planed_time
+        _, next_n, xth = Algorithms.find_PRT_position_on_PATH(self.path_e, path_travel_time)
+        remain_travel_time = sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in self.path_e[:xth]) - path_travel_time
+        
+        path_n_to_nearStation = []
+        path_e_to_nearStation = []
+        while next_n.nodeType == JUNCTION or next_n.nodeType == DOT:
+            if len(next_n.edges_outward) == 1:
+                path_n_to_nearStation.append(next_n.edges_outward[0]._to)
+                path_e_to_nearStation.append(next_n.edges_outward[0])
+                next_n = next_n.edges_outward[0]._to
+            else:
+                for e in next_n.edges_outward:
+                    if e._to.nodeType == TRANSFER or e._to.nodeType == STATION :
+                        path_n_to_nearStation.append(e._to)
+                        path_e_to_nearStation.append(e)
+                        next_n = e._to
+                        break
+                else:
+                    assert False 
+        evt_change_point = cur_time + remain_travel_time + sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in path_e_to_nearStation)
+        self.path_n, self.path_e = self.path_n[:xth + 1] + path_n_to_nearStation, self.path_e[:xth] + path_e_to_nearStation
         x = [evt_change_point, self.On_ParkingToIdle, None]
         self.event_seq.append(x)
         heappush(event_queue, x)
@@ -504,18 +524,18 @@ class PRT():
         self.set_stateChange(ST_APPROACHING, cur_time)
         
         # Set things for next state
-        travel_distance = (cur_time - self.last_planed_time) * PRT_SPEED
-        remain_dis = sum(e.distance for e in self.path_e) - travel_distance
+        path_travel_time = cur_time - self.last_planed_time
+        remain_travel_time = sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in self.path_e[:xth]) - path_travel_time
         next_n = self.path_n[-1]
+        
         if next_n == target_c.sn:
             # There is no need to change modification of path
-            evt_change_point = cur_time + remain_dis / PRT_SPEED
+            evt_change_point = cur_time + remain_travel_time
         else:
             path_n_Rerouted, path_e_Rerouted = Algorithms.find_SP(next_n, target_c.sn, Nodes)
             self.path_n = self.path_n + path_n_Rerouted[1:]
             self.path_e = self.path_e + path_e_Rerouted
-            evt_change_point = cur_time + (remain_dis + sum(e.distance for e in path_e_Rerouted)) / PRT_SPEED
-        
+            evt_change_point = cur_time + remain_travel_time + sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in path_e_Rerouted)
         x = [evt_change_point, self.On_ApproachingToTransiting, target_c]
         self.event_seq.append(x)
         heappush(event_queue, x)
@@ -533,7 +553,7 @@ def gen_Network(ns, ns_connection):
         Edges.append(Edge(Nodes[pn], Nodes[nn]))
     return Nodes, Edges
 
-def gen_Customer(average_arrival, num_customers, Nodes):
+def gen_Customer(average_arrival, num_customers, imbalanceLevel, Nodes):
     seed(1)
     accu_pd = []
     pd = [expovariate(1.0 / average_arrival) for _ in range(num_customers)]
@@ -543,11 +563,16 @@ def gen_Customer(average_arrival, num_customers, Nodes):
             continue
         accu_pd.append(accu_pd[-1] + t)
     
+    TransferStations = [ i for i, n in enumerate(Nodes) if n.nodeType == TRANSFER]
+    
     Customers = []
     for t in accu_pd:
         sn, dn = 0, 0
         while sn == dn or Nodes[sn].nodeType != STATION or Nodes[dn].nodeType != STATION:
-            sn = randrange(len(Nodes))
+            if random() <= imbalanceLevel:
+                sn = choice(TransferStations)
+            else:
+                sn = randrange(len(Nodes))
             dn = randrange(len(Nodes))
         Customers.append(Customer(t, Nodes[sn], Nodes[dn]))
         
@@ -570,7 +595,7 @@ def gen_PRT(numOfPRT, Nodes):
 
 #---------------------------------------------------------------------
 # Prepare dynamics run
-PRT_SPEED = 80
+PRT_SPEED = 12  # unit (m/s)
 waiting_customers = []
 event_queue = []
 
@@ -633,14 +658,9 @@ def test():
     import Network
     
     # Generate all inputs: Network, Arrivals of customers, PRTs
-#     Nodes, Edges = gen_Network(*Network.network0())
     Nodes, Edges = Network1()
-    Customers = gen_Customer(10.5, 2000, Nodes)
+    Customers = gen_Customer(10.5, 2000, 0.52, Nodes)
     PRTs = gen_PRT(10, Nodes)
-#     path_n, path_e = Algorithms.find_SP(findNode('5E'), findNode('14'), Nodes) 
-    
-#     print path_n, path_e
-#     assert False
     
     # Choose dispatcher
 #     dispatcher = Algorithms.NN0

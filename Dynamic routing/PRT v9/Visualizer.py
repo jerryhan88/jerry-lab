@@ -2,7 +2,7 @@ from __future__ import division
 from math import sqrt
 from util import DragZoomPanel
 import wx, Dynamics, Algorithms, Network
-from Dynamics import ST_IDLE, ST_APPROACHING, ST_TRANSITING, ST_PARKING, STATION
+from Dynamics import ST_IDLE, ST_APPROACHING, ST_TRANSITING, ST_PARKING, STATION, TRANSFER
   
 
 TIMER_INTERVAL = 100
@@ -21,25 +21,22 @@ TITLE = 'PRT Simulator'
 
 class MainFrame(wx.Frame):
     def __init__(self):
-#         wx.Frame.__init__(self, None, -1, TITLE, size=(1024, 768), pos=(20, 20))
-        wx.Frame.__init__(self, None, -1, TITLE, size=(1920, 960), pos=(0, 0))
+        wx.Frame.__init__(self, None, -1, TITLE, size=(1024, 768), pos=(20, 20))
+#         wx.Frame.__init__(self, None, -1, TITLE, size=(1920, 960), pos=(0, 0))
         # Every resources are accessible
         self.Nodes, self.Edges = Dynamics.Network1()
-#         gen_Network(*Network.network0())
-        
-        
-        self.Customers = Dynamics.gen_Customer(2.5, 2000, self.Nodes)
+        self.Customers = Dynamics.gen_Customer(20, 500, 0.3, self.Nodes)
         self.NumOfTotalCustomer = len(self.Customers)
         self.PRTs = Dynamics.gen_PRT(10, self.Nodes)
         
         self.idlePRT_in_node = {}
         for n in self.Nodes:
-            if n.nodeType == STATION:
+            if n.nodeType == TRANSFER or n.nodeType == STATION:
                 self.idlePRT_in_node[n.id] = []
         
         self.waiting_customers_in_node = {}
         for n in self.Nodes:
-            if n.nodeType == STATION:
+            if n.nodeType == TRANSFER or n.nodeType == STATION:
                 self.waiting_customers_in_node[n.id] = []
         
         self.now = 0.0
@@ -52,7 +49,7 @@ class MainFrame(wx.Frame):
         s2 = wx.SplitterWindow(s1, style=wx.SP_NOBORDER)
         
         ip = InputPanel(s0)
-        s0.SplitVertically(ip, s1, 220)
+        s0.SplitVertically(ip, s1, 250)
         s0.SetMinimumPaneSize(20)
         
         self.mp = MeasurePanel(s1)
@@ -109,42 +106,40 @@ class MainFrame(wx.Frame):
         
         self.idlePRT_in_node = {}
         for n in self.Nodes:
-            if n.nodeType == STATION:
+            if n.nodeType == TRANSFER or n.nodeType == STATION:
                 self.idlePRT_in_node[n.id] = []
         
         # Update positions of PRTs
         for prt in self.PRTs:
             if prt.path_e:
-                path_travel_distance = (self.now - prt.last_planed_time) * Dynamics.PRT_SPEED
-                sum_edges_distance = 0
+                path_travel_time = self.now - prt.last_planed_time
                 edges_counter = 0
-                
                 prev_n, next_n = None, None
-            
+                sum_travel_time = 0
                 for e in prt.path_e:
-                    sum_edges_distance += e.distance
+                    sum_travel_time += e.distance // min(Dynamics.PRT_SPEED, e.maxSpeed) 
                     edges_counter += 1 
-                    if sum_edges_distance >= path_travel_distance:
+                    if sum_travel_time >= path_travel_time:
                         prev_n = e._from
                         next_n = e._to
                         break
-                
-                prev_n_arrival_time = prt.last_planed_time + sum(e.distance for e in prt.path_e[:edges_counter - 1]) / Dynamics.PRT_SPEED  
-                
+                prev_n_arrival_time = prt.last_planed_time + sum(e.distance // min(Dynamics.PRT_SPEED, e.maxSpeed) for e in prt.path_e[:edges_counter - 1])
+                  
                 dx = next_n.px - prev_n.px
                 dy = next_n.py - prev_n.py
                 cos_theta = dx / sqrt(dx * dx + dy * dy)
                 sin_theta = dy / sqrt(dx * dx + dy * dy)
                 
-                prt.px = prev_n.px + cos_theta * (self.now - prev_n_arrival_time) * Dynamics.PRT_SPEED
-                prt.py = prev_n.py + sin_theta * (self.now - prev_n_arrival_time) * Dynamics.PRT_SPEED
+                prt.px = prev_n.px + cos_theta * (self.now - prev_n_arrival_time) * min(Dynamics.PRT_SPEED, prt.path_e[edges_counter - 1].maxSpeed)
+                prt.py = prev_n.py + sin_theta * (self.now - prev_n_arrival_time) * min(Dynamics.PRT_SPEED, prt.path_e[edges_counter - 1].maxSpeed)
             else:
+                assert prt.state == Dynamics.ST_IDLE
                 prt.px, prt.py = prt.arrived_n.px, prt.arrived_n.py
                 self.idlePRT_in_node[prt.arrived_n.id].append(prt.id)
         
         self.waiting_customers_in_node = {}
         for n in self.Nodes:
-            if n.nodeType == STATION:
+            if n.nodeType == TRANSFER or n.nodeType == STATION:
                 self.waiting_customers_in_node[n.id] = []
         
         for c in Dynamics.waiting_customers:
@@ -311,13 +306,13 @@ class MeasurePanel(wx.ListCtrl):
 class InputPanel(wx.ListCtrl):
     def __init__(self, parent):
         wx.ListCtrl.__init__(self, parent, -1, style=wx.LC_REPORT | wx.SUNKEN_BORDER)
-        self.InsertColumn(0, 'Customer')
-        self.InsertColumn(1, 'Time', wx.LIST_FORMAT_RIGHT)
-        self.InsertColumn(2, 'From')
-        self.InsertColumn(3, 'To')
+        self.InsertColumn(0, 'Customer', wx.LIST_FORMAT_CENTER)
+        self.InsertColumn(1, 'Time', wx.LIST_FORMAT_CENTER)
+        self.InsertColumn(2, 'From', wx.LIST_FORMAT_CENTER)
+        self.InsertColumn(3, 'To', wx.LIST_FORMAT_CENTER)
         
         self.SetColumnWidth(0, 65)
-        self.SetColumnWidth(1, 45)
+        self.SetColumnWidth(1, 80)
         self.SetColumnWidth(2, 43)
         self.SetColumnWidth(3, 43)
         
@@ -328,7 +323,10 @@ class InputPanel(wx.ListCtrl):
                 sn, dn = sd.split('-')
                 arrival_time = float(arrival_time_str)
                 self.InsertStringItem(rowCount, 'C%d' % rowCount)
-                self.SetStringItem(rowCount, 1, '%.1f' % arrival_time)
+                h = int(arrival_time // 3600)
+                m = int(arrival_time // 60) % 60
+                s = arrival_time % 60
+                self.SetStringItem(rowCount, 1, '%02d:%02d:%04.1f' % (h, m, s))
                 self.SetStringItem(rowCount, 2, sn)
                 self.SetStringItem(rowCount, 3, dn)
                 rowCount += 1
@@ -369,14 +367,19 @@ class ViewPanel(DragZoomPanel):
 
     def OnDrawDevice(self, gc):
         gc.SetFont(wx.Font(12, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-        gc.DrawText('%.1f (%.1fX)' % (self.Parent.Parent.Parent.Parent.now, CLOCK_INCREMENT / TIMER_INTERVAL), 5, 3)
+        
+        h = int(self.Parent.Parent.Parent.Parent.now // 3600)
+        m = int(self.Parent.Parent.Parent.Parent.now // 60) % 60
+        s = self.Parent.Parent.Parent.Parent.now % 60
+        
+        gc.DrawText('%02d:%02d:%04.1f (%.1fX)' % (h, m, s, CLOCK_INCREMENT / TIMER_INTERVAL), 5, 3)
     
     def OnDraw(self, gc):
         old_tr = gc.GetTransform()
         
         for n in self.Parent.Parent.Parent.Parent.Nodes:
             gc.Translate(n.px, n.py)
-            if n.nodeType == STATION:
+            if n.nodeType == TRANSFER or n.nodeType == STATION:
                 gc.SetBrush(wx.Brush(wx.Colour(255, 255, 255)))
                 gc.SetPen(wx.Pen(wx.Colour(0, 0, 0), 1))
                 gc.DrawEllipse(-STATION_DIAMETER / 2, -STATION_DIAMETER / 2, STATION_DIAMETER, STATION_DIAMETER)
@@ -412,7 +415,8 @@ class ViewPanel(DragZoomPanel):
             la = sqrt(ax * ax + ay * ay)
             ux, uy = ax / la, ay / la
             px, py = -uy, ux
-            if prev_n.nodeType == STATION and next_n.nodeType == JUNCTION:
+            
+            if (prev_n.nodeType == TRANSFER or prev_n.nodeType == STATION) and next_n.nodeType == JUNCTION:
                 sx = prev_n.px + ux * STATION_DIAMETER / 2
                 sy = prev_n.py + uy * STATION_DIAMETER / 2
                 ex = next_n.px - ux * JUNCTION_DIAMETER / 2
@@ -420,7 +424,7 @@ class ViewPanel(DragZoomPanel):
                 gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
                 gc.DrawLines([(ex, ey), (ex - int((ux * 5)) + int(px * 3), ey - int(uy * 5) + int(py * 3))])
                 gc.DrawLines([(ex, ey), (ex - int(ux * 5) - int(px * 3), ey - int(uy * 5) - int(py * 3))])  
-            elif prev_n.nodeType == JUNCTION and next_n.nodeType == STATION:
+            elif prev_n.nodeType == JUNCTION and (next_n.nodeType == TRANSFER or next_n.nodeType == STATION):
                 sx = prev_n.px + ux * JUNCTION_DIAMETER / 2
                 sy = prev_n.py + uy * JUNCTION_DIAMETER / 2
                 ex = next_n.px - ux * STATION_DIAMETER / 2
@@ -455,10 +459,9 @@ class ViewPanel(DragZoomPanel):
                 sy = prev_n.py
                 ex = next_n.px
                 ey = next_n.py
-                gc.DrawLines([(sx, sy), (ex, ey)])
+#                 gc.DrawLines([(sx, sy), (ex, ey)])
                 gc.SetFont(wx.Font(5, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-#                 gc.DrawText('%d' % int(round(e.distance, 1)), (prev_n.px + next_n.px) / 2, (prev_n.py + next_n.py) / 2)
-                continue
+#                 continue
             else:
                 assert False 
             gc.DrawLines([(sx, sy), (ex, ey)])

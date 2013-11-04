@@ -9,7 +9,7 @@ on_notify_assignmentment_point = lambda x: None
 # For using Hungarian method, give long distance(cost) to augmented cell
 Longest_dis = 100000000
 
-def on_notify_assignmentment_point(args = None):
+def on_notify_assignmentment_point(args=None):
     print '-----------------------------------------------------------------------(Re)assignment!!' 
 
 def get_all_dispatchers():
@@ -83,42 +83,39 @@ def find_opt_matching(cur_time, target_PRTs, target_customers, Nodes):
     
     for prt_id, prt in enumerate(target_PRTs):
         travel_distance = (cur_time - prt.last_planed_time) * PRT_SPEED
+        path_travel_time = cur_time - prt.last_planed_time
         for i, cus in enumerate(target_customers):
             if prt.state == ST_IDLE:
                 # Calculate remain distance
-                remain_dis = 0
-                
+                remain_travel_time = 0
                 # Calculate distance to location a customer is waiting
                 _, path_e = find_SP(prt.arrived_n, cus.sn, Nodes)
                 
             elif prt.state == ST_APPROACHING:
                 # Calculate remain distance to next node
-                _, next_n, xth = find_PRT_position_on_PATH(prt.path_e, travel_distance)
-                remain_dis = sum([e.distance for e in prt.path_e[:xth]]) - travel_distance
-                
+                _, next_n, xth = find_PRT_position_on_PATH(prt.path_e, path_travel_time)
+                remain_travel_time = sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in prt.path_e[:xth]) - path_travel_time
                 # Calculate distance to location a customer is waiting
                 _, path_e = find_SP(next_n, cus.sn, Nodes)
                 
             elif prt.state == ST_TRANSITING:
                 # Calculate remain distance to destination of the boarding customer
-                remain_dis = sum([e.distance for e in prt.path_e]) - travel_distance
-                
+                remain_travel_time = sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in prt.path_e) - path_travel_time
                 # Calculate distance to location a customer is waiting
                 _, path_e = find_SP(prt.path_n[-1], cus.sn, Nodes)
                 
             elif prt.state == ST_PARKING:
                 # Calculate remain distance to next node
-                _, next_n, xth = find_PRT_position_on_PATH(prt.path_e, travel_distance)
-                assert next_n == prt.path_n[-1]
-                remain_dis = sum([e.distance for e in prt.path_e[:xth]]) - travel_distance
+                _, next_n, xth = find_PRT_position_on_PATH(prt.path_e, path_travel_time)
+#                 assert next_n == prt.path_n[-1]
+                remain_travel_time = sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in prt.path_e[:xth]) - path_travel_time
                  
                 # Calculate distance to location a customer is waiting
                 _, path_e = find_SP(next_n, cus.sn, Nodes)
-                
             else:
                 assert False
             
-            PRTbyCustomer_matrix[prt_id][i] = (sum([e.distance for e in path_e]) + remain_dis) / PRT_SPEED
+            PRTbyCustomer_matrix[prt_id][i] = sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in path_e) + remain_travel_time
     
     # Apply Hungarian method        
     hungarian_algo = Munkres()
@@ -132,13 +129,14 @@ def find_opt_matching(cur_time, target_PRTs, target_customers, Nodes):
     
     return assignment_results
 
-def find_PRT_position_on_PATH(path_e, travel_distance):
-    sum_edges_distance = 0
+def find_PRT_position_on_PATH(path_e, path_travel_time):
+    from Dynamics import PRT_SPEED
+    sum_travel_time = 0
     xth = 0
     for e in path_e:
-        sum_edges_distance += e.distance
+        sum_travel_time += e.distance // min(PRT_SPEED, e.maxSpeed) 
         xth += 1 
-        if sum_edges_distance >= travel_distance:
+        if sum_travel_time >= path_travel_time:
             return e._from, e._to, xth
     else:
         assert False 
@@ -149,7 +147,7 @@ def find_SP(sn, en, Nodes):
         n.init_node()
     
     # Update minimum distance
-    sn.min_d = 0
+    sn.minTime = 0
     sn.visited = True
     todo = [sn]
     while todo:
@@ -162,9 +160,9 @@ def find_SP(sn, en, Nodes):
                 n.visited = True
         for e in n.edges_outward:
             consi_n = e._to
-            dist = n.min_d + e.distance
-            if consi_n.min_d >= dist:
-                consi_n.min_d = dist
+            tentative_minTime = n.minTime + e.distance // e.maxSpeed
+            if consi_n.minTime >= tentative_minTime:
+                consi_n.minTime = tentative_minTime
                 if not consi_n.visited and consi_n not in todo:
                     todo.append(consi_n)
                 
@@ -175,7 +173,7 @@ def find_SP(sn, en, Nodes):
     while consi_n:
         path_n.append(consi_n)
         for e in consi_n.edges_inward:
-            if e._from.min_d + e.distance == consi_n.min_d:
+            if e._from.minTime + e.distance // e.maxSpeed == consi_n.minTime:
                 consi_n = e._from
                 path_e.append(e)
                 break 
