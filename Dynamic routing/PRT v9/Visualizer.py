@@ -2,7 +2,7 @@ from __future__ import division
 from math import sqrt
 from util import DragZoomPanel
 import wx, Dynamics, Algorithms, Network
-from Dynamics import ST_IDLE, ST_APPROACHING, ST_TRANSITING, ST_PARKING
+from Dynamics import ST_IDLE, ST_APPROACHING, ST_TRANSITING, ST_PARKING, STATION
   
 
 TIMER_INTERVAL = 100
@@ -11,9 +11,8 @@ CLOCK_INCR_DIFF = sqrt(2)
 
 STATION_DIAMETER = 30
 JUNCTION_DIAMETER = STATION_DIAMETER / 4
-DOT_DIAMETER = STATION_DIAMETER / 20
 CUSTOMER_RADIUS = STATION_DIAMETER / 3
-PRT_SIZE = 20
+PRT_SIZE = STATION_DIAMETER / 5
 
 waiting_customers = []
 event_queue = []
@@ -33,7 +32,15 @@ class MainFrame(wx.Frame):
         self.NumOfTotalCustomer = len(self.Customers)
         self.PRTs = Dynamics.gen_PRT(10, self.Nodes)
         
-        self.waiting_customers_in_node = [[] for _ in range(len(self.Nodes))]
+        self.idlePRT_in_node = {}
+        for n in self.Nodes:
+            if n.nodeType == STATION:
+                self.idlePRT_in_node[n.id] = []
+        
+        self.waiting_customers_in_node = {}
+        for n in self.Nodes:
+            if n.nodeType == STATION:
+                self.waiting_customers_in_node[n.id] = []
         
         self.now = 0.0
         self.timer = wx.Timer(self)
@@ -100,6 +107,11 @@ class MainFrame(wx.Frame):
         if not Dynamics.process_events(self.now):
             self.OnPause(None)
         
+        self.idlePRT_in_node = {}
+        for n in self.Nodes:
+            if n.nodeType == STATION:
+                self.idlePRT_in_node[n.id] = []
+        
         # Update positions of PRTs
         for prt in self.PRTs:
             if prt.path_e:
@@ -127,20 +139,24 @@ class MainFrame(wx.Frame):
                 prt.px = prev_n.px + cos_theta * (self.now - prev_n_arrival_time) * Dynamics.PRT_SPEED
                 prt.py = prev_n.py + sin_theta * (self.now - prev_n_arrival_time) * Dynamics.PRT_SPEED
             else:
-                prt.px, prt.py = prt.arrived_n.px, prt.arrived_n.py 
+                prt.px, prt.py = prt.arrived_n.px, prt.arrived_n.py
+                self.idlePRT_in_node[prt.arrived_n.id].append(prt.id)
         
-#         self.waiting_customers_in_node = [[] for _ in range(len(self.Nodes))]
-#         
-#         for c in Dynamics.waiting_customers:
-#             self.waiting_customers_in_node[c.sn.id].append(c.id) 
+        self.waiting_customers_in_node = {}
+        for n in self.Nodes:
+            if n.nodeType == STATION:
+                self.waiting_customers_in_node[n.id] = []
         
+        for c in Dynamics.waiting_customers:
+            self.waiting_customers_in_node[c.sn.id].append(c.id) 
         self.vp.RefreshGC()
+        
         
         self.onTimer_counter += 1
         
         if self.onTimer_counter == 10:
             self.onTimer_counter = 0
-#             self.mp.update_stat(self.now)
+            self.mp.update_stat(self.now)
                 
     def OnPlay(self, _):
         self.timer.Start(TIMER_INTERVAL)
@@ -171,6 +187,7 @@ class MainFrame(wx.Frame):
         b_s_up = tb.AddSimpleTool(wx.ID_ANY, load_icon('pic/speed_up.bmp'))
         
         self.check_reassign = wx.CheckBox(tb, -1, "Check reassignment point", pos=(100, 5))
+        self.show_distance = wx.CheckBox(tb, -1, "Show distance", pos=(265, 5))
         self.Bind(wx.EVT_MENU, self.OnPlay, b_play)
         self.Bind(wx.EVT_MENU, self.OnPause, b_pause)
         self.Bind(wx.EVT_MENU, self.OnSpeedDown, b_s_down)
@@ -179,7 +196,7 @@ class MainFrame(wx.Frame):
         tb.Realize()
 
 
-NumOfStations, NumOfPRTs, TotalCustomer, B1, CustomerArrivals, WaitingCustomers, PickedUpCustomers, ServicedCustomers, B2, WaitingTime, WTTotal, WTAverage, WTMaximum, B3, FlowTime, FTTotal, FTAverage, B4, TravelDistance, TDTotal, TDAverage, B5, EmptyTravelDistance, ETDTotal, ETDAverage, B6, StateDuration, Idle, Approaching, Transiting, Parking = range(31)
+StaticInfo, NumOfStations, NumOfPRTs, TotalCustomer, AboutCustomer, CustomerArrivals, WaitingCustomers, PickedUpCustomers, ServicedCustomers, WaitingTime, WTTotal, WTAverage, WTMaximum, FlowTime, FTTotal, FTAverage, TravelDistance, TDTotal, TDAverage, EmptyTravelDistance, ETDTotal, ETDAverage, StateDuration, Idle, Approaching, Transiting, Parking = range(27)
  
 
 measure_name = ['T.TravelDist', 'T.TravelDist', 'T.E.TravelDist', 'A.WaitTime', 'A.FlowTime']
@@ -192,77 +209,76 @@ class MeasurePanel(wx.ListCtrl):
 
         self.SetColumnWidth(0, 90)
         self.SetColumnWidth(1, 90)
-        
-#         self.InsertStringItem(NumOfStations, 'Stations')
-#         self.SetStringItem(NumOfStations, 1, '%d' % len([n for n in self.Parent.Parent.Parent.Nodes if n.isStation]))
-        
-#         self.InsertStringItem(NumOfPRTs, 'PRTs')
-#         self.SetStringItem(NumOfPRTs, 1, '%d' % len(self.Parent.Parent.Parent.PRTs))
-#         
-#         self.InsertStringItem(TotalCustomer, 'T. Customers')
-#         self.SetStringItem(TotalCustomer, 1, '%d' % self.Parent.Parent.Parent.NumOfTotalCustomer)
-#         
-#         self.InsertStringItem(B1, '  ')
-#         self.SetStringItem(B1, 1, '   ')
-#         self.InsertStringItem(CustomerArrivals, 'C. Arrivals')
-#         self.SetStringItem(CustomerArrivals, 1, '%d' % Dynamics.NumOfCustomerArrivals)
-#         self.InsertStringItem(WaitingCustomers, 'Waiting Customers')
-#         self.SetStringItem(WaitingCustomers, 1, '%d' % len(Dynamics.waiting_customers))
-#         self.InsertStringItem(PickedUpCustomers, 'PickedUp Customers')
-#         self.SetStringItem(PickedUpCustomers, 1, '%d' % Dynamics.NumOfPickedUpCustomer)
-#         self.InsertStringItem(ServicedCustomers, 'Serviced Customers')
-#         self.SetStringItem(ServicedCustomers, 1, '%d' % Dynamics.NumOfServicedCustomer)
-#         
-#         self.InsertStringItem(B2, '  ')
-#         self.SetStringItem(B2, 1, '   ')
-#         self.InsertStringItem(WaitingTime, 'Waiting Time')
-#         self.SetStringItem(WaitingTime, 1, '   ')
-#         self.InsertStringItem(WTTotal, 'Total')
-#         self.SetStringItem(WTTotal, 1, '%.1f' % Dynamics.Total_customers_waiting_time)
-#         self.InsertStringItem(WTAverage, 'Average')
-#         self.SetStringItem(WTAverage, 1, '%.1f' % 0.0)
-#         self.InsertStringItem(WTMaximum, 'Maximum')
-#         self.SetStringItem(WTMaximum, 1, '%.1f' % Dynamics.MaxCustomerWaitingTime)
-#         
-#         self.InsertStringItem(B3, '  ')
-#         self.SetStringItem(B3, 1, '   ')
-#         self.InsertStringItem(FlowTime, 'Flow Time')
-#         self.SetStringItem(FlowTime, 1, '   ')
-#         self.InsertStringItem(FTTotal, 'Total')
-#         self.SetStringItem(FTTotal, 1, '%.1f' % Dynamics.Total_customers_flow_time)
-#         self.InsertStringItem(FTAverage, 'Average')
-#         self.SetStringItem(FTAverage, 1, '%.1f' % 0.0)
-#         
-#         self.InsertStringItem(B4, '  ')
-#         self.SetStringItem(B4, 1, '   ')
-#         self.InsertStringItem(TravelDistance, 'Travel Distance')
-#         self.SetStringItem(TravelDistance, 1, '   ')
-#         self.InsertStringItem(TDTotal, 'Total')
-#         self.SetStringItem(TDTotal, 1, '%.1f' % Dynamics.Total_travel_distance)
-#         self.InsertStringItem(TDAverage, 'Average')
-#         self.SetStringItem(TDAverage, 1, '%.1f' % 0.0)
-#         
-#         self.InsertStringItem(B5, '  ')
-#         self.SetStringItem(B5, 1, '   ')
-#         self.InsertStringItem(EmptyTravelDistance, 'E. T. Distance')
-#         self.SetStringItem(EmptyTravelDistance, 1, '   ')
-#         self.InsertStringItem(ETDTotal, 'Total')
-#         self.SetStringItem(ETDTotal, 1, '%.1f' % Dynamics.Total_empty_travel_distance)
-#         self.InsertStringItem(ETDAverage, 'Average')
-#         self.SetStringItem(ETDAverage, 1, '%.1f' % 0.0)
-#         
-#         self.InsertStringItem(B6, '  ')
-#         self.SetStringItem(B6, 1, '   ')
-#         self.InsertStringItem(StateDuration, 'State Duration')
-#         self.SetStringItem(StateDuration, 1, '   ')
-#         self.InsertStringItem(Idle, 'Idle')
-#         self.SetStringItem(Idle, 1, '%.1f' % Dynamics.IdleState_time)
-#         self.InsertStringItem(Approaching, 'Approaching')
-#         self.SetStringItem(Approaching, 1, '%.1f' % Dynamics.ApproachingState_time)
-#         self.InsertStringItem(Transiting, 'Transiting')
-#         self.SetStringItem(Transiting, 1, '%.1f' % Dynamics.TransitingState_time)
-#         self.InsertStringItem(Parking, 'Parking')
-#         self.SetStringItem(Parking, 1, '%.1f' % Dynamics.ParkingState_time)
+        bg_clr = wx.Colour(220, 220, 220)
+        self.InsertStringItem(StaticInfo, 'Static informations')
+        self.SetStringItem(StaticInfo, 1, '   ')
+        self.SetItemBackgroundColour(StaticInfo, bg_clr)
+        self.InsertStringItem(NumOfStations, 'Stations')
+        self.SetStringItem(NumOfStations, 1, '%d' % len([n for n in self.Parent.Parent.Parent.Nodes if n.nodeType == Dynamics.STATION]))
+            
+        self.InsertStringItem(NumOfPRTs, 'PRTs')
+        self.SetStringItem(NumOfPRTs, 1, '%d' % len(self.Parent.Parent.Parent.PRTs))
+         
+        self.InsertStringItem(TotalCustomer, 'T. Customers')
+        self.SetStringItem(TotalCustomer, 1, '%d' % self.Parent.Parent.Parent.NumOfTotalCustomer)
+         
+        self.InsertStringItem(AboutCustomer, 'About Cusomer')
+        self.SetStringItem(AboutCustomer, 1, '   ')
+        self.SetItemBackgroundColour(AboutCustomer, bg_clr)
+        self.InsertStringItem(CustomerArrivals, 'C. Arrivals')
+        self.SetStringItem(CustomerArrivals, 1, '%d' % Dynamics.NumOfCustomerArrivals)
+        self.InsertStringItem(WaitingCustomers, 'Waiting Customers')
+        self.SetStringItem(WaitingCustomers, 1, '%d' % len(Dynamics.waiting_customers))
+        self.InsertStringItem(PickedUpCustomers, 'PickedUp Customers')
+        self.SetStringItem(PickedUpCustomers, 1, '%d' % Dynamics.NumOfPickedUpCustomer)
+        self.InsertStringItem(ServicedCustomers, 'Serviced Customers')
+        self.SetStringItem(ServicedCustomers, 1, '%d' % Dynamics.NumOfServicedCustomer)
+         
+        self.InsertStringItem(WaitingTime, 'Waiting Time')
+        self.SetStringItem(WaitingTime, 1, '   ')
+        self.SetItemBackgroundColour(WaitingTime, bg_clr)
+        self.InsertStringItem(WTTotal, 'Total')
+        self.SetStringItem(WTTotal, 1, '%.1f' % Dynamics.Total_customers_waiting_time)
+        self.InsertStringItem(WTAverage, 'Average')
+        self.SetStringItem(WTAverage, 1, '%.1f' % 0.0)
+        self.InsertStringItem(WTMaximum, 'Maximum')
+        self.SetStringItem(WTMaximum, 1, '%.1f' % Dynamics.MaxCustomerWaitingTime)
+         
+        self.InsertStringItem(FlowTime, 'Flow Time')
+        self.SetStringItem(FlowTime, 1, '   ')
+        self.SetItemBackgroundColour(FlowTime, bg_clr)
+        self.InsertStringItem(FTTotal, 'Total')
+        self.SetStringItem(FTTotal, 1, '%.1f' % Dynamics.Total_customers_flow_time)
+        self.InsertStringItem(FTAverage, 'Average')
+        self.SetStringItem(FTAverage, 1, '%.1f' % 0.0)
+         
+        self.InsertStringItem(TravelDistance, 'Travel Distance')
+        self.SetStringItem(TravelDistance, 1, '   ')
+        self.SetItemBackgroundColour(TravelDistance, bg_clr)
+        self.InsertStringItem(TDTotal, 'Total')
+        self.SetStringItem(TDTotal, 1, '%.1f' % Dynamics.Total_travel_distance)
+        self.InsertStringItem(TDAverage, 'Average')
+        self.SetStringItem(TDAverage, 1, '%.1f' % 0.0)
+         
+        self.InsertStringItem(EmptyTravelDistance, 'E. T. Distance')
+        self.SetStringItem(EmptyTravelDistance, 1, '   ')
+        self.SetItemBackgroundColour(EmptyTravelDistance, bg_clr)
+        self.InsertStringItem(ETDTotal, 'Total')
+        self.SetStringItem(ETDTotal, 1, '%.1f' % Dynamics.Total_empty_travel_distance)
+        self.InsertStringItem(ETDAverage, 'Average')
+        self.SetStringItem(ETDAverage, 1, '%.1f' % 0.0)
+         
+        self.InsertStringItem(StateDuration, 'State Duration')
+        self.SetStringItem(StateDuration, 1, '   ')
+        self.SetItemBackgroundColour(StateDuration, bg_clr)
+        self.InsertStringItem(Idle, 'Idle')
+        self.SetStringItem(Idle, 1, '%.1f' % Dynamics.IdleState_time)
+        self.InsertStringItem(Approaching, 'Approaching')
+        self.SetStringItem(Approaching, 1, '%.1f' % Dynamics.ApproachingState_time)
+        self.InsertStringItem(Transiting, 'Transiting')
+        self.SetStringItem(Transiting, 1, '%.1f' % Dynamics.TransitingState_time)
+        self.InsertStringItem(Parking, 'Parking')
+        self.SetStringItem(Parking, 1, '%.1f' % Dynamics.ParkingState_time)
                 
     def update_stat(self, cur_time):
         self.SetStringItem(CustomerArrivals, 1, '%d' % Dynamics.NumOfCustomerArrivals)
@@ -296,7 +312,7 @@ class InputPanel(wx.ListCtrl):
     def __init__(self, parent):
         wx.ListCtrl.__init__(self, parent, -1, style=wx.LC_REPORT | wx.SUNKEN_BORDER)
         self.InsertColumn(0, 'Customer')
-        self.InsertColumn(1, 'Time')
+        self.InsertColumn(1, 'Time', wx.LIST_FORMAT_RIGHT)
         self.InsertColumn(2, 'From')
         self.InsertColumn(3, 'To')
         
@@ -321,6 +337,7 @@ class InputPanel(wx.ListCtrl):
         if customer.id != 0:
             self.SetItemBackgroundColour(customer.id - 1, wx.Colour(255, 255, 255))
         self.SetItemBackgroundColour(customer.id, wx.Colour(200, 200, 200))
+        self.EnsureVisible(customer.id)
         
         self.Refresh()
 
@@ -374,16 +391,19 @@ class ViewPanel(DragZoomPanel):
                 gc.DrawEllipse(-JUNCTION_DIAMETER / 2, -JUNCTION_DIAMETER / 2, JUNCTION_DIAMETER, JUNCTION_DIAMETER)
             else:
                 assert n.nodeType == DOT
-#                 gc.SetBrush(wx.Brush(wx.Colour(0, 0, 0)))
-#                 gc.SetPen(wx.Pen(wx.Colour(0, 0, 0), 0.01))
-#                 gc.DrawEllipse(-DOT_DIAMETER / 2, -DOT_DIAMETER / 2, DOT_DIAMETER, DOT_DIAMETER)
             gc.SetTransform(old_tr)
             
-        for i, waiting_c_in_node in enumerate(self.Parent.Parent.Parent.Parent.waiting_customers_in_node):
+        for n_id, waiting_c_in_node in self.Parent.Parent.Parent.Parent.waiting_customers_in_node.iteritems():
             if waiting_c_in_node:
                 waiting_c_str = '[' + ':'.join(('C%d' % c_id) for c_id in waiting_c_in_node) + ']'
                 gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-                gc.DrawText(waiting_c_str, self.Parent.Parent.Parent.Parent.Nodes[i].px + STATION_DIAMETER / 2, self.Parent.Parent.Parent.Parent.Nodes[i].py - STATION_DIAMETER / 2)
+                gc.DrawText(waiting_c_str, Dynamics.findNode(n_id).px + STATION_DIAMETER / 2, Dynamics.findNode(n_id).py - STATION_DIAMETER / 2 - 5)
+        
+        for n_id, idlePRT_in_node in self.Parent.Parent.Parent.Parent.idlePRT_in_node.iteritems():
+            if idlePRT_in_node:
+                PRTs_str = '(' + ':'.join(('PRT%d' % prt_id) for prt_id in idlePRT_in_node) + ')'
+                gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+                gc.DrawText(PRTs_str, Dynamics.findNode(n_id).px + STATION_DIAMETER / 2, Dynamics.findNode(n_id).py + STATION_DIAMETER / 2 - 5)
         
         for e in self.Parent.Parent.Parent.Parent.Edges:
             prev_n, next_n = e._from, e._to
@@ -437,13 +457,14 @@ class ViewPanel(DragZoomPanel):
                 ey = next_n.py
                 gc.DrawLines([(sx, sy), (ex, ey)])
                 gc.SetFont(wx.Font(5, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-                gc.DrawText('%d' % int(round(e.distance, 1)), (prev_n.px + next_n.px) / 2, (prev_n.py + next_n.py) / 2)
+#                 gc.DrawText('%d' % int(round(e.distance, 1)), (prev_n.px + next_n.px) / 2, (prev_n.py + next_n.py) / 2)
                 continue
             else:
                 assert False 
             gc.DrawLines([(sx, sy), (ex, ey)])
             
-            gc.DrawText('%d' % int(round(e.distance, 1)), (prev_n.px + next_n.px) / 2, (prev_n.py + next_n.py) / 2)
+            if self.Parent.Parent.Parent.Parent.show_distance.GetValue():
+                gc.DrawText('%d' % int(round(e.distance, 1)), (prev_n.px + next_n.px) / 2, (prev_n.py + next_n.py) / 2)
             
         for v in self.Parent.Parent.Parent.Parent.PRTs:
             gc.Translate(v.px, v.py)
@@ -462,21 +483,18 @@ class ViewPanel(DragZoomPanel):
                 assert v.state == ST_PARKING
                 # PARKING PRT's color is YELLOW
                 gc.SetBrush(wx.Brush(wx.Colour(255, 242, 0)))
-            
-            gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-            gc.DrawRectangle(-PRT_SIZE / 2, -PRT_SIZE / 2, PRT_SIZE, PRT_SIZE)
-            gc.DrawText('PRT%d' % v.id, -PRT_SIZE / 2, -PRT_SIZE / 2 - 10)
-            
-            if v.assigned_customer:
-                assert v.state == ST_APPROACHING
-                gc.DrawText('C%d' % v.assigned_customer.id, -7, -7)                
 
-            if v.transporting_customer:
-                bg_clr = wx.Colour(255, 255, 0)
-                gc.SetBrush(wx.Brush(bg_clr))
-                gc.SetPen(wx.Pen(bg_clr, 0.5))
-                gc.DrawEllipse(-CUSTOMER_RADIUS / 2, -CUSTOMER_RADIUS / 2, CUSTOMER_RADIUS, CUSTOMER_RADIUS)
-                gc.DrawText('C%d' % v.transporting_customer.id, -7, -7)
+            if v.state != ST_IDLE:
+                gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+                gc.DrawEllipse(-PRT_SIZE / 2, -PRT_SIZE / 2, PRT_SIZE, PRT_SIZE)
+                
+                if v.assigned_customer:
+                    gc.DrawText('PRT%d-C%d' % (v.id, v.assigned_customer.id), -PRT_SIZE / 2, -PRT_SIZE / 2 - 12)
+                elif v.transporting_customer:
+                    gc.DrawText('PRT%d(C%d)' % (v.id, v.transporting_customer.id), -PRT_SIZE / 2, -PRT_SIZE / 2 - 12)
+                else:
+                    assert not v.assigned_customer and not v.transporting_customer 
+                    gc.DrawText('PRT%d' % v.id, -PRT_SIZE / 2, -PRT_SIZE / 2 - 12)
             
             gc.SetTransform(old_tr)
         

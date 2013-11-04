@@ -71,10 +71,6 @@ def Network1():
                 Node('12-8.D9', c1 - btwSJ + ((c1 - c0) - btwSJ) * cos((pi / 180) * (-180 + -90 * (2 / 11))), r2 + btwSJ + ((c1 - c0) - btwSJ) * sin((pi / 180) * (-180 + -90 * (2 / 11))), DOT),
                 Node('12-8.D10', c1 - btwSJ + ((c1 - c0) - btwSJ) * cos((pi / 180) * (-180 + -90 * (1 / 11))), r2 + btwSJ + ((c1 - c0) - btwSJ) * sin((pi / 180) * (-180 + -90 * (1 / 11))), DOT),
                 Node('8S', c0, r2 + btwSJ, JUNCTION),
-                
-                
-                
-                
            ]
     
     Edges = [Edge(findNode('1'), findNode('1E')), Edge(findNode('1S'), findNode('1')),
@@ -392,7 +388,7 @@ class PRT():
         self.event_seq.append(x)
         heappush(event_queue, x)
         logger('            path: %s' % (self.path_n))
-        logger('            now, around N%d' % (next_n.id))
+        logger('            now, around %s' % (next_n.id))
         
         # Modify event of tager_c's previous assigned PRT which is already scheduled
         self.modify_passed_assignedPRT_event(cur_time, prev_PRT, target_c)
@@ -477,7 +473,7 @@ class PRT():
         dispatcher(cur_time, PRTs, waiting_customers, Nodes)
         
     def On_ParkingToIdle(self, cur_time, args=None):
-        logger('%.1f:    On_P2I - %s, arriving node: %d' % (cur_time, self, self.path_n[-1].id))
+        logger('%.1f:    On_P2I - %s, arriving node: %s' % (cur_time, self, self.path_n[-1].id))
         assert self.state == ST_PARKING
         
         # Measure update
