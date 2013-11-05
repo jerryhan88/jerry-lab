@@ -54,7 +54,7 @@ class MainFrame(wx.Frame):
         
         self.mp = MeasurePanel(s1)
         
-        s1.SplitVertically(s2, self.mp, -200)
+        s1.SplitVertically(s2, self.mp, -210)
         s1.SetSashGravity(1)
         
         self.vp = ViewPanel(s2)
@@ -203,7 +203,7 @@ class MeasurePanel(wx.ListCtrl):
         self.InsertColumn(1, 'Value', wx.LIST_FORMAT_RIGHT)
 
         self.SetColumnWidth(0, 90)
-        self.SetColumnWidth(1, 90)
+        self.SetColumnWidth(1, 110)
         bg_clr = wx.Colour(220, 220, 220)
         self.InsertStringItem(StaticInfo, 'Static informations')
         self.SetStringItem(StaticInfo, 1, '   ')
@@ -296,10 +296,11 @@ class MeasurePanel(wx.ListCtrl):
         if Dynamics.NumOfPickedUpCustomer != 0:
             self.SetStringItem(ETDAverage, 1, '%.1f' % (Dynamics.Total_empty_travel_distance / Dynamics.NumOfPickedUpCustomer))
         
-        self.SetStringItem(Idle, 1, '%.1f' % Dynamics.IdleState_time)
-        self.SetStringItem(Approaching, 1, '%.1f' % Dynamics.ApproachingState_time)
-        self.SetStringItem(Transiting, 1, '%.1f' % Dynamics.TransitingState_time)
-        self.SetStringItem(Parking, 1, '%.1f' % Dynamics.ParkingState_time)
+        total_tive_flow = cur_time * len(Dynamics.PRTs)
+        self.SetStringItem(Idle, 1, '%.1f(%.1f%s)' % (Dynamics.IdleState_time, Dynamics.IdleState_time / total_tive_flow * 100, '%'))
+        self.SetStringItem(Approaching, 1, '%.1f(%.1f%s)' % (Dynamics.ApproachingState_time, Dynamics.ApproachingState_time / total_tive_flow * 100, '%'))
+        self.SetStringItem(Transiting, 1, '%.1f(%.1f%s)' % (Dynamics.TransitingState_time, Dynamics.TransitingState_time / total_tive_flow * 100, '%'))
+        self.SetStringItem(Parking, 1, '%.1f(%.1f%s)' % (Dynamics.ParkingState_time, Dynamics.ParkingState_time / total_tive_flow * 100, '%'))
         
         self.Refresh()
             
