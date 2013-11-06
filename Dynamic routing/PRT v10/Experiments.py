@@ -71,6 +71,7 @@ def on_notify_customer_arrival(customer):
 def run(i, j, dispatcher, meanTimeArrival, numOfArrivingCustomer, imbalanceLevel, numOfPRTs):
     # Generate all inputs: Network, Arrivals of customers, PRTs
     result_txt = open('%d-%d.txt' % (i, j), 'w')
+    result_txt.write('%s_meanTimeArrival(%.1f) numOfArrivingCustomer(%d) imbalanceLevel(%.1f) numOfPRTs(%d)\n' % (str(dispatcher), meanTimeArrival, numOfArrivingCustomer, imbalanceLevel, numOfPRTs))
     Nodes, Edges = Dynamics.Network1()
     Customers = Dynamics.gen_Customer(meanTimeArrival, numOfArrivingCustomer, imbalanceLevel, Nodes)
     global NumOfTotalCustomer
@@ -84,8 +85,6 @@ def run(i, j, dispatcher, meanTimeArrival, numOfArrivingCustomer, imbalanceLevel
     st = time()
     Dynamics.process_events(now)
     et = time() - st
-    
-    result_txt.write('%s_meanTimeArrival(%.1f) numOfArrivingCustomer(%d) imbalanceLevel(%.1f) numOfPRTs(%d)\n' % (str(dispatcher), meanTimeArrival, numOfArrivingCustomer, imbalanceLevel, numOfPRTs))
     result_txt.write('%s\n' % str(ctime(st)))
     result_txt.write('computation time: %.1f\n' % (et))
     result_txt.write('\n')        
@@ -100,7 +99,7 @@ def run(i, j, dispatcher, meanTimeArrival, numOfArrivingCustomer, imbalanceLevel
     result_txt.write('SettingState_time: %.1f(%.1f%s)\n' % (SettingState_time, SettingState_time / total_tive_flow * 100, '%'))
     result_txt.write('TransitingState_time: %.1f(%.1f%s)\n' % (TransitingState_time, TransitingState_time / total_tive_flow * 100, '%'))
     result_txt.write('ParkingState_time: %.1f(%.1f%s)\n' % (ParkingState_time, ParkingState_time / total_tive_flow * 100, '%'))
-    
+    result_txt.close()
 if __name__ == '__main__':
     meanTimeArrival = (60.0, 180.0, 300.0)
     numOfArrivingCustomer = (5000, 5000, 5000)
