@@ -100,6 +100,15 @@ def run(i, j, dispatcher, meanTimeArrival, numOfArrivingCustomer, imbalanceLevel
     result_txt.write('TransitingState_time: %.1f(%.1f%s)\n' % (TransitingState_time, TransitingState_time / total_tive_flow * 100, '%'))
     result_txt.write('ParkingState_time: %.1f(%.1f%s)\n' % (ParkingState_time, ParkingState_time / total_tive_flow * 100, '%'))
     result_txt.close()
+
+def profile_solve():
+    print 'Using', solve.__module__
+    import cProfile, pstats
+    seed(25); H, L = problem.gen_uniform(6, 8, 0.6, 9)
+    cProfile.runctx('solve(H, L, hfunc2)', globals(), locals(), 'log/profile')
+    s = pstats.Stats('log/profile')
+    s.strip_dirs().sort_stats('cumulative', 'time').print_stats()
+
 if __name__ == '__main__':
     meanTimeArrival = (60.0, 180.0, 300.0)
     numOfArrivingCustomer = (5000, 5000, 5000)
