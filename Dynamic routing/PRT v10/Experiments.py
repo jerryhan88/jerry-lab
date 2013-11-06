@@ -94,7 +94,6 @@ def run(i, j, dispatcher, meanTimeArrival, numOfArrivingCustomer, imbalanceLevel
     result_txt.write('T.E.TravelDist: %.1f\n' % (Total_empty_travel_distance))
     result_txt.write('T.FlowTime: %.1f\n' % (Total_customers_flow_time))
     result_txt.write('T.WaitTime: %.1f\n' % (Total_customers_waiting_time))
-    
     total_tive_flow = (data_accu_st - data_accu_et) * len(Dynamics.PRTs)
     result_txt.write('IdleState_time: %.1f(%.1f%s)\n' % (IdleState_time, IdleState_time / total_tive_flow * 100, '%'))
     result_txt.write('ApproachingState_time: %.1f(%.1f%s)\n' % (ApproachingState_time, ApproachingState_time / total_tive_flow * 100, '%'))
@@ -107,7 +106,6 @@ if __name__ == '__main__':
     numOfArrivingCustomer = (5000, 5000, 5000)
     imbalanceLevel = (1.0, 0.5, 0.3)
     numOfPRTs = (40, 60, 80)
-    
     for i, args in enumerate(zip(meanTimeArrival, numOfArrivingCustomer, imbalanceLevel, numOfPRTs)):
         for j, dispatcher in enumerate([Algorithms.NN0, Algorithms.NN1, Algorithms.NN2, Algorithms.NN3, Algorithms.NN4, Algorithms.NN5]):
             run(i, j, dispatcher, *args)
