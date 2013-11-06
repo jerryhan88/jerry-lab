@@ -356,7 +356,8 @@ class PRT():
         global ApproachingState_time, NumOfPickedUpCustomer, Total_empty_travel_distance, Total_travel_distance
         ApproachingState_time += cur_time - self.stateChangingPoint
         NumOfPickedUpCustomer += 1
-        travel_distance = (cur_time - self.last_planed_time) * PRT_SPEED
+        path_travel_time = cur_time - self.last_planed_time
+        travel_distance = sum(e.distance for e in self.path_e)
         Total_empty_travel_distance += travel_distance 
         Total_travel_distance += travel_distance
         update_customerWaitingTimeMeasure(cur_time, -1)
@@ -380,7 +381,7 @@ class PRT():
         prev_PRT = target_c.assigned_PRT
         
         # Measure update
-        global SettingState_time, Total_empty_travel_distance, Total_travel_distance, Total_customers_flow_time, NumOfPickedUpCustomer, NumOfServicedCustomer
+        global SettingState_time
         SettingState_time += cur_time - self.stateChangingPoint
             
         # State update
@@ -492,7 +493,7 @@ class PRT():
         global TransitingState_time, NumOfServicedCustomer, Total_travel_distance, Total_customers_flow_time
         TransitingState_time += cur_time - self.stateChangingPoint
         NumOfServicedCustomer += 1
-        travel_distance = (cur_time - self.last_planed_time) * PRT_SPEED
+        travel_distance = sum(e.distance for e in self.path_e)
         Total_travel_distance += travel_distance
         Total_customers_flow_time += cur_time - target_c.arriving_time
         
@@ -513,7 +514,7 @@ class PRT():
         # Measure update
         global ParkingState_time, Total_travel_distance, Total_empty_travel_distance
         ParkingState_time += cur_time - self.stateChangingPoint
-        travel_distance = (cur_time - self.last_planed_time) * PRT_SPEED
+        travel_distance = sum(e.distance for e in self.path_e)
         Total_empty_travel_distance += travel_distance
         Total_travel_distance += travel_distance
         

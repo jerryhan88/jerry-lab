@@ -194,7 +194,7 @@ class MainFrame(wx.Frame):
         tb.Realize()
 
 
-StaticInfo, NumOfStations, NumOfPRTs, TotalCustomer, AboutCustomer, CustomerArrivals, WaitingCustomers, PickedUpCustomers, ServicedCustomers, WaitingTime, WTTotal, WTAverage, WTMaximum, FlowTime, FTTotal, FTAverage, TravelDistance, TDTotal, TDAverage, EmptyTravelDistance, ETDTotal, ETDAverage, StateDuration, Idle, Approaching, Transiting, Parking = range(27)
+StaticInfo, NumOfStations, NumOfPRTs, TotalCustomer, AboutCustomer, CustomerArrivals, WaitingCustomers, PickedUpCustomers, ServicedCustomers, WaitingTime, WTTotal, WTAverage, WTMaximum, FlowTime, FTTotal, FTAverage, TravelDistance, TDTotal, TDAverage, EmptyTravelDistance, ETDTotal, ETDAverage, StateDuration, Idle, Approaching, Setting, Transiting, Parking = range(28)
  
 
 measure_name = ['T.TravelDist', 'T.TravelDist', 'T.E.TravelDist', 'A.WaitTime', 'A.FlowTime']
@@ -273,6 +273,8 @@ class MeasurePanel(wx.ListCtrl):
         self.SetStringItem(Idle, 1, '%.1f' % Dynamics.IdleState_time)
         self.InsertStringItem(Approaching, 'Approaching')
         self.SetStringItem(Approaching, 1, '%.1f' % Dynamics.ApproachingState_time)
+        self.InsertStringItem(Setting, 'Setting')
+        self.SetStringItem(Setting, 1, '%.1f' % Dynamics.ApproachingState_time)
         self.InsertStringItem(Transiting, 'Transiting')
         self.SetStringItem(Transiting, 1, '%.1f' % Dynamics.TransitingState_time)
         self.InsertStringItem(Parking, 'Parking')
@@ -302,6 +304,7 @@ class MeasurePanel(wx.ListCtrl):
         total_tive_flow = cur_time * len(Dynamics.PRTs)
         self.SetStringItem(Idle, 1, '%.1f(%.1f%s)' % (Dynamics.IdleState_time, Dynamics.IdleState_time / total_tive_flow * 100, '%'))
         self.SetStringItem(Approaching, 1, '%.1f(%.1f%s)' % (Dynamics.ApproachingState_time, Dynamics.ApproachingState_time / total_tive_flow * 100, '%'))
+        self.SetStringItem(Setting, 1, '%.1f(%.1f%s)' % (Dynamics.SettingState_time, Dynamics.SettingState_time / total_tive_flow * 100, '%'))
         self.SetStringItem(Transiting, 1, '%.1f(%.1f%s)' % (Dynamics.TransitingState_time, Dynamics.TransitingState_time / total_tive_flow * 100, '%'))
         self.SetStringItem(Parking, 1, '%.1f(%.1f%s)' % (Dynamics.ParkingState_time, Dynamics.ParkingState_time / total_tive_flow * 100, '%'))
         
