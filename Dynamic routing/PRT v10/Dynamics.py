@@ -189,10 +189,8 @@ class Edge():
         return '%s->%s' % (self._from.id, self._to.id)
 
 class Customer():
-    _id = 0
-    def __init__(self, arriving_time, sn, dn):
-        self.id = Customer._id
-        Customer._id += 1
+    def __init__(self, _id, arriving_time, sn, dn):
+        self.id = _id
         self.arriving_time = arriving_time
         self.sn, self.dn = sn, dn
         
@@ -582,7 +580,7 @@ def gen_Customer(average_arrival, num_customers, imbalanceLevel, Nodes):
     Stations = [ i for i, n in enumerate(Nodes) if n.nodeType == STATION]
     
     Customers = []
-    for t in accu_pd:
+    for i, t in enumerate(accu_pd):
         if random() <= imbalanceLevel:
             p1 = choice(TransferStations)
             p2 = choice(Stations)
@@ -592,7 +590,7 @@ def gen_Customer(average_arrival, num_customers, imbalanceLevel, Nodes):
                 sn, dn = p2, p1
         else:
             sn, dn = sample(Stations, 2)
-        Customers.append(Customer(t, Nodes[sn], Nodes[dn]))
+        Customers.append(Customer(i, t, Nodes[sn], Nodes[dn]))
         
     customerArrivals_txt = open('Info. Arrivals of customers.txt', 'w')
     for c in Customers:
@@ -632,6 +630,7 @@ on_notify_customer_arrival = lambda x: None
 
 def update_customerWaitingTimeMeasure(cur_time, numOfCustomerChange):
     global Total_customers_waiting_time, NumOfWaitingCustomer, ChaningPointOfNWC, MaxCustomerWaitingTime  
+
     # Update measure
     customers_waiting_time = NumOfWaitingCustomer * (cur_time - ChaningPointOfNWC)
     if customers_waiting_time > MaxCustomerWaitingTime:
@@ -639,7 +638,14 @@ def update_customerWaitingTimeMeasure(cur_time, numOfCustomerChange):
     Total_customers_waiting_time += customers_waiting_time 
     
     # Memorize things for the next calculation
-    NumOfWaitingCustomer += numOfCustomerChange
+    if NumOfWaitingCustomer == 0 :
+        if numOfCustomerChange == -1: 
+            NumOfWaitingCustomer = 0
+        else:
+            assert numOfCustomerChange == 1
+            NumOfWaitingCustomer += numOfCustomerChange
+    else:
+        NumOfWaitingCustomer += numOfCustomerChange
     ChaningPointOfNWC = cur_time
 
 def On_CustomerArrival(cur_time, target_c):

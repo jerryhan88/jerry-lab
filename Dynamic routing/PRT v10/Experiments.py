@@ -26,7 +26,7 @@ data_accu_st = 0.0
 data_accu_et = 0.0
 
 def on_notify_customer_arrival(customer):
-    if Dynamics.NumOfCustomerArrivals > NumOfTotalCustomer / 10:
+    if Dynamics.NumOfCustomerArrivals == int(NumOfTotalCustomer / 10):
         Dynamics.Total_empty_travel_distance = 0.0
         Dynamics.NumOfPickedUpCustomer = 0
         
@@ -44,26 +44,27 @@ def on_notify_customer_arrival(customer):
         Dynamics.SettingState_time = 0.0
         Dynamics.TransitingState_time = 0.0
         Dynamics.ParkingState_time = 0.0
-        
+        global data_accu_st
         data_accu_st = customer.arriving_time
 
     if Dynamics.NumOfCustomerArrivals == NumOfTotalCustomer:
+        global Total_empty_travel_distance, NumOfPickedUpCustomer 
         Total_empty_travel_distance = Dynamics.Total_empty_travel_distance
         NumOfPickedUpCustomer = Dynamics.NumOfPickedUpCustomer
-        
+        global Total_travel_distance, Total_customers_flow_time, NumOfServicedCustomer 
         Total_travel_distance = Dynamics.Total_travel_distance 
         Total_customers_flow_time = Dynamics.Total_customers_flow_time 
         NumOfServicedCustomer = Dynamics.NumOfServicedCustomer 
-        
+        global Total_customers_waiting_time, MaxCustomerWaitingTime 
         Total_customers_waiting_time = Dynamics.Total_customers_waiting_time
         MaxCustomerWaitingTime = Dynamics.MaxCustomerWaitingTime 
-        
+        global IdleState_time, ApproachingState_time, SettingState_time, TransitingState_time, ParkingState_time
         IdleState_time = Dynamics.IdleState_time 
         ApproachingState_time = Dynamics.ApproachingState_time
         SettingState_time = Dynamics.SettingState_time 
         TransitingState_time = Dynamics.TransitingState_time
         ParkingState_time = Dynamics.ParkingState_time
-        
+        global data_accu_et
         data_accu_et = customer.arriving_time
      
     print customer
@@ -93,7 +94,7 @@ def run(i, j, dispatcher, meanTimeArrival, numOfArrivingCustomer, imbalanceLevel
     result_txt.write('T.E.TravelDist: %.1f\n' % (Total_empty_travel_distance))
     result_txt.write('T.FlowTime: %.1f\n' % (Total_customers_flow_time))
     result_txt.write('T.WaitTime: %.1f\n' % (Total_customers_waiting_time))
-    total_tive_flow = (data_accu_st - data_accu_et) * len(Dynamics.PRTs)
+    total_tive_flow = (data_accu_et - data_accu_st) * len(Dynamics.PRTs)
     result_txt.write('IdleState_time: %.1f(%.1f%s)\n' % (IdleState_time, IdleState_time / total_tive_flow * 100, '%'))
     result_txt.write('ApproachingState_time: %.1f(%.1f%s)\n' % (ApproachingState_time, ApproachingState_time / total_tive_flow * 100, '%'))
     result_txt.write('SettingState_time: %.1f(%.1f%s)\n' % (SettingState_time, SettingState_time / total_tive_flow * 100, '%'))
@@ -102,18 +103,26 @@ def run(i, j, dispatcher, meanTimeArrival, numOfArrivingCustomer, imbalanceLevel
     result_txt.close()
 
 def profile_solve():
-    print 'Using', solve.__module__
     import cProfile, pstats
-    seed(25); H, L = problem.gen_uniform(6, 8, 0.6, 9)
-    cProfile.runctx('solve(H, L, hfunc2)', globals(), locals(), 'log/profile')
+    args = (60.0, 500, 0.8, 80)
+    dispatcher = Algorithms.NN5
+    cProfile.runctx('run(0, 0, dispatcher, *args)', globals(), locals(), 'log/profile')
     s = pstats.Stats('log/profile')
     s.strip_dirs().sort_stats('cumulative', 'time').print_stats()
+    
+#     print 'Using', solve.__module__
+#     import cProfile, pstats
+#     H, L = problem.gen_uniform(6, 8, 0.6, 9)
+#     cProfile.runctx('solve(H, L, hfunc2)', globals(), locals(), 'log/profile')
+#     s = pstats.Stats('log/profile')
+#     s.strip_dirs().sort_stats('cumulative', 'time').print_stats()
 
 if __name__ == '__main__':
-    meanTimeArrival = (60.0, 180.0, 300.0)
-    numOfArrivingCustomer = (5000, 5000, 5000)
-    imbalanceLevel = (1.0, 0.5, 0.3)
-    numOfPRTs = (40, 60, 80)
-    for i, args in enumerate(zip(meanTimeArrival, numOfArrivingCustomer, imbalanceLevel, numOfPRTs)):
-        for j, dispatcher in enumerate([Algorithms.NN0, Algorithms.NN1, Algorithms.NN2, Algorithms.NN3, Algorithms.NN4, Algorithms.NN5]):
-            run(i, j, dispatcher, *args)
+    profile_solve()
+#     meanTimeArrival = (60.0, 180.0, 300.0)
+#     numOfArrivingCustomer = (10, 5000, 5000)
+#     imbalanceLevel = (1.0, 0.5, 0.3)
+#     numOfPRTs = (1, 60, 80)
+#     for i, args in enumerate(zip(meanTimeArrival, numOfArrivingCustomer, imbalanceLevel, numOfPRTs)):
+#         for j, dispatcher in enumerate([Algorithms.NN0, Algorithms.NN1, Algorithms.NN2, Algorithms.NN3, Algorithms.NN4, Algorithms.NN5]):
+#             run(i, j, dispatcher, *args)
