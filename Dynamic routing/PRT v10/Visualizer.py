@@ -19,6 +19,56 @@ event_queue = []
 
 TITLE = 'PRT Simulator'
 
+class CustomerWaitingTime_chart(wx.Frame):
+    def __init__(self, parent):
+        wx.Frame.__init__(self, parent, -1, '', pos=(150, 150) , size=(1024, 768))
+        self.SetTitle('Customer waiting time chart' + ' - ' + self.Parent.dispatcher.__name__)
+        self.cp = ChartPanel(self) 
+        self.SetBackgroundColour(wx.Colour(236, 233, 216))
+        self.Bind(wx.EVT_CLOSE, self.OnClose)
+        self.Show(True)
+        
+    def OnClose(self, event):
+        self.Show(False)
+
+class ChartPanel(DragZoomPanel):
+    def __init__(self, parent):
+        DragZoomPanel.__init__(self, parent, -1, style=wx.SUNKEN_BORDER)
+        self.SetBackgroundColour(wx.WHITE)
+        self.Bind(wx.EVT_PAINT, self.OnPaint)
+        self.Bind(wx.EVT_SIZE, self.OnSize)
+        self.lastTime = Dynamics.Customers[-1].arriving_time + 600.0
+        self.NumOfTotalCustomer = len(Dynamics.Customers)
+        
+    def OnDrawDevice(self, gc):
+        pass
+    
+    def OnDraw(self, gc):
+        sx, sy = self.GetSize()
+        ori_px, ori_py = sx * 0.1, sy * (1 - 0.2)
+        len_sx, len_sy = sx * 0.8, sy * 0.6
+        gc.DrawLines([(ori_px, ori_py), (ori_px + len_sx, ori_py)])
+        gc.DrawLines([(ori_px + len_sx, ori_py), (ori_px + len_sx - 3, ori_py - 3)])
+        gc.DrawLines([(ori_px + len_sx, ori_py), (ori_px + len_sx - 3, ori_py + 3)])
+        gc.DrawLines([(ori_px, ori_py), (ori_px, ori_py - len_sy)])
+        gc.DrawLines([(ori_px, ori_py - len_sy), (ori_px - 3, ori_py - len_sy + 3)])
+        gc.DrawLines([(ori_px, ori_py - len_sy), (ori_px + 3, ori_py - len_sy + 3)])
+        
+        xUnit = len_sx / (self.lastTime)
+        yUnit = len_sy / (self.NumOfTotalCustomer / 10)
+        last_px, last_py = ori_px, ori_py
+        CCS, NWC = 0.0, 0
+        gc.SetPen(wx.Pen(wx.Colour(0, 0, 0), 0.5))
+        for i, args in enumerate(Dynamics.WaitingCustomerChanges):
+            CCS, NWC = args 
+            if i == 0:
+                gc.DrawLines([(ori_px, ori_py), (ori_px + CCS * xUnit, ori_py)])
+            else:
+                gc.DrawLines([(ori_px + Dynamics.WaitingCustomerChanges[i - 1][0] * xUnit, ori_py - Dynamics.WaitingCustomerChanges[i - 1][1] * yUnit), (ori_px + Dynamics.WaitingCustomerChanges[i - 1][0] * xUnit, ori_py - NWC * yUnit)])
+                gc.DrawLines([(ori_px + Dynamics.WaitingCustomerChanges[i - 1][0] * xUnit, ori_py - NWC * yUnit), (ori_px + CCS * xUnit, ori_py - NWC * yUnit)])
+#         if Dynamics.WaitingCustomerChanges and self.Parent.Parent.now >= Dynamics.WaitingCustomerChanges[-1][0]:
+#             gc.DrawLines([(ori_px + CCS * xUnit, ori_py - NWC * yUnit), (ori_px + self.Parent.Parent.now * xUnit, ori_py - NWC * yUnit)])
+
 class MainFrame(wx.Frame):
     def __init__(self):
         wx.Frame.__init__(self, None, -1, TITLE, size=(1024, 768), pos=(20, 20))
@@ -71,17 +121,27 @@ class MainFrame(wx.Frame):
 
         self.Show(True)
         
-        dispatcher = self.select_dispatcher()
-        if dispatcher == None:
+        self.dispatcher = self.select_dispatcher()
+        if self.dispatcher == None:
             return
         
-        Dynamics.init_dynamics(self.Nodes, self.PRTs, self.Customers, dispatcher)
+        Dynamics.init_dynamics(self.Nodes, self.PRTs, self.Customers, self.dispatcher)
         
-        self.SetTitle(TITLE + ' - ' + dispatcher.__name__)
-        
+        self.SetTitle(TITLE + ' - ' + self.dispatcher.__name__)
         self.vp.SetFocus()
+        
+        self.CWTC = CustomerWaitingTime_chart(self)
+        
+        ##############################
+        
         self.onTimer_counter = 0
 
+        self.Bind(wx.EVT_CLOSE, self.OnClose)
+        
+    def OnClose(self, event):
+        self.CWTC.Destroy()
+        self.Destroy()
+    
     def select_dispatcher(self):
         AD = Algorithms.get_all_dispatchers()
         dlg = wx.SingleChoiceDialog(self, 'Select dispatcher:', 'Dispatcher Selection', sorted(AD), wx.CHOICEDLG_STYLE)
@@ -148,7 +208,7 @@ class MainFrame(wx.Frame):
         for c in Dynamics.waiting_customers:
             self.waiting_customers_in_node[c.sn.id].append(c.id) 
         self.vp.RefreshGC()
-        
+        self.CWTC.cp.RefreshGC()
         
         self.onTimer_counter += 1
         
@@ -220,7 +280,7 @@ class MeasurePanel(wx.ListCtrl):
         self.InsertStringItem(TotalCustomer, 'T. Customers')
         self.SetStringItem(TotalCustomer, 1, '%d' % self.Parent.Parent.Parent.NumOfTotalCustomer)
          
-        self.InsertStringItem(AboutCustomer, 'About Cusomer')
+        self.InsertStringItem(AboutCustomer, 'Customer')
         self.SetStringItem(AboutCustomer, 1, '   ')
         self.SetItemBackgroundColour(AboutCustomer, bg_clr)
         self.InsertStringItem(CustomerArrivals, 'C. Arrivals')

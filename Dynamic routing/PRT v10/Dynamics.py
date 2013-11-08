@@ -150,6 +150,10 @@ ParkingState_time = 0.0
 NumOfCustomerArrivals = 0
 
 #---------------------------------------------------------------------
+# For charting measure
+WaitingCustomerChanges = []
+
+#---------------------------------------------------------------------
 # Classes
 
 class Node():
@@ -629,14 +633,14 @@ def logger(s):
 on_notify_customer_arrival = lambda x: None
 
 def update_customerWaitingTimeMeasure(cur_time, numOfCustomerChange):
-    global Total_customers_waiting_time, NumOfWaitingCustomer, ChaningPointOfNWC, MaxCustomerWaitingTime  
+    global Total_customers_waiting_time, NumOfWaitingCustomer, ChaningPointOfNWC, MaxCustomerWaitingTime, WaitingCustomerChanges  
 
     # Update measure
     customers_waiting_time = NumOfWaitingCustomer * (cur_time - ChaningPointOfNWC)
     if customers_waiting_time > MaxCustomerWaitingTime:
          MaxCustomerWaitingTime = customers_waiting_time
-    Total_customers_waiting_time += customers_waiting_time 
-    
+    Total_customers_waiting_time += customers_waiting_time
+
     # Memorize things for the next calculation
     if NumOfWaitingCustomer == 0 :
         if numOfCustomerChange == -1: 
@@ -647,6 +651,9 @@ def update_customerWaitingTimeMeasure(cur_time, numOfCustomerChange):
     else:
         NumOfWaitingCustomer += numOfCustomerChange
     ChaningPointOfNWC = cur_time
+    if WaitingCustomerChanges and WaitingCustomerChanges[-1][0] == cur_time:
+        WaitingCustomerChanges.pop()
+    WaitingCustomerChanges.append((cur_time, NumOfWaitingCustomer))
 
 def On_CustomerArrival(cur_time, target_c):
     logger('%.1f: On_CustomerArrival - %s' % (cur_time, target_c))
