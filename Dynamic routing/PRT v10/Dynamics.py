@@ -152,6 +152,7 @@ NumOfCustomerArrivals = 0
 #---------------------------------------------------------------------
 # For charting measure
 WaitingCustomerChanges = []
+WaitingTimeChanges = []
 
 #---------------------------------------------------------------------
 # Classes
@@ -571,7 +572,8 @@ def gen_Network(ns, ns_connection):
     return Nodes, Edges
 
 def gen_Customer(average_arrival, num_customers, imbalanceLevel, Nodes):
-    seed(1)
+#     seed(4)  # 1000, 2000, 3000
+    seed(5)
     accu_pd = []
     pd = [expovariate(1.0 / average_arrival) for _ in range(num_customers)]
     for i, t in enumerate(pd):
@@ -616,11 +618,30 @@ def gen_PRT(numOfPRT, Nodes):
 #---------------------------------------------------------------------
 # Prepare dynamics run
 PRT_SPEED = 12  # unit (m/s)
-SETTING_TIME = (35.0, 60.0)
+SETTING_TIME = (45.0, 60.0)
 waiting_customers = []
 event_queue = []
 
 def init_dynamics(_Nodes, _PRTs, _Customers, _dispatcher):
+    global Total_empty_travel_distance, NumOfPickedUpCustomer, Total_travel_distance, Total_customers_flow_time, NumOfServicedCustomer  
+    Total_empty_travel_distance = 0.0
+    NumOfPickedUpCustomer = 0
+    Total_travel_distance = 0.0
+    Total_customers_flow_time = 0.0
+    NumOfServicedCustomer = 0
+    global Total_customers_waiting_time, NumOfWaitingCustomer, ChaningPointOfNWC, MaxCustomerWaitingTime  
+    Total_customers_waiting_time = 0.0
+    NumOfWaitingCustomer = 0
+    ChaningPointOfNWC = 0.0
+    MaxCustomerWaitingTime = 0.0
+    global IdleState_time, ApproachingState_time, SettingState_time, TransitingState_time, ParkingState_time 
+    IdleState_time = 0.0
+    ApproachingState_time = 0.0
+    SettingState_time = 0.0
+    TransitingState_time = 0.0
+    ParkingState_time = 0.0
+    global NumOfCustomerArrivals
+    NumOfCustomerArrivals = 0
     global Nodes, PRTs, Customers, dispatcher
     Nodes, PRTs, Customers, dispatcher = _Nodes, _PRTs, _Customers, _dispatcher
     for customer in Customers:
@@ -633,7 +654,7 @@ def logger(s):
 on_notify_customer_arrival = lambda x: None
 
 def update_customerWaitingTimeMeasure(cur_time, numOfCustomerChange):
-    global Total_customers_waiting_time, NumOfWaitingCustomer, ChaningPointOfNWC, MaxCustomerWaitingTime, WaitingCustomerChanges  
+    global Total_customers_waiting_time, NumOfWaitingCustomer, ChaningPointOfNWC, MaxCustomerWaitingTime, WaitingCustomerChanges, WaitingTimeChanges
 
     # Update measure
     customers_waiting_time = NumOfWaitingCustomer * (cur_time - ChaningPointOfNWC)
@@ -651,9 +672,15 @@ def update_customerWaitingTimeMeasure(cur_time, numOfCustomerChange):
     else:
         NumOfWaitingCustomer += numOfCustomerChange
     ChaningPointOfNWC = cur_time
+    
     if WaitingCustomerChanges and WaitingCustomerChanges[-1][0] == cur_time:
         WaitingCustomerChanges.pop()
     WaitingCustomerChanges.append((cur_time, NumOfWaitingCustomer))
+    
+    if WaitingTimeChanges and WaitingTimeChanges[-1][0] == cur_time:
+        WaitingTimeChanges.pop()
+    WaitingTimeChanges.append((cur_time, Total_customers_waiting_time))
+    
 
 def On_CustomerArrival(cur_time, target_c):
     logger('%.1f: On_CustomerArrival - %s' % (cur_time, target_c))

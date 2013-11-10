@@ -1,0 +1,1 @@
+<function NN4 at 0x00000000025604A8>_meanTimeArrival(30.0) imbalanceLevel(1.0) numOfPRTs(20)

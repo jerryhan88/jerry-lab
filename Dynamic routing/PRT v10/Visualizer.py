@@ -1,5 +1,5 @@
 from __future__ import division
-from math import sqrt
+from math import sqrt, pi
 from util import DragZoomPanel
 import wx, Dynamics, Algorithms
 from Dynamics import ST_IDLE, ST_APPROACHING, ST_SETTING, ST_TRANSITING, ST_PARKING, STATION, TRANSFER
@@ -40,6 +40,7 @@ class ChartPanel(DragZoomPanel):
         self.lastTime = Dynamics.Customers[-1].arriving_time + 600.0
         self.NumOfTotalCustomer = len(Dynamics.Customers)
         
+        
     def OnDrawDevice(self, gc):
         pass
     
@@ -56,6 +57,18 @@ class ChartPanel(DragZoomPanel):
         
         xUnit = len_sx / (self.lastTime)
         yUnit = len_sy / (self.NumOfTotalCustomer / 10)
+        
+#         gc.SetFont(wx.Font(5, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+#         gc.DrawText('%d' % self.NumOfTotalCustomer, ori_px + len_sx, ori_py - len_sy )
+        gc.SetFont(wx.Font(5, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+        TTI = 10
+        for i in range(TTI):
+            t = (i + 1) * (self.lastTime / TTI)
+            h = int(t // 3600)
+            m = int(t // 60) % 60
+            s = t % 60
+            gc.DrawText('%02d:%02d:%04.1f' % (h, m, s), ori_px + t * xUnit, ori_py + 10)
+        
         last_px, last_py = ori_px, ori_py
         CCS, NWC = 0.0, 0
         gc.SetPen(wx.Pen(wx.Colour(0, 0, 0), 0.5))
@@ -66,8 +79,16 @@ class ChartPanel(DragZoomPanel):
             else:
                 gc.DrawLines([(ori_px + Dynamics.WaitingCustomerChanges[i - 1][0] * xUnit, ori_py - Dynamics.WaitingCustomerChanges[i - 1][1] * yUnit), (ori_px + Dynamics.WaitingCustomerChanges[i - 1][0] * xUnit, ori_py - NWC * yUnit)])
                 gc.DrawLines([(ori_px + Dynamics.WaitingCustomerChanges[i - 1][0] * xUnit, ori_py - NWC * yUnit), (ori_px + CCS * xUnit, ori_py - NWC * yUnit)])
-#         if Dynamics.WaitingCustomerChanges and self.Parent.Parent.now >= Dynamics.WaitingCustomerChanges[-1][0]:
-#             gc.DrawLines([(ori_px + CCS * xUnit, ori_py - NWC * yUnit), (ori_px + self.Parent.Parent.now * xUnit, ori_py - NWC * yUnit)])
+        
+        CT, TWT = 0.0, 0.0
+        gc.SetPen(wx.Pen(wx.Colour(255, 0, 0), 0.5)) 
+        for i, args in enumerate(Dynamics.WaitingTimeChanges):
+            CT, TWT = args
+            AWT = TWT / CT 
+            if i == 0:
+                gc.DrawLines([(ori_px, ori_py), (ori_px + CT * xUnit, ori_py - AWT * yUnit)])
+            else:
+                gc.DrawLines([(ori_px + Dynamics.WaitingTimeChanges[i - 1][0] * xUnit, ori_py - (Dynamics.WaitingTimeChanges[i - 1][1] / Dynamics.WaitingTimeChanges[i - 1][0]) * yUnit), (ori_px + CT * xUnit, ori_py - AWT * yUnit)])
 
 class MainFrame(wx.Frame):
     def __init__(self):
@@ -75,9 +96,9 @@ class MainFrame(wx.Frame):
 #         wx.Frame.__init__(self, None, -1, TITLE, size=(1920, 960), pos=(0, 0))
         # Every resources are accessible
         self.Nodes, self.Edges = Dynamics.Network1()
-        self.Customers = Dynamics.gen_Customer(20, 500, 0.3, self.Nodes)
+        self.Customers = Dynamics.gen_Customer(60, 2000, 0.3, self.Nodes)
         self.NumOfTotalCustomer = len(self.Customers)
-        self.PRTs = Dynamics.gen_PRT(10, self.Nodes)
+        self.PRTs = Dynamics.gen_PRT(50, self.Nodes)
         
         self.idlePRT_in_node = {}
         for n in self.Nodes:

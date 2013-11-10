@@ -66,6 +66,7 @@ def on_notify_customer_arrival(customer):
         ParkingState_time = Dynamics.ParkingState_time
         global data_accu_et
         data_accu_et = customer.arriving_time
+        print '-------------------------------------------------------------------------------'
      
     print customer
 
@@ -86,6 +87,9 @@ def run(ex, dispatcher, meanTimeArrival, imbalanceLevel, numOfPRTs):
     st = time()
     Dynamics.process_events(now)
     et = time() - st
+    global Total_empty_travel_distance, NumOfPickedUpCustomer, Total_travel_distance, Total_customers_flow_time, NumOfServicedCustomer, Total_customers_waiting_time, MaxCustomerWaitingTime
+    global IdleState_time, ApproachingState_time, SettingState_time, TransitingState_time, ParkingState_time, data_accu_st, data_accu_et
+    
     result_txt.write('%s\n' % str(ctime(st)))
     result_txt.write('computation time: %.1f\n' % (et))
     result_txt.write('\n')        
@@ -93,13 +97,15 @@ def run(ex, dispatcher, meanTimeArrival, imbalanceLevel, numOfPRTs):
     result_txt.write('T.TravedDist: %.1f\n' % (Total_travel_distance))
     result_txt.write('T.E.TravelDist: %.1f\n' % (Total_empty_travel_distance))
     result_txt.write('T.FlowTime: %.1f\n' % (Total_customers_flow_time))
+    time_flow = data_accu_et - data_accu_st
+    total_time_flow = time_flow * len(Dynamics.PRTs)
     result_txt.write('T.WaitTime: %.1f\n' % (Total_customers_waiting_time))
-    total_tive_flow = (data_accu_et - data_accu_st) * len(Dynamics.PRTs)
-    result_txt.write('IdleState_time: %.1f(%.1f%s)\n' % (IdleState_time, IdleState_time / total_tive_flow * 100, '%'))
-    result_txt.write('ApproachingState_time: %.1f(%.1f%s)\n' % (ApproachingState_time, ApproachingState_time / total_tive_flow * 100, '%'))
-    result_txt.write('SettingState_time: %.1f(%.1f%s)\n' % (SettingState_time, SettingState_time / total_tive_flow * 100, '%'))
-    result_txt.write('TransitingState_time: %.1f(%.1f%s)\n' % (TransitingState_time, TransitingState_time / total_tive_flow * 100, '%'))
-    result_txt.write('ParkingState_time: %.1f(%.1f%s)\n' % (ParkingState_time, ParkingState_time / total_tive_flow * 100, '%'))
+    result_txt.write('A.WaitTime: %.1f\n' % (Total_customers_waiting_time / time_flow))
+    result_txt.write('IdleState_time: %.1f(%.1f%s)\n' % (IdleState_time, IdleState_time / total_time_flow * 100, '%'))
+    result_txt.write('ApproachingState_time: %.1f(%.1f%s)\n' % (ApproachingState_time, ApproachingState_time / total_time_flow * 100, '%'))
+    result_txt.write('SettingState_time: %.1f(%.1f%s)\n' % (SettingState_time, SettingState_time / total_time_flow * 100, '%'))
+    result_txt.write('TransitingState_time: %.1f(%.1f%s)\n' % (TransitingState_time, TransitingState_time / total_time_flow * 100, '%'))
+    result_txt.write('ParkingState_time: %.1f(%.1f%s)\n' % (ParkingState_time, ParkingState_time / total_time_flow * 100, '%'))
     result_txt.close()
 
 def profile_solve():
@@ -109,33 +115,11 @@ def profile_solve():
     cProfile.runctx('run(0, 0, dispatcher, *args)', globals(), locals(), 'log/profile')
     s = pstats.Stats('log/profile')
     s.strip_dirs().sort_stats('cumulative', 'time').print_stats()
-    
-#     print 'Using', solve.__module__
-#     import cProfile, pstats
-#     H, L = problem.gen_uniform(6, 8, 0.6, 9)
-#     cProfile.runctx('solve(H, L, hfunc2)', globals(), locals(), 'log/profile')
-#     s = pstats.Stats('log/profile')
-#     s.strip_dirs().sort_stats('cumulative', 'time').print_stats()
 
 if __name__ == '__main__':
-#     profile_solve()
-#     ex = 0
-#     for dispatcher in (Algorithms.NN0, Algorithms.NN1, Algorithms.NN2, Algorithms.NN3, Algorithms.NN4, Algorithms.NN5):
-#         for meanTimeArrival in (30.0, 180.0, 300.0):
-#             for numOfPRTs in (40, 60, 80):
-#                 run(ex, dispatcher, meanTimeArrival, 0.0, numOfPRTs)
-#                 ex += 1
-
-#     ex = 1000
-#     for dispatcher in enumerate([Algorithms.NN0, Algorithms.NN1, Algorithms.NN2, Algorithms.NN3, Algorithms.NN4, Algorithms.NN5]):
-#         for meanTimeArrival in (30.0, 180.0, 300.0):
-#             for numOfPRTs in (40, 60, 80):
-#                 run(ex, dispatcher, meanTimeArrival, 0.5, numOfPRTs)
-#                 ex += 1
-#     
-    ex = 2000
-    for dispatcher in enumerate([Algorithms.NN0, Algorithms.NN1, Algorithms.NN2, Algorithms.NN3, Algorithms.NN4, Algorithms.NN5]):
-        for meanTimeArrival in (30.0, 180.0, 300.0):
-            for numOfPRTs in (40, 60, 80):
-                run(ex, dispatcher, meanTimeArrival, 1.0, numOfPRTs)
+    ex = 4000
+    for numOfPRTs in (20, 40, 60, 80, 100):
+        for meanTimeArrival in (5.0, 30.0, 60.0, 180.0, 300.0):
+            for dispatcher in (Algorithms.NN0, Algorithms.NN1, Algorithms.NN2, Algorithms.NN3, Algorithms.NN4, Algorithms.NN5):
+                run(ex, dispatcher, meanTimeArrival, 0.0, numOfPRTs)
                 ex += 1
