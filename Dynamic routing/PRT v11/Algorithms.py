@@ -1,6 +1,7 @@
 from __future__ import division
 from math import sqrt
 from munkres import Munkres
+from igraph import Graph
 
 check_path = lambda x: None
 
@@ -143,7 +144,7 @@ def find_PRT_position_on_PATH(path_e, path_travel_time):
     else:
         assert False 
 
-def find_SP(sn, en, Nodes):
+def find_SP0(sn, en, Nodes):
     # Initialize node state for adapting Dijkstra algorithm
     for n in Nodes:
         n.init_node()
@@ -189,5 +190,42 @@ def find_SP(sn, en, Nodes):
     
     return path_n, path_e
 
+def find_SP(sn, dn, Nodes):
+    path_n = []
+    path_e = []
+    
+    if sn == dn:
+        path_n.append(sn)
+    else:
+        E = []
+        W = []
+        for n in Nodes:
+            for e in n.edges_outward:
+                E.append((Nodes.index(e._from), Nodes.index(e._to)))
+                W.append(e.distance // e.maxSpeed)
+        g = Graph(len(Nodes), E, True, edge_attrs={'weight': W})
+        path = g.get_shortest_paths(Nodes.index(sn), Nodes.index(dn), 'weight')[0]
+        
+        for i, n_index in enumerate(path):
+            n = Nodes[n_index]
+            path_n.append(n)
+            if i != 0 :
+                for e in n.edges_inward:
+                    if e._from == Nodes[path[i - 1]]:
+                        path_e.append(e)
+                        break
+                else:
+                    assert False
+    assert sn == path_n[0]
+    assert dn == path_n[-1] 
+    
+    return path_n, path_e
 if __name__ == '__main__':
-    pass
+    import Dynamics
+    from Dynamics import Network1, findNode
+    Nodes, Edges = Network1()
+    Dynamics.Nodes = Nodes
+    path_n, path_e = find_SP0(findNode('5'), findNode('10'), Nodes)
+    print path_n, path_e
+    path_n, path_e = find_SP(findNode('5'), findNode('10'), Nodes)
+    print path_n, path_e 
