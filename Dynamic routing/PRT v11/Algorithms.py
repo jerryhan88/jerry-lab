@@ -2,6 +2,7 @@ from __future__ import division
 from math import sqrt
 from munkres import Munkres
 from igraph import Graph
+import dlib
 
 check_path = lambda x: None
 
@@ -82,7 +83,7 @@ def find_opt_matching(cur_time, target_PRTs, target_customers, Nodes):
     # Create_PRTbyCustomer_matrix
     row_size, col_size = len(target_PRTs), len(target_customers)
     max_M_size = max(row_size, col_size)
-    PRTbyCustomer_matrix = [[Longest_dis / PRT_SPEED] * max_M_size for _ in range(max_M_size)]
+    PRTbyCustomer_matrix = [[-Longest_dis / PRT_SPEED] * max_M_size for _ in range(max_M_size)]
     
     for prt_id, prt in enumerate(target_PRTs):
         travel_distance = (cur_time - prt.last_planed_time) * PRT_SPEED
@@ -118,12 +119,12 @@ def find_opt_matching(cur_time, target_PRTs, target_customers, Nodes):
             else:
                 assert False
             
-            PRTbyCustomer_matrix[prt_id][i] = sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in path_e) + remain_travel_time
+            PRTbyCustomer_matrix[prt_id][i] = -sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in path_e) + remain_travel_time
     
     # Apply Hungarian method        
-    hungarian_algo = Munkres()
     assignment_results = []
-    for prt_id, customer_id in hungarian_algo.compute(PRTbyCustomer_matrix):
+    cost = dlib.matrix(PRTbyCustomer_matrix)
+    for prt_id, customer_id in enumerate(dlib.max_cost_assignment(cost)):
         if prt_id >= len(target_PRTs) or customer_id >= len(target_customers):
             continue 
         # (prt, customer)
@@ -220,7 +221,8 @@ def find_SP(sn, dn, Nodes):
     assert dn == path_n[-1] 
     
     return path_n, path_e
-if __name__ == '__main__':
+
+def test_path_find():
     import Dynamics
     from Dynamics import Network1, findNode
     Nodes, Edges = Network1()
@@ -228,4 +230,16 @@ if __name__ == '__main__':
     path_n, path_e = find_SP0(findNode('5'), findNode('10'), Nodes)
     print path_n, path_e
     path_n, path_e = find_SP(findNode('5'), findNode('10'), Nodes)
-    print path_n, path_e 
+    print path_n, path_e
+    
+def test_assignment():
+    import dlib
+    cost = dlib.matrix([[1, 2, 6],
+                        [5, 3, 6],
+                        [4, 5, 0]])
+    assignment = dlib.max_cost_assignment(cost)
+    print "optimal assignments: ", assignment
+    return None
+if __name__ == '__main__':
+#     test_path_find()
+    test_assignment() 
