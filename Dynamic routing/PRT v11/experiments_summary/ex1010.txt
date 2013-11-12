@@ -1,15 +1,15 @@
-<function NN4 at 0x0000000003719E48>_meanTimeArrival(60.0) imbalanceLevel(0.0) numOfPRTs(20)
-Tue Nov 12 13:13:25 2013
-computation time: 6.1
+<function NN4 at 0x000000000377E6D8>_meanTimeArrival(60.0) imbalanceLevel(0.0) numOfPRTs(20)
+Tue Nov 12 23:51:18 2013
+computation time: 2.7
 
 Measure------------------------------------------------------------------------------------------------
-T.TravedDist: 1558609.3
-T.E.TravelDist: 288219.4
-T.FlowTime: 229637.2
-T.WaitTime: 69460.9
-A.WaitTime: 1.2
-IdleState_time: 964775.4(85.0%)
-ApproachingState_time: 25977.7(2.3%)
-SettingState_time: 47261.6(4.2%)
-TransitingState_time: 112500.0(9.9%)
-ParkingState_time: 313.3(0.0%)
+T.TravedDist: 1576096.0
+T.E.TravelDist: 300298.2
+T.FlowTime: 189114.7
+T.WaitTime: 28742.9
+A.WaitTime: 0.5
+IdleState_time: 926032.9(81.6%)
+ApproachingState_time: 27096.0(2.4%)
+SettingState_time: 47271.9(4.2%)
+TransitingState_time: 112972.0(10.0%)
+ParkingState_time: 77.0(0.0%)

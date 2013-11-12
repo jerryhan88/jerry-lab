@@ -1,6 +1,6 @@
-<function NN0 at 0x0000000003719C88>_meanTimeArrival(180.0) imbalanceLevel(0.0) numOfPRTs(20)
-Tue Nov 12 13:13:37 2013
-computation time: 2.1
+<function NN0 at 0x000000000377E518>_meanTimeArrival(180.0) imbalanceLevel(0.0) numOfPRTs(20)
+Tue Nov 12 23:51:23 2013
+computation time: 1.4
 
 Measure------------------------------------------------------------------------------------------------
 T.TravedDist: 1556735.2
