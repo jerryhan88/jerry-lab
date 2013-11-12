@@ -74,7 +74,7 @@ def run(ex, dispatcher, meanTimeArrival, imbalanceLevel, numOfPRTs):
     result_txt = open('ex%d.txt' % (ex), 'w')
     result_txt.write('%s_meanTimeArrival(%.1f) imbalanceLevel(%.1f) numOfPRTs(%d)\n' % (str(dispatcher), meanTimeArrival, imbalanceLevel, numOfPRTs))
     Nodes, Edges = Dynamics.Network1()
-    Customers = Dynamics.gen_Customer(meanTimeArrival, 1000, imbalanceLevel, Nodes)
+    Customers = Dynamics.gen_Customer(meanTimeArrival, 100, imbalanceLevel, Nodes)
     global NumOfTotalCustomer
     NumOfTotalCustomer = len(Customers)
     PRTs = Dynamics.gen_PRT(numOfPRTs, Nodes)
@@ -104,9 +104,9 @@ def run(ex, dispatcher, meanTimeArrival, imbalanceLevel, numOfPRTs):
 
 def profile_solve():
     import cProfile, pstats
-    args = (60.0, 500, 0.8, 80)
-    dispatcher = Algorithms.NN5
-    cProfile.runctx('run(0, 0, dispatcher, *args)', globals(), locals(), 'log/profile')
+    args = (60.0, 0.8, 60)
+    dispatcher = Algorithms.NN0
+    cProfile.runctx('run(1000, dispatcher, *args)', globals(), locals(), 'log/profile')
     s = pstats.Stats('log/profile')
     s.strip_dirs().sort_stats('cumulative', 'time').print_stats()
     
@@ -118,7 +118,7 @@ def profile_solve():
 #     s.strip_dirs().sort_stats('cumulative', 'time').print_stats()
 
 if __name__ == '__main__':
-#     profile_solve()
+    profile_solve()
 #     ex = 0
 #     for dispatcher in (Algorithms.NN0, Algorithms.NN1, Algorithms.NN2, Algorithms.NN3, Algorithms.NN4, Algorithms.NN5):
 #         for meanTimeArrival in (30.0, 180.0, 300.0):
