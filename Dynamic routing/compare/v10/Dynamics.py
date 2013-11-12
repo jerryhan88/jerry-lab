@@ -316,6 +316,7 @@ class PRT():
         self.transporting_customer.assigned_PRT = self
         
         # Set things for next state
+        seed(2)
         evt_change_point = cur_time + uniform(*SETTING_TIME)
         x = [evt_change_point, self.On_SettingToTransiting, target_c]
         self.event_seq.append(x)
@@ -373,6 +374,7 @@ class PRT():
         self.assigned_customer = None
         
         # Set things for next state
+        seed(2)
         evt_change_point = cur_time + uniform(*SETTING_TIME)
         x = [evt_change_point, self.On_SettingToTransiting, target_c]
         self.event_seq.append(x)
