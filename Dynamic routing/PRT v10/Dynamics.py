@@ -574,8 +574,8 @@ def gen_Network(ns, ns_connection):
     return Nodes, Edges
 
 def gen_Customer(average_arrival, num_customers, imbalanceLevel, Nodes):
-#     seed(4)  # 1000, 2000, 3000
-    seed(5)
+    seed(4)  # 1000, 2000, 3000
+#     seed(5)
     accu_pd = []
     pd = [expovariate(1.0 / average_arrival) for _ in range(num_customers)]
     for i, t in enumerate(pd):

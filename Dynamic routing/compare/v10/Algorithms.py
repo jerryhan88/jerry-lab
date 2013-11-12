@@ -6,6 +6,8 @@ check_path = lambda x: None
 
 on_notify_assignmentment_point = lambda x: None
 
+priority_rate_earlyArrival = 0.0001
+
 # For using Hungarian method, give long distance(cost) to augmented cell
 Longest_dis = 100000000
 
