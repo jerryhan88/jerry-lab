@@ -123,7 +123,9 @@ def Network1():
                 Edge(findNode('12-8.D9'), findNode('12-8.D10')), Edge(findNode('12-8.D10'), findNode('8S')),
             
              ]    
-
+    for i, n in enumerate(Nodes):
+        n.no = i
+        
     return Nodes, Edges
 
 
@@ -339,7 +341,7 @@ class PRT():
         target_c.assigned_PRT = self
         
         # Set things for next state
-        self.path_n, self.path_e = Algorithms.find_SP(self.arrived_n, self.assigned_customer.sn)
+        self.path_n, self.path_e = Algorithms.find_SP(self.arrived_n.no, self.assigned_customer.sn.no)
         self.last_planed_time = cur_time
         evt_change_point = cur_time + sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in self.path_e)
         x = [evt_change_point, self.On_ApproachingToSetting, target_c]
@@ -391,7 +393,7 @@ class PRT():
         self.set_stateChange(ST_TRANSITING, cur_time)
         
         # Set things for next state
-        self.path_n, self.path_e = Algorithms.find_SP(self.transporting_customer.sn, self.transporting_customer.dn)
+        self.path_n, self.path_e = Algorithms.find_SP(self.transporting_customer.sn.no, self.transporting_customer.dn.no)
         self.last_planed_time = cur_time
         evt_change_point = cur_time + sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in self.path_e)
         x = [evt_change_point, self.On_TransitingToIdle, target_c]
@@ -431,7 +433,7 @@ class PRT():
             # There is no need to change modification of path
             evt_change_point = cur_time + remain_travel_time
         else:
-            path_n_Rerouted, path_e_Rerouted = Algorithms.find_SP(next_n, target_c.sn)
+            path_n_Rerouted, path_e_Rerouted = Algorithms.find_SP(next_n.no, target_c.sn.no)
             self.path_n = self.path_n + path_n_Rerouted[1:]
             self.path_e = self.path_e + path_e_Rerouted
             evt_change_point = cur_time + remain_travel_time + sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in path_e_Rerouted)
@@ -550,7 +552,7 @@ class PRT():
             # There is no need to change modification of path
             evt_change_point = cur_time + remain_travel_time
         else:
-            path_n_Rerouted, path_e_Rerouted = Algorithms.find_SP(next_n, target_c.sn, Nodes)
+            path_n_Rerouted, path_e_Rerouted = Algorithms.find_SP(next_n.no, target_c.sn.no)
             self.path_n = self.path_n + path_n_Rerouted[1:]
             self.path_e = self.path_e + path_e_Rerouted
             evt_change_point = cur_time + remain_travel_time + sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in path_e_Rerouted)
