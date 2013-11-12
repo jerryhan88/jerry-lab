@@ -1,5 +1,5 @@
 summary_txt = open('experiments summary.txt', 'w')
-for i in [1000, 2000, 3000]:
+for i in [1000]:
     for j in range(54):
         num = i + j
         with open('ex%d.txt' % num, 'r') as fp:

@@ -79,6 +79,7 @@ def run(ex, dispatcher, meanTimeArrival, imbalanceLevel, numOfPRTs):
     global NumOfTotalCustomer
     NumOfTotalCustomer = len(Customers)
     PRTs = Dynamics.gen_PRT(numOfPRTs, Nodes)
+    Algorithms.init_algorithms(Nodes)
     Dynamics.init_dynamics(Nodes, PRTs, Customers, dispatcher)
     Dynamics.logger = logger_pass 
     Algorithms.on_notify_assignmentment_point = logger_pass  

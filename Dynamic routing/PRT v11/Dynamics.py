@@ -339,7 +339,7 @@ class PRT():
         target_c.assigned_PRT = self
         
         # Set things for next state
-        self.path_n, self.path_e = Algorithms.find_SP(self.arrived_n, self.assigned_customer.sn, Nodes)
+        self.path_n, self.path_e = Algorithms.find_SP(self.arrived_n, self.assigned_customer.sn)
         self.last_planed_time = cur_time
         evt_change_point = cur_time + sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in self.path_e)
         x = [evt_change_point, self.On_ApproachingToSetting, target_c]
@@ -391,7 +391,7 @@ class PRT():
         self.set_stateChange(ST_TRANSITING, cur_time)
         
         # Set things for next state
-        self.path_n, self.path_e = Algorithms.find_SP(self.transporting_customer.sn, self.transporting_customer.dn, Nodes)
+        self.path_n, self.path_e = Algorithms.find_SP(self.transporting_customer.sn, self.transporting_customer.dn)
         self.last_planed_time = cur_time
         evt_change_point = cur_time + sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in self.path_e)
         x = [evt_change_point, self.On_TransitingToIdle, target_c]
@@ -431,7 +431,7 @@ class PRT():
             # There is no need to change modification of path
             evt_change_point = cur_time + remain_travel_time
         else:
-            path_n_Rerouted, path_e_Rerouted = Algorithms.find_SP(next_n, target_c.sn, Nodes)
+            path_n_Rerouted, path_e_Rerouted = Algorithms.find_SP(next_n, target_c.sn)
             self.path_n = self.path_n + path_n_Rerouted[1:]
             self.path_e = self.path_e + path_e_Rerouted
             evt_change_point = cur_time + remain_travel_time + sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in path_e_Rerouted)
@@ -572,8 +572,8 @@ def gen_Network(ns, ns_connection):
     return Nodes, Edges
 
 def gen_Customer(average_arrival, num_customers, imbalanceLevel, Nodes):
-#     seed(4)  # 1000, 2000, 3000
-    seed(5)
+    seed(4)  # 1000, 2000, 3000
+#     seed(5)
     accu_pd = []
     pd = [expovariate(1.0 / average_arrival) for _ in range(num_customers)]
     for i, t in enumerate(pd):
@@ -642,8 +642,10 @@ def init_dynamics(_Nodes, _PRTs, _Customers, _dispatcher):
     ParkingState_time = 0.0
     global NumOfCustomerArrivals
     NumOfCustomerArrivals = 0
+
     global Nodes, PRTs, Customers, dispatcher
     Nodes, PRTs, Customers, dispatcher = _Nodes, _PRTs, _Customers, _dispatcher
+    
     for customer in Customers:
         x = [customer.arriving_time, On_CustomerArrival, customer]
         heappush(event_queue, x)
@@ -720,6 +722,8 @@ def test():
     Customers = gen_Customer(10.5, 2000, 0.52, Nodes)
     PRTs = gen_PRT(10, Nodes)
     
+    Algorithms.init_algorithms(Nodes)
+    
     # Choose dispatcher
 #     dispatcher = Algorithms.NN0
 #     dispatcher = Algorithms.NN1
@@ -727,6 +731,7 @@ def test():
 #     dispatcher = Algorithms.NN3
 #     dispatcher = Algorithms.NN4
     dispatcher = Algorithms.NN5
+    
     
     init_dynamics(Nodes, PRTs, Customers, dispatcher)
     

@@ -79,6 +79,7 @@ def run(ex, dispatcher, meanTimeArrival, imbalanceLevel, numOfPRTs):
     global NumOfTotalCustomer
     NumOfTotalCustomer = len(Customers)
     PRTs = Dynamics.gen_PRT(numOfPRTs, Nodes)
+    Algorithms.init_algorithms(Nodes)
     Dynamics.init_dynamics(Nodes, PRTs, Customers, dispatcher)
     Dynamics.logger = logger_pass 
     Algorithms.on_notify_assignmentment_point = logger_pass  
@@ -118,8 +119,6 @@ def profile_solve():
 
 if __name__ == '__main__':
     ex = 4000
-    for numOfPRTs in (20, 40, 60, 80, 100):
-        for meanTimeArrival in (5.0, 30.0, 60.0, 180.0, 300.0):
-            for dispatcher in (Algorithms.NN0, Algorithms.NN1, Algorithms.NN2, Algorithms.NN3, Algorithms.NN4, Algorithms.NN5):
-                run(ex, dispatcher, meanTimeArrival, 0.0, numOfPRTs)
-                ex += 1
+    for numOfPRTs in (30, 40, 50, 60, 70):
+        run(ex, Algorithms.NN2, 5.0, 0.0, numOfPRTs)
+        ex += 1

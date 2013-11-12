@@ -11,6 +11,16 @@ on_notify_assignmentment_point = lambda x: None
 # For using Hungarian method, give long distance(cost) to augmented cell
 Longest_dis = 100000000
 
+def init_algorithms(Nodes):
+    global network, indexToNode, nodeToIndex
+    indexToNode, nodeToIndex = {i: n for i, n in enumerate(Nodes)}, {n: i for i, n in enumerate(Nodes)}
+    E, W = [], []
+    for n in Nodes:
+        for e in n.edges_outward:
+            E.append((nodeToIndex[e._from], nodeToIndex[e._to]))
+            W.append(e.distance // e.maxSpeed)
+    network = Graph(len(Nodes), E, True, edge_attrs={'weight': W})
+
 def on_notify_assignmentment_point(args=None):
     print '-----------------------------------------------------------------------(Re)assignment!!' 
 
@@ -93,20 +103,20 @@ def find_opt_matching(cur_time, target_PRTs, target_customers, Nodes):
                 # Calculate remain distance
                 remain_travel_time = 0
                 # Calculate distance to location a customer is waiting
-                _, path_e = find_SP(prt.arrived_n, cus.sn, Nodes)
+                _, path_e = find_SP(prt.arrived_n, cus.sn)
                 
             elif prt.state == ST_APPROACHING:
                 # Calculate remain distance to next node
                 _, next_n, xth = find_PRT_position_on_PATH(prt.path_e, path_travel_time)
                 remain_travel_time = sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in prt.path_e[:xth]) - path_travel_time
                 # Calculate distance to location a customer is waiting
-                _, path_e = find_SP(next_n, cus.sn, Nodes)
+                _, path_e = find_SP(next_n, cus.sn)
                 
             elif prt.state == ST_TRANSITING:
                 # Calculate remain distance to destination of the boarding customer
                 remain_travel_time = sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in prt.path_e) - path_travel_time
                 # Calculate distance to location a customer is waiting
-                _, path_e = find_SP(prt.path_n[-1], cus.sn, Nodes)
+                _, path_e = find_SP(prt.path_n[-1], cus.sn)
                 
             elif prt.state == ST_PARKING:
                 # Calculate remain distance to next node
@@ -115,7 +125,7 @@ def find_opt_matching(cur_time, target_PRTs, target_customers, Nodes):
                 remain_travel_time = sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in prt.path_e[:xth]) - path_travel_time
                  
                 # Calculate distance to location a customer is waiting
-                _, path_e = find_SP(next_n, cus.sn, Nodes)
+                _, path_e = find_SP(next_n, cus.sn)
             else:
                 assert False
             
@@ -191,28 +201,20 @@ def find_SP0(sn, en, Nodes):
     
     return path_n, path_e
 
-def find_SP(sn, dn, Nodes):
-    path_n = []
-    path_e = []
+def find_SP(sn, dn):
+    path_n, path_e = [], []
     
     if sn == dn:
         path_n.append(sn)
     else:
-        E = []
-        W = []
-        for n in Nodes:
-            for e in n.edges_outward:
-                E.append((Nodes.index(e._from), Nodes.index(e._to)))
-                W.append(e.distance // e.maxSpeed)
-        g = Graph(len(Nodes), E, True, edge_attrs={'weight': W})
-        path = g.get_shortest_paths(Nodes.index(sn), Nodes.index(dn), 'weight')[0]
+        path = network.get_shortest_paths(nodeToIndex[sn], nodeToIndex[dn], 'weight')[0]
         
         for i, n_index in enumerate(path):
-            n = Nodes[n_index]
+            n = indexToNode[n_index]
             path_n.append(n)
             if i != 0 :
                 for e in n.edges_inward:
-                    if e._from == Nodes[path[i - 1]]:
+                    if e._from == indexToNode[path[i - 1]]:
                         path_e.append(e)
                         break
                 else:

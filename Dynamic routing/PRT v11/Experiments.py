@@ -78,9 +78,10 @@ def run(ex, dispatcher, meanTimeArrival, imbalanceLevel, numOfPRTs):
     global NumOfTotalCustomer
     NumOfTotalCustomer = len(Customers)
     PRTs = Dynamics.gen_PRT(numOfPRTs, Nodes)
+    Algorithms.init_algorithms(Nodes)
     Dynamics.init_dynamics(Nodes, PRTs, Customers, dispatcher)
     Dynamics.logger = logger_pass 
-    Algorithms.on_notify_assignmentment_point = logger_pass  
+    Algorithms.on_notify_assignmentment_point = logger_pass
     Dynamics.on_notify_customer_arrival = on_notify_customer_arrival 
     now = 1e400
     st = time()
@@ -104,21 +105,15 @@ def run(ex, dispatcher, meanTimeArrival, imbalanceLevel, numOfPRTs):
 
 def profile_solve():
     import cProfile, pstats
-    args = (60.0, 500, 0.8, 80)
-    dispatcher = Algorithms.NN5
-    cProfile.runctx('run(0, 0, dispatcher, *args)', globals(), locals(), 'log/profile')
+    args = (60.0, 0.8, 60)
+    dispatcher = Algorithms.NN0
+    cProfile.runctx('run(1000, dispatcher, *args)', globals(), locals(), 'log/profile')
     s = pstats.Stats('log/profile')
     s.strip_dirs().sort_stats('cumulative', 'time').print_stats()
-    
-#     print 'Using', solve.__module__
-#     import cProfile, pstats
-#     H, L = problem.gen_uniform(6, 8, 0.6, 9)
-#     cProfile.runctx('solve(H, L, hfunc2)', globals(), locals(), 'log/profile')
-#     s = pstats.Stats('log/profile')
-#     s.strip_dirs().sort_stats('cumulative', 'time').print_stats()
 
 if __name__ == '__main__':
-#     profile_solve()
+    
+    profile_solve()
 #     ex = 0
 #     for dispatcher in (Algorithms.NN0, Algorithms.NN1, Algorithms.NN2, Algorithms.NN3, Algorithms.NN4, Algorithms.NN5):
 #         for meanTimeArrival in (30.0, 180.0, 300.0):
