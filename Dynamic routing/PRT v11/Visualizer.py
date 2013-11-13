@@ -100,6 +100,8 @@ class MainFrame(wx.Frame):
         self.NumOfTotalCustomer = len(self.Customers)
         self.PRTs = Dynamics.gen_PRT(50, self.Nodes)
         
+        Algorithms.init_algorithms(self.Nodes)
+        
         self.idlePRT_in_node = {}
         for n in self.Nodes:
             if n.nodeType == TRANSFER or n.nodeType == STATION:

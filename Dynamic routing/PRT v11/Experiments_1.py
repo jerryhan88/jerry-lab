@@ -75,10 +75,11 @@ def run(ex, dispatcher, meanTimeArrival, imbalanceLevel, numOfPRTs):
     result_txt = open('ex%d.txt' % (ex), 'w')
     result_txt.write('%s_meanTimeArrival(%.1f) imbalanceLevel(%.1f) numOfPRTs(%d)\n' % (str(dispatcher), meanTimeArrival, imbalanceLevel, numOfPRTs))
     Nodes, Edges = Dynamics.Network1()
-    Customers = Dynamics.gen_Customer(meanTimeArrival, 1000, imbalanceLevel, Nodes)
+    Customers = Dynamics.gen_Customer(meanTimeArrival, 5000, imbalanceLevel, Nodes)
     global NumOfTotalCustomer
     NumOfTotalCustomer = len(Customers)
     PRTs = Dynamics.gen_PRT(numOfPRTs, Nodes)
+    Algorithms.init_algorithms(Nodes)
     Dynamics.init_dynamics(Nodes, PRTs, Customers, dispatcher)
     Dynamics.logger = logger_pass 
     Algorithms.on_notify_assignmentment_point = logger_pass  
@@ -118,8 +119,8 @@ def profile_solve():
 
 if __name__ == '__main__':
     ex = 2000
-    for numOfPRTs in (20, 40, 60):
-        for meanTimeArrival in (10.0, 60.0, 180.0):
+    for numOfPRTs in (40, 50, 60, 70, 80):
+        for meanTimeArrival in (5.0, 8.0, 10.0, 30.0, 60.0):
             for dispatcher in (Algorithms.NN0, Algorithms.NN1, Algorithms.NN2, Algorithms.NN3, Algorithms.NN4, Algorithms.NN5):
                 run(ex, dispatcher, meanTimeArrival, 0.5, numOfPRTs)
                 ex += 1

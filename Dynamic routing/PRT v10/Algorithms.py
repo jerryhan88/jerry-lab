@@ -118,8 +118,8 @@ def find_opt_matching(cur_time, target_PRTs, target_customers, Nodes):
                 _, path_e = find_SP(next_n, cus.sn, Nodes)
             else:
                 assert False
-#             PRTbyCustomer_matrix[prt_id][i] = sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in path_e) + remain_travel_time
-            PRTbyCustomer_matrix[prt_id][i] = sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in path_e) + remain_travel_time - priority_rate_earlyArrival * (cus.arriving_time - cur_time)
+            PRTbyCustomer_matrix[prt_id][i] = sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in path_e) + remain_travel_time
+#             PRTbyCustomer_matrix[prt_id][i] = sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in path_e) + remain_travel_time - priority_rate_earlyArrival * (cus.arriving_time - cur_time)
     
     # Apply Hungarian method        
     hungarian_algo = Munkres()

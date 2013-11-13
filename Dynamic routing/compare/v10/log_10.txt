@@ -1,0 +1,342 @@
+2.8: On_CustomerArrival - (C0) 11->5
+-----------------------------------------------------------------------(Re)assignment!!
+2.8:    On_I2A - PRT5(S0-6), assigned customer (C0) 11->5
+            path: [6, 6S, 10N, 10E, 11W, 11]
+4.0: On_CustomerArrival - (C1) 2->9
+-----------------------------------------------------------------------(Re)assignment!!
+4.0:    On_I2S - PRT2(S0-2), ready for customer (C1) 2->9
+9.3: On_CustomerArrival - (C2) 8->3
+-----------------------------------------------------------------------(Re)assignment!!
+9.3:    On_I2A - PRT15(S0-4), assigned customer (C2) 8->3
+            path: [4, 4S, 8N, 8]
+11.0: On_CustomerArrival - (C3) 14->5
+-----------------------------------------------------------------------(Re)assignment!!
+11.0:    On_I2S - PRT10(S0-14), ready for customer (C3) 14->5
+11.8: On_CustomerArrival - (C4) 4->12
+-----------------------------------------------------------------------(Re)assignment!!
+11.8:    On_I2S - PRT18(S0-4), ready for customer (C4) 4->12
+17.1: On_CustomerArrival - (C5) 13->12
+-----------------------------------------------------------------------(Re)assignment!!
+17.1:    On_I2A - PRT9(S0-12), assigned customer (C5) 13->12
+            path: [12, 12E, 13W, 13]
+43.4: On_CustomerArrival - (C6) 5->9
+-----------------------------------------------------------------------(Re)assignment!!
+43.4:    On_I2A - PRT4(S0-2), assigned customer (C6) 5->9
+            path: [2, 2S, 5N, 5]
+56.1:    On_A2S - PRT9(S1-12), ready for customer (C5) 13->12
+60.3: On_CustomerArrival - (C7) 5->12
+-----------------------------------------------------------------------(Re)assignment!!
+60.3:    On_A2A - PRT4(S1-2), prev_c:(C6) 5->9 - new_c:(C7) 5->12
+            path: [2, 2S, 5N, 5, 5]
+            now, around 5N
+60.3:    On_I2A - PRT14(S0-2), assigned customer (C6) 5->9
+            path: [2, 2S, 5N, 5]
+                    There is the prev PRT for the target customer: PRT4(S1-2)
+61.3:    On_A2S - PRT15(S1-4), ready for customer (C2) 8->3
+63.3:    On_I2T - PRT2(S2-2), picking up customer-(C1) 2->9
+            path: [2, 2S, 5N, 5E, 6W, 6S, 10N, 10W, 9E, 9]
+70.4:    On_I2T - PRT10(S2-14), picking up customer-(C3) 14->5
+            path: [14, 14W, 13E, 13N, 10S, 10W, 9E, 9N, 5S, 5]
+71.1:    On_I2T - PRT18(S2-4), picking up customer-(C4) 4->12
+            path: [4, 4S, 8N, 8E, 9W, 9S, 12N, 12]
+75.5: On_CustomerArrival - (C8) 4->5
+-----------------------------------------------------------------------(Re)assignment!!
+75.5:    On_I2A - PRT0(S0-9), assigned customer (C8) 4->5
+            path: [9, 9N, 5S, 5W, 4E, 4]
+75.5:    On_A2A - PRT4(S1-2), prev_c:(C7) 5->12 - new_c:(C6) 5->9
+            path: [2, 2S, 5N, 5, 5]
+            now, around 5
+                    There is the prev PRT for the target customer: PRT14(S1-2)
+75.5:    On_A2P - PRT14(S1-2), lost (C6) 5->9, ori Path: [2, 2S, 5N, 5]
+            parking node: 5
+75.5:    On_A2A - PRT14(S1-2), prev_c:None - new_c:(C7) 5->12
+            path: [2, 2S, 5N, 5, 5]
+            now, around 5N
+                    There is the prev PRT for the target customer: PRT4(S1-2)
+78.2: On_CustomerArrival - (C9) 5->14
+-----------------------------------------------------------------------(Re)assignment!!
+78.2:    On_A2A - PRT0(S1-9), prev_c:(C8) 4->5 - new_c:(C6) 5->9
+            path: [9, 9N, 5S, 5W, 4E, 4, 5S, 5]
+            now, around 9N
+                    There is the prev PRT for the target customer: PRT4(S1-2)
+78.2:    On_A2P - PRT4(S1-2), lost (C6) 5->9, ori Path: [2, 2S, 5N, 5, 5]
+            parking node: 5
+78.2:    On_I2A - PRT3(S0-3), assigned customer (C8) 4->5
+            path: [3, 3W, 2E, 2S, 5N, 5W, 4E, 4]
+                    There is the prev PRT for the target customer: PRT0(S1-9)
+78.2:    On_A2A - PRT4(S1-2), prev_c:None - new_c:(C9) 5->14
+            path: [2, 2S, 5N, 5]
+            now, around 5
+78.4:    On_A2S - PRT4(S1-2), ready for customer (C9) 5->14
+86.3: On_CustomerArrival - (C10) 5->10
+-----------------------------------------------------------------------(Re)assignment!!
+86.3:    On_I2A - PRT11(S0-3), assigned customer (C10) 5->10
+            path: [3, 3W, 2E, 2S, 5N, 5]
+89.7: On_CustomerArrival - (C11) 6->5
+-----------------------------------------------------------------------(Re)assignment!!
+89.7:    On_I2S - PRT6(S0-6), ready for customer (C11) 6->5
+91.6: On_CustomerArrival - (C12) 2->1
+-----------------------------------------------------------------------(Re)assignment!!
+91.6:    On_A2A - PRT0(S1-9), prev_c:(C6) 5->9 - new_c:(C8) 4->5
+            path: [9, 9N, 5S, 5W, 4E, 4, 5S, 5, 5W, 4E, 4]
+            now, around 5S
+                    There is the prev PRT for the target customer: PRT3(S1-3)
+91.6:    On_A2P - PRT3(S1-3), lost (C8) 4->5, ori Path: [3, 3W, 2E, 2S, 5N, 5W, 4E, 4]
+            parking node: 2
+91.6:    On_I2A - PRT1(S0-1), assigned customer (C7) 5->12
+            path: [1, 1E, 2W, 2S, 5N, 5]
+                    There is the prev PRT for the target customer: PRT14(S1-2)
+91.6:    On_A2P - PRT14(S1-2), lost (C7) 5->12, ori Path: [2, 2S, 5N, 5, 5]
+            parking node: 5
+91.6:    On_A2A - PRT3(S1-3), prev_c:None - new_c:(C12) 2->1
+            path: [3, 3W, 2E, 2, 2]
+            now, around 2E
+91.6:    On_A2A - PRT14(S1-2), prev_c:None - new_c:(C6) 5->9
+            path: [2, 2S, 5N, 5]
+            now, around 5
+                    There is the prev PRT for the target customer: PRT0(S1-9)
+92.8: On_CustomerArrival - (C13) 5->10
+-----------------------------------------------------------------------(Re)assignment!!
+92.8:    On_A2A - PRT0(S1-9), prev_c:(C8) 4->5 - new_c:(C6) 5->9
+            path: [9, 9N, 5S, 5W, 4E, 4, 5S, 5, 5W, 4E, 4, 5]
+            now, around 5S
+                    There is the prev PRT for the target customer: PRT14(S1-2)
+92.8:    On_A2P - PRT14(S1-2), lost (C6) 5->9, ori Path: [2, 2S, 5N, 5]
+            parking node: 5
+92.8:    On_A2A - PRT3(S1-3), prev_c:(C12) 2->1 - new_c:(C8) 4->5
+            path: [3, 3W, 2E, 2, 2, 2S, 5N, 5W, 4E, 4]
+            now, around 2E
+                    There is the prev PRT for the target customer: PRT0(S1-9)
+92.8:    On_A2A - PRT11(S1-3), prev_c:(C10) 5->10 - new_c:(C12) 2->1
+            path: [3, 3W, 2E, 2S, 5N, 5, 2E, 2]
+            now, around 3W
+                    There is the prev PRT for the target customer: PRT3(S1-3)
+92.8:    On_A2A - PRT14(S1-2), prev_c:None - new_c:(C10) 5->10
+            path: [2, 2S, 5N, 5]
+            now, around 5
+                    There is the prev PRT for the target customer: PRT11(S1-3)
+92.8:    On_I2A - PRT17(S0-1), assigned customer (C13) 5->10
+            path: [1, 1E, 2W, 2S, 5N, 5]
+92.8:    On_A2S - PRT5(S1-6), ready for customer (C0) 11->5
+95.3:    On_A2S - PRT14(S1-2), ready for customer (C10) 5->10
+95.4: On_CustomerArrival - (C14) 5->7
+-----------------------------------------------------------------------(Re)assignment!!
+95.4:    On_A2A - PRT3(S1-3), prev_c:(C8) 4->5 - new_c:(C12) 2->1
+            path: [3, 3W, 2E, 2, 2, 2S, 5N, 5W, 4E, 4, 2]
+            now, around 2E
+                    There is the prev PRT for the target customer: PRT11(S1-3)
+95.4:    On_A2P - PRT11(S1-3), lost (C12) 2->1, ori Path: [3, 3W, 2E, 2S, 5N, 5, 2E, 2]
+            parking node: 2
+95.4:    On_A2A - PRT11(S1-3), prev_c:None - new_c:(C14) 5->7
+            path: [3, 3W, 2E, 2, 2E, 2S, 5N, 5]
+            now, around 3W
+95.4:    On_A2A - PRT17(S1-1), prev_c:(C13) 5->10 - new_c:(C8) 4->5
+            path: [1, 1E, 2W, 2S, 5N, 5, 2W, 2S, 5N, 5W, 4E, 4]
+            now, around 1E
+                    There is the prev PRT for the target customer: PRT3(S1-3)
+95.4:    On_I2A - PRT19(S0-1), assigned customer (C13) 5->10
+            path: [1, 1E, 2W, 2S, 5N, 5]
+                    There is the prev PRT for the target customer: PRT17(S1-1)
+115.5:    On_I2T - PRT9(S2-13), picking up customer-(C5) 13->12
+            path: [13, 13N, 10S, 10W, 9E, 9S, 12N, 12]
+117.2:    On_A2S - PRT3(S1-3), ready for customer (C12) 2->1
+120.6:    On_I2T - PRT15(S2-8), picking up customer-(C2) 8->3
+            path: [8, 8E, 9W, 9N, 5S, 5E, 6W, 6N, 3S, 3]
+122.9: On_CustomerArrival - (C15) 13->14
+-----------------------------------------------------------------------(Re)assignment!!
+122.9:    On_A2A - PRT0(S1-9), prev_c:(C6) 5->9 - new_c:(C8) 4->5
+            path: [9, 9N, 5S, 5W, 4E, 4, 5S, 5, 5W, 4E, 4, 5, 4E, 4]
+            now, around 5W
+                    There is the prev PRT for the target customer: PRT17(S1-1)
+122.9:    On_A2P - PRT17(S1-1), lost (C8) 4->5, ori Path: [1, 1E, 2W, 2S, 5N, 5, 2W, 2S, 5N, 5W, 4E, 4]
+            parking node: 2
+122.9:    On_A2A - PRT1(S1-1), prev_c:(C7) 5->12 - new_c:(C6) 5->9
+            path: [1, 1E, 2W, 2S, 5N, 5, 2S, 5N, 5]
+            now, around 2W
+                    There is the prev PRT for the target customer: PRT0(S1-9)
+122.9:    On_A2A - PRT11(S1-3), prev_c:(C14) 5->7 - new_c:(C7) 5->12
+            path: [3, 3W, 2E, 2, 2E, 2S, 5N, 5, 2S, 5N, 5]
+            now, around 2
+                    There is the prev PRT for the target customer: PRT1(S1-1)
+122.9:    On_I2A - PRT16(S0-12), assigned customer (C15) 13->14
+            path: [12, 12E, 13W, 13]
+122.9:    On_A2A - PRT17(S1-1), prev_c:None - new_c:(C13) 5->10
+            path: [1, 1E, 2W, 2, 2S, 5N, 5]
+            now, around 2W
+                    There is the prev PRT for the target customer: PRT19(S1-1)
+122.9:    On_A2P - PRT19(S1-1), lost (C13) 5->10, ori Path: [1, 1E, 2W, 2S, 5N, 5]
+            parking node: 2
+122.9:    On_A2A - PRT19(S1-1), prev_c:None - new_c:(C14) 5->7
+            path: [1, 1E, 2W, 2, 2S, 5N, 5]
+            now, around 2W
+                    There is the prev PRT for the target customer: PRT11(S1-3)
+137.7:    On_I2T - PRT4(S2-5), picking up customer-(C9) 5->14
+            path: [5, 5E, 6W, 6S, 10N, 10E, 11W, 11S, 14N, 14]
+141.4: On_CustomerArrival - (C16) 14->1
+-----------------------------------------------------------------------(Re)assignment!!
+141.4:    On_A2A - PRT1(S1-1), prev_c:(C6) 5->9 - new_c:(C7) 5->12
+            path: [1, 1E, 2W, 2S, 5N, 5, 2S, 5N, 5, 5]
+            now, around 5N
+                    There is the prev PRT for the target customer: PRT11(S1-3)
+141.4:    On_A2P - PRT11(S1-3), lost (C7) 5->12, ori Path: [3, 3W, 2E, 2, 2E, 2S, 5N, 5, 2S, 5N, 5]
+            parking node: 2
+141.4:    On_A2A - PRT11(S1-3), prev_c:None - new_c:(C6) 5->9
+            path: [3, 3W, 2E, 2, 2E, 2, 2S, 5N, 5]
+            now, around 2E
+                    There is the prev PRT for the target customer: PRT1(S1-1)
+141.4:    On_I2S - PRT12(S0-14), ready for customer (C16) 14->1
+141.4:    On_A2A - PRT17(S1-1), prev_c:(C13) 5->10 - new_c:(C14) 5->7
+            path: [1, 1E, 2W, 2, 2S, 5N, 5, 5N, 5]
+            now, around 2S
+                    There is the prev PRT for the target customer: PRT19(S1-1)
+141.4:    On_A2P - PRT19(S1-1), lost (C14) 5->7, ori Path: [1, 1E, 2W, 2, 2S, 5N, 5]
+            parking node: 2
+141.4:    On_A2A - PRT19(S1-1), prev_c:None - new_c:(C13) 5->10
+            path: [1, 1E, 2W, 2, 2S, 5N, 5]
+            now, around 2
+                    There is the prev PRT for the target customer: PRT17(S1-1)
+149.0:    On_I2T - PRT6(S2-6), picking up customer-(C11) 6->5
+            path: [6, 6N, 3S, 3W, 2E, 2S, 5N, 5]
+152.2:    On_I2T - PRT5(S2-11), picking up customer-(C0) 11->5
+            path: [11, 11N, 7S, 7W, 6E, 6N, 3S, 3W, 2E, 2S, 5N, 5]
+154.7:    On_I2T - PRT14(S2-5), picking up customer-(C10) 5->10
+            path: [5, 5E, 6W, 6S, 10N, 10]
+158.7: On_CustomerArrival - (C17) 5->12
+-----------------------------------------------------------------------(Re)assignment!!
+158.7:    On_A2A - PRT1(S1-1), prev_c:(C7) 5->12 - new_c:(C13) 5->10
+            path: [1, 1E, 2W, 2S, 5N, 5, 2S, 5N, 5, 5]
+            now, around 5
+                    There is the prev PRT for the target customer: PRT19(S1-1)
+158.7:    On_A2P - PRT19(S1-1), lost (C13) 5->10, ori Path: [1, 1E, 2W, 2, 2S, 5N, 5]
+            parking node: 5
+158.7:    On_I2A - PRT8(S0-6), assigned customer (C17) 5->12
+            path: [6, 6N, 3S, 3W, 2E, 2S, 5N, 5]
+158.7:    On_A2A - PRT11(S1-3), prev_c:(C6) 5->9 - new_c:(C7) 5->12
+            path: [3, 3W, 2E, 2, 2E, 2, 2S, 5N, 5, 5N, 5]
+            now, around 2S
+                    There is the prev PRT for the target customer: PRT1(S1-1)
+158.7:    On_A2A - PRT17(S1-1), prev_c:(C14) 5->7 - new_c:(C6) 5->9
+            path: [1, 1E, 2W, 2, 2S, 5N, 5, 5N, 5, 5]
+            now, around 5N
+                    There is the prev PRT for the target customer: PRT11(S1-3)
+158.7:    On_A2A - PRT19(S1-1), prev_c:None - new_c:(C14) 5->7
+            path: [1, 1E, 2W, 2, 2S, 5N, 5, 5]
+            now, around 5N
+                    There is the prev PRT for the target customer: PRT17(S1-1)
+159.6:    On_A2S - PRT1(S1-1), ready for customer (C13) 5->10
+160.5:    On_A2S - PRT0(S1-9), ready for customer (C8) 4->5
+161.9:    On_A2S - PRT16(S1-12), ready for customer (C15) 13->14
+171.8:    On_A2S - PRT17(S1-1), ready for customer (C6) 5->9
+175.6: On_CustomerArrival - (C18) 10->11
+-----------------------------------------------------------------------(Re)assignment!!
+175.6:    On_I2A - PRT7(S0-6), assigned customer (C18) 10->11
+            path: [6, 6S, 10N, 10]
+176.5:    On_I2T - PRT3(S2-2), picking up customer-(C12) 2->1
+            path: [2, 2S, 5N, 5W, 4E, 4N, 1S, 1]
+177.4:    On_A2S - PRT19(S1-1), ready for customer (C14) 5->7
+177.9: On_CustomerArrival - (C19) 5->7
+-----------------------------------------------------------------------(Re)assignment!!
+177.9:    On_A2A - PRT7(S1-6), prev_c:(C18) 10->11 - new_c:(C17) 5->12
+            path: [6, 6S, 10N, 10, 10N, 10W, 9E, 9N, 5S, 5]
+            now, around 6S
+                    There is the prev PRT for the target customer: PRT8(S1-6)
+177.9:    On_A2P - PRT8(S1-6), lost (C17) 5->12, ori Path: [6, 6N, 3S, 3W, 2E, 2S, 5N, 5]
+            parking node: 3
+177.9:    On_A2A - PRT8(S1-6), prev_c:None - new_c:(C19) 5->7
+            path: [6, 6N, 3S, 3, 3W, 2E, 2S, 5N, 5]
+            now, around 3S
+177.9:    On_I2A - PRT13(S0-14), assigned customer (C18) 10->11
+            path: [14, 14W, 13E, 13N, 10S, 10]
+                    There is the prev PRT for the target customer: PRT7(S1-6)
+185.3:    On_A2S - PRT11(S1-3), ready for customer (C7) 5->12
+186.3:    On_T2I - PRT2(S3-2)
+-----------------------------------------------------------------------(Re)assignment!!
+186.3:    On_I2A - PRT2(S0-9), assigned customer (C19) 5->7
+            path: [9, 9N, 5S, 5]
+                    There is the prev PRT for the target customer: PRT8(S1-6)
+186.3:    On_A2P - PRT8(S1-6), lost (C19) 5->7, ori Path: [6, 6N, 3S, 3, 3W, 2E, 2S, 5N, 5]
+            parking node: 3
+186.3:    On_A2A - PRT7(S1-6), prev_c:(C17) 5->12 - new_c:(C18) 10->11
+            path: [6, 6S, 10N, 10, 10N, 10W, 9E, 9N, 5S, 5, 10N, 10]
+            now, around 6S
+                    There is the prev PRT for the target customer: PRT13(S1-14)
+186.3:    On_A2P - PRT13(S1-14), lost (C18) 10->11, ori Path: [14, 14W, 13E, 13N, 10S, 10]
+            parking node: 13
+186.3:    On_A2A - PRT8(S1-6), prev_c:None - new_c:(C17) 5->12
+            path: [6, 6N, 3S, 3, 3W, 2E, 2S, 5N, 5]
+            now, around 3
+                    There is the prev PRT for the target customer: PRT7(S1-6)
+189.1:    On_T2I - PRT18(S3-4)
+-----------------------------------------------------------------------(Re)assignment!!
+200.8:    On_I2T - PRT12(S2-14), picking up customer-(C16) 14->1
+            path: [14, 14W, 13E, 13N, 10S, 10W, 9E, 9N, 5S, 5W, 4E, 4N, 1S, 1]
+218.4:    On_T2I - PRT10(S3-14)
+-----------------------------------------------------------------------(Re)assignment!!
+218.4:    On_I2S - PRT10(S0-5), ready for customer (C17) 5->12
+                    There is the prev PRT for the target customer: PRT8(S1-6)
+218.4:    On_A2P - PRT8(S1-6), lost (C17) 5->12, ori Path: [6, 6N, 3S, 3, 3W, 2E, 2S, 5N, 5]
+            parking node: 2
+219.0:    On_I2T - PRT1(S2-5), picking up customer-(C13) 5->10
+            path: [5, 5E, 6W, 6S, 10N, 10]
+219.9:    On_I2T - PRT0(S2-4), picking up customer-(C8) 4->5
+            path: [4, 4N, 1S, 1E, 2W, 2S, 5N, 5]
+220.5:    On_T2I - PRT9(S3-13)
+-----------------------------------------------------------------------(Re)assignment!!
+221.2:    On_I2T - PRT16(S2-13), picking up customer-(C15) 13->14
+            path: [13, 13N, 10S, 10E, 11W, 11S, 14N, 14]
+227.6:    On_A2S - PRT7(S1-6), ready for customer (C18) 10->11
+229.9:    On_P2I - PRT13(S4-14), arriving node: 13
+230.0:    On_T2I - PRT6(S3-6)
+-----------------------------------------------------------------------(Re)assignment!!
+230.0:    On_I2S - PRT6(S0-5), ready for customer (C19) 5->7
+                    There is the prev PRT for the target customer: PRT2(S1-9)
+230.0:    On_A2P - PRT2(S1-9), lost (C19) 5->7, ori Path: [9, 9N, 5S, 5]
+            parking node: 5
+231.2:    On_I2T - PRT17(S2-5), picking up customer-(C6) 5->9
+            path: [5, 5E, 6W, 6S, 10N, 10W, 9E, 9]
+231.7:    On_T2I - PRT14(S3-5)
+-----------------------------------------------------------------------(Re)assignment!!
+232.7:    On_P2I - PRT8(S4-6), arriving node: 2
+236.7:    On_I2T - PRT19(S2-5), picking up customer-(C14) 5->7
+            path: [5, 5E, 6W, 6N, 3S, 3E, 3-7.D1, 3-7.D2, 3-7.D3, 3-7.D4, 3-7.D5, 3-7.D6, 3-7.D7, 3-7.D8, 3-7.D9, 3-7.D10, 3-7.D11, 7N, 7]
+238.3:    On_P2I - PRT2(S4-9), arriving node: 5
+244.6:    On_I2T - PRT11(S2-5), picking up customer-(C7) 5->12
+            path: [5, 5E, 6W, 6S, 10N, 10W, 9E, 9S, 12N, 12]
+251.6:    On_T2I - PRT15(S3-8)
+-----------------------------------------------------------------------(Re)assignment!!
+265.5:    On_T2I - PRT3(S3-2)
+-----------------------------------------------------------------------(Re)assignment!!
+277.7:    On_I2T - PRT10(S2-5), picking up customer-(C17) 5->12
+            path: [5, 5E, 6W, 6S, 10N, 10W, 9E, 9S, 12N, 12]
+285.7:    On_T2I - PRT4(S3-5)
+-----------------------------------------------------------------------(Re)assignment!!
+287.0:    On_I2T - PRT7(S2-10), picking up customer-(C18) 10->11
+            path: [10, 10E, 11W, 11]
+289.3:    On_I2T - PRT6(S2-5), picking up customer-(C19) 5->7
+            path: [5, 5E, 6W, 6N, 3S, 3E, 3-7.D1, 3-7.D2, 3-7.D3, 3-7.D4, 3-7.D5, 3-7.D6, 3-7.D7, 3-7.D8, 3-7.D9, 3-7.D10, 3-7.D11, 7N, 7]
+296.0:    On_T2I - PRT1(S3-5)
+-----------------------------------------------------------------------(Re)assignment!!
+308.9:    On_T2I - PRT0(S3-4)
+-----------------------------------------------------------------------(Re)assignment!!
+309.2:    On_T2I - PRT5(S3-11)
+-----------------------------------------------------------------------(Re)assignment!!
+333.2:    On_T2I - PRT17(S3-5)
+-----------------------------------------------------------------------(Re)assignment!!
+339.0:    On_T2I - PRT7(S3-10)
+-----------------------------------------------------------------------(Re)assignment!!
+339.2:    On_T2I - PRT16(S3-13)
+-----------------------------------------------------------------------(Re)assignment!!
+342.7:    On_T2I - PRT19(S3-5)
+-----------------------------------------------------------------------(Re)assignment!!
+379.6:    On_T2I - PRT11(S3-5)
+-----------------------------------------------------------------------(Re)assignment!!
+395.3:    On_T2I - PRT6(S3-5)
+-----------------------------------------------------------------------(Re)assignment!!
+402.8:    On_T2I - PRT12(S3-14)
+-----------------------------------------------------------------------(Re)assignment!!
+412.7:    On_T2I - PRT10(S3-5)
+-----------------------------------------------------------------------(Re)assignment!!
+
+Measure------------------------------------------------------------------------------------------------
+T.TravedDist: 40003.7, T.E.TravelDist: 14228.9, T.FlowTime: 4391.6, T.WaitTime: 905.8
+IdleState_time: 1545.7, ApproachingState_time: 905.8, TransitingState_time: 2299.0, ParkingState_time: 66.2

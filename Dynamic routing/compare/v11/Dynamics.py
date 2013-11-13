@@ -165,6 +165,7 @@ class Node():
         self.id = _id
         self.px, self.py = px, py
         self.nodeType = nodeType
+        self.customer_counter = 0
         
         self.edges_inward = []
         self.edges_outward = []
@@ -430,14 +431,13 @@ class PRT():
         _, next_n, xth = Algorithms.find_PRT_position_on_PATH(self.path_e, path_travel_time)
         remain_travel_time = sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in self.path_e[:xth]) - path_travel_time
         
-        
         if next_n == target_c.sn:
             # There is no need to change modification of path
             evt_change_point = cur_time + remain_travel_time
         else:
             path_n_Rerouted, path_e_Rerouted = Algorithms.find_SP(next_n.no, target_c.sn.no)
-            self.path_n = self.path_n + path_n_Rerouted[1:]
-            self.path_e = self.path_e + path_e_Rerouted
+            self.path_n = self.path_n[:xth] + path_n_Rerouted
+            self.path_e = self.path_e[:xth] + path_e_Rerouted
             evt_change_point = cur_time + remain_travel_time + sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in path_e_Rerouted)
         x = [evt_change_point, self.On_ApproachingToSetting, target_c]
         self.event_seq.append(x)
@@ -555,7 +555,7 @@ class PRT():
             evt_change_point = cur_time + remain_travel_time
         else:
             path_n_Rerouted, path_e_Rerouted = Algorithms.find_SP(next_n.no, target_c.sn.no)
-            self.path_n = self.path_n + path_n_Rerouted[1:]
+            self.path_n = self.path_n[:-1] + path_n_Rerouted
             self.path_e = self.path_e + path_e_Rerouted
             evt_change_point = cur_time + remain_travel_time + sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in path_e_Rerouted)
         x = [evt_change_point, self.On_ApproachingToSetting, target_c]
@@ -692,6 +692,8 @@ def On_CustomerArrival(cur_time, target_c):
     logger('%.1f: On_CustomerArrival - %s' % (cur_time, target_c))
     customer = Customers.pop(0)
     assert customer == target_c
+    target_c.sn.customer_counter += 1
+    target_c.order = target_c.sn.customer_counter 
     waiting_customers.append(customer)
     
     # Measure update
@@ -723,18 +725,17 @@ def test():
     
     # Generate all inputs: Network, Arrivals of customers, PRTs
     Nodes, Edges = Network1()
-    Customers = gen_Customer(10.5, 2000, 0.52, Nodes)
-    PRTs = gen_PRT(10, Nodes)
-    
+    Customers = gen_Customer(10.5, 20, 0.52, Nodes)
+    PRTs = gen_PRT(20, Nodes)
     Algorithms.init_algorithms(Nodes)
     
     # Choose dispatcher
 #     dispatcher = Algorithms.NN0
-#     dispatcher = Algorithms.NN1
+    dispatcher = Algorithms.NN1
 #     dispatcher = Algorithms.NN2
 #     dispatcher = Algorithms.NN3
 #     dispatcher = Algorithms.NN4
-    dispatcher = Algorithms.NN5
+#     dispatcher = Algorithms.NN5
     
     
     init_dynamics(Nodes, PRTs, Customers, dispatcher)

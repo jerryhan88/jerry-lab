@@ -6,7 +6,7 @@ check_path = lambda x: None
 
 on_notify_assignmentment_point = lambda x: None
 
-priority_rate_earlyArrival = 0.0001
+priority_rate_earlyArrival = 0.01
 
 # For using Hungarian method, give long distance(cost) to augmented cell
 Longest_dis = 100000000
@@ -119,7 +119,7 @@ def find_opt_matching(cur_time, target_PRTs, target_customers, Nodes):
             else:
                 assert False
 #             PRTbyCustomer_matrix[prt_id][i] = sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in path_e) + remain_travel_time
-            PRTbyCustomer_matrix[prt_id][i] = sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in path_e) + remain_travel_time - priority_rate_earlyArrival * (cus.arriving_time - cur_time)
+            PRTbyCustomer_matrix[prt_id][i] = sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in path_e) + remain_travel_time + priority_rate_earlyArrival * cus.order
     
     # Apply Hungarian method        
     hungarian_algo = Munkres()

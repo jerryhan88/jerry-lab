@@ -163,6 +163,7 @@ class Node():
         self.id = _id
         self.px, self.py = px, py
         self.nodeType = nodeType
+        self.customer_counter = 0
         
         self.edges_inward = []
         self.edges_outward = []
@@ -644,8 +645,10 @@ def init_dynamics(_Nodes, _PRTs, _Customers, _dispatcher):
     ParkingState_time = 0.0
     global NumOfCustomerArrivals
     NumOfCustomerArrivals = 0
+    
     global Nodes, PRTs, Customers, dispatcher
     Nodes, PRTs, Customers, dispatcher = _Nodes, _PRTs, _Customers, _dispatcher
+    
     for customer in Customers:
         x = [customer.arriving_time, On_CustomerArrival, customer]
         heappush(event_queue, x)
@@ -688,6 +691,8 @@ def On_CustomerArrival(cur_time, target_c):
     logger('%.1f: On_CustomerArrival - %s' % (cur_time, target_c))
     customer = Customers.pop(0)
     assert customer == target_c
+    target_c.sn.customer_counter += 1
+    target_c.order = target_c.sn.customer_counter
     waiting_customers.append(customer)
     
     # Measure update
@@ -719,16 +724,16 @@ def test():
     
     # Generate all inputs: Network, Arrivals of customers, PRTs
     Nodes, Edges = Network1()
-    Customers = gen_Customer(10.5, 2000, 0.52, Nodes)
-    PRTs = gen_PRT(10, Nodes)
+    Customers = gen_Customer(10.5, 20, 0.52, Nodes)
+    PRTs = gen_PRT(20, Nodes)
     
     # Choose dispatcher
 #     dispatcher = Algorithms.NN0
-#     dispatcher = Algorithms.NN1
+    dispatcher = Algorithms.NN1
 #     dispatcher = Algorithms.NN2
 #     dispatcher = Algorithms.NN3
 #     dispatcher = Algorithms.NN4
-    dispatcher = Algorithms.NN5
+#     dispatcher = Algorithms.NN5
     
     init_dynamics(Nodes, PRTs, Customers, dispatcher)
     

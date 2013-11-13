@@ -644,8 +644,10 @@ def init_dynamics(_Nodes, _PRTs, _Customers, _dispatcher):
     ParkingState_time = 0.0
     global NumOfCustomerArrivals
     NumOfCustomerArrivals = 0
+    
     global Nodes, PRTs, Customers, dispatcher
     Nodes, PRTs, Customers, dispatcher = _Nodes, _PRTs, _Customers, _dispatcher
+    
     for customer in Customers:
         x = [customer.arriving_time, On_CustomerArrival, customer]
         heappush(event_queue, x)
@@ -720,7 +722,7 @@ def test():
     # Generate all inputs: Network, Arrivals of customers, PRTs
     Nodes, Edges = Network1()
     Customers = gen_Customer(10.5, 2000, 0.52, Nodes)
-    PRTs = gen_PRT(10, Nodes)
+    PRTs = gen_PRT(20, Nodes)
     
     # Choose dispatcher
 #     dispatcher = Algorithms.NN0
