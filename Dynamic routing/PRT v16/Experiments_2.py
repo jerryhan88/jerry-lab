@@ -118,9 +118,9 @@ def profile_solve():
     s.strip_dirs().sort_stats('cumulative', 'time').print_stats()
 
 if __name__ == '__main__':
-    ex = 1000
+    ex = 3000
     for meanTimeArrival in (6.0, 10.0, 30.0, 60.0):
         for numOfPRTs in (40, 50, 60, 70, 80):
             for dispatcher in (Algorithms.NN0, Algorithms.NN1, Algorithms.NN2, Algorithms.NN3, Algorithms.NN4, Algorithms.NN5):
-                run(ex, dispatcher, meanTimeArrival, 0.0, numOfPRTs)
+                run(ex, dispatcher, meanTimeArrival, 0.5, numOfPRTs)
                 ex += 1

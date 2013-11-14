@@ -101,7 +101,7 @@ class MainFrame(wx.Frame):
 #         wx.Frame.__init__(self, None, -1, TITLE, size=(1920, 960), pos=(0, 0))
         # Every resources are accessible
         self.Nodes, self.Edges = Dynamics.Network1()
-        self.Customers = Dynamics.gen_Customer(4.0, 5000, 0.3, self.Nodes)
+        self.Customers = Dynamics.gen_Customer(4.5, 5000, 0.3, self.Nodes)
         self.NumOfTotalCustomer = len(self.Customers)
         self.PRTs = Dynamics.gen_PRT(40, self.Nodes)
         
