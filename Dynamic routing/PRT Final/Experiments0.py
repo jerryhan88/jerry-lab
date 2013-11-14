@@ -101,6 +101,7 @@ def run(ex, dispatcher, meanTimeArrival, imbalanceLevel, numOfPRTs):
     time_flow = data_accu_et - data_accu_st
     total_time_flow = time_flow * len(Dynamics.PRTs)
     result_txt.write('T.WaitTime: %.1f\n' % (Total_customers_waiting_time))
+    result_txt.write('M.WaitTime: %.1f\n' % (MaxCustomerWaitingTime))
     result_txt.write('A.WaitTime: %.1f\n' % (Total_customers_waiting_time / time_flow))
     result_txt.write('IdleState_time: %.1f(%.1f%s)\n' % (IdleState_time, IdleState_time / total_time_flow * 100, '%'))
     result_txt.write('ApproachingState_time: %.1f(%.1f%s)\n' % (ApproachingState_time, ApproachingState_time / total_time_flow * 100, '%'))
