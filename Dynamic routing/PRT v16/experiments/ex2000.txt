@@ -1,0 +1,15 @@
+<function NN0 at 0x00000000037ABC88>_meanTimeArrival(6.0) imbalanceLevel(0.5) numOfPRTs(40)
+Thu Nov 14 10:24:35 2013
+computation time: 3.8
+
+Measure------------------------------------------------------------------------------------------------
+T.TravedDist: 8182529.8
+T.E.TravelDist: 2666459.6
+T.FlowTime: 1090140.0
+T.WaitTime: 321277.2
+A.WaitTime: 12.0
+IdleState_time: 57742.7(5.4%)
+ApproachingState_time: 248339.0(23.2%)
+SettingState_time: 266913.6(25.0%)
+TransitingState_time: 495500.0(46.4%)
+ParkingState_time: 0.0(0.0%)

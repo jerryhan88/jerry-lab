@@ -72,7 +72,7 @@ def on_notify_customer_arrival(customer):
 
 def run(ex, dispatcher, meanTimeArrival, imbalanceLevel, numOfPRTs):
     # Generate all inputs: Network, Arrivals of customers, PRTs
-    result_txt = open('experiment_oriNN/ex%d.txt' % (ex), 'w')
+    result_txt = open('experiment_FOFS/ex%d.txt' % (ex), 'w')
     result_txt.write('%s_meanTimeArrival(%.1f) imbalanceLevel(%.1f) numOfPRTs(%d)\n' % (str(dispatcher), meanTimeArrival, imbalanceLevel, numOfPRTs))
     Nodes, Edges = Dynamics.Network1()
     Customers = Dynamics.gen_Customer(meanTimeArrival, 5000, imbalanceLevel, Nodes)

@@ -1,6 +1,6 @@
 summary_txt = open('experiments summary.txt', 'w')
-for i in [1000, 2000, 3000]:
-    for j in range(6):
+for i in [2000]:
+    for j in range(12):
         num = i + j
         with open('ex%d.txt' % num, 'r') as fp:
             NN_funcion, args = fp.readline().split('_')

@@ -151,9 +151,8 @@ def find_opt_matching(cur_time, target_PRTs, target_customers, Nodes):
                 _, path_e = find_SP(next_n.no, cus.sn.no)
             else:
                 assert False
-            _, determinded_path_e = find_SP(cus.sn.no, cus.dn.no)
-            processing_time = sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in determinded_path_e )
-            PRTbyCustomer_matrix[prt_id][i] = -(processing_time + sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in path_e) + remain_travel_time)
+                
+            PRTbyCustomer_matrix[prt_id][i] = -(sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in path_e) + remain_travel_time)
     
     # Apply Hungarian method        
     assignment_results = []
