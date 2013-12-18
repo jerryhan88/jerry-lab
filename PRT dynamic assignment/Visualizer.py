@@ -457,8 +457,8 @@ class ViewPanel(DragZoomPanel):
         self.SetBackgroundColour(wx.WHITE)
         self.Bind(wx.EVT_PAINT, self.OnPaint)
         self.Bind(wx.EVT_SIZE, self.OnSize)
-        from Dynamics import STATION, JUNCTION, DOT
-        global STATION, JUNCTION, DOT
+        from Dynamics import STATION, JUNCTION, DOT1, DOT2
+        global STATION, JUNCTION, DOT1, DOT2
     
     def OnMouseWheel(self, e):
         if e.ControlDown():
@@ -496,7 +496,7 @@ class ViewPanel(DragZoomPanel):
                 gc.SetPen(wx.Pen(wx.Colour(0, 0, 0), 0.01))
                 gc.DrawEllipse(-JUNCTION_DIAMETER / 2, -JUNCTION_DIAMETER / 2, JUNCTION_DIAMETER, JUNCTION_DIAMETER)
             else:
-                assert n.nodeType == DOT
+#                 assert n.nodeType == DOT1 or 
 #                 ------------------------------------------------------
                 gc.SetBrush(wx.Brush(wx.Colour(255, 255, 255)))
                 gc.SetPen(wx.Pen(wx.Colour(0, 0, 0), 0.01))
@@ -548,7 +548,7 @@ class ViewPanel(DragZoomPanel):
                 gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
                 gc.DrawLines([(ex, ey), (ex - int((ux * 5)) + int(px * 3), ey - int(uy * 5) + int(py * 3))])
                 gc.DrawLines([(ex, ey), (ex - int(ux * 5) - int(px * 3), ey - int(uy * 5) - int(py * 3))])
-            elif prev_n.nodeType == DOT and next_n.nodeType == JUNCTION:
+            elif prev_n.nodeType == DOT2 and next_n.nodeType == JUNCTION:
                 sx = prev_n.px
                 sy = prev_n.py
                 ex = next_n.px - ux * JUNCTION_DIAMETER / 2
@@ -556,20 +556,42 @@ class ViewPanel(DragZoomPanel):
                 gc.SetFont(wx.Font(5, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
                 gc.DrawLines([(ex, ey), (ex - int((ux * 5)) + int(px * 3), ey - int(uy * 5) + int(py * 3))])
                 gc.DrawLines([(ex, ey), (ex - int(ux * 5) - int(px * 3), ey - int(uy * 5) - int(py * 3))])
-            elif prev_n.nodeType == JUNCTION and next_n.nodeType == DOT :
+            elif prev_n.nodeType == JUNCTION and next_n.nodeType == DOT2 :
                 sx = prev_n.px + ux * JUNCTION_DIAMETER / 2
                 sy = prev_n.py + uy * JUNCTION_DIAMETER / 2
                 ex = next_n.px
                 ey = next_n.py
                 gc.SetFont(wx.Font(5, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-            elif prev_n.nodeType == DOT and next_n.nodeType == DOT :
+            elif prev_n.nodeType == DOT2 and next_n.nodeType == DOT2 :
                 sx = prev_n.px
                 sy = prev_n.py
                 ex = next_n.px
                 ey = next_n.py
-#                 gc.DrawLines([(sx, sy), (ex, ey)])
                 gc.SetFont(wx.Font(5, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-#                 continue
+            elif prev_n.nodeType == JUNCTION and next_n.nodeType == DOT1 :
+                sx = prev_n.px + ux * JUNCTION_DIAMETER / 2
+                sy = prev_n.py + uy * JUNCTION_DIAMETER / 2
+                ex = next_n.px
+                ey = next_n.py
+                gc.SetFont(wx.Font(5, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+                gc.DrawLines([(ex, ey), (ex - int((ux * 5)) + int(px * 3), ey - int(uy * 5) + int(py * 3))])
+                gc.DrawLines([(ex, ey), (ex - int(ux * 5) - int(px * 3), ey - int(uy * 5) - int(py * 3))])
+            elif prev_n.nodeType == DOT1 and next_n.nodeType == DOT1 :
+                sx = prev_n.px
+                sy = prev_n.py
+                ex = next_n.px
+                ey = next_n.py
+                gc.SetFont(wx.Font(5, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+                gc.DrawLines([(ex, ey), (ex - int((ux * 5)) + int(px * 3), ey - int(uy * 5) + int(py * 3))])
+                gc.DrawLines([(ex, ey), (ex - int(ux * 5) - int(px * 3), ey - int(uy * 5) - int(py * 3))])
+            elif prev_n.nodeType == DOT1 and next_n.nodeType == JUNCTION :
+                sx = prev_n.px
+                sy = prev_n.py
+                ex = next_n.px - ux * JUNCTION_DIAMETER / 2
+                ey = next_n.py - uy * JUNCTION_DIAMETER / 2
+                gc.SetFont(wx.Font(5, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+                gc.DrawLines([(ex, ey), (ex - int((ux * 5)) + int(px * 3), ey - int(uy * 5) + int(py * 3))])
+                gc.DrawLines([(ex, ey), (ex - int(ux * 5) - int(px * 3), ey - int(uy * 5) - int(py * 3))])
             else:
                 assert False 
             gc.DrawLines([(sx, sy), (ex, ey)])
