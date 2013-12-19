@@ -20,8 +20,7 @@ PRT_SIZE = STATION_DIAMETER / 5
 waiting_customers = []
 event_queue = []
 
-LOG_TO_OUTPUT = True
-Is_CustomerWaitingTime_chart_appeared = False
+LOG_TO_OUTPUT = False
 
 TITLE = 'PRT Simulator'
 
@@ -98,12 +97,12 @@ class ChartPanel(DragZoomPanel):
 
 class MainFrame(wx.Frame):
     def __init__(self):
-#         wx.Frame.__init__(self, None, -1, TITLE, size=(1024, 768), pos=(20, 20))
-        wx.Frame.__init__(self, None, -1, TITLE, size=(1920, 960), pos=(0, 0))
+        wx.Frame.__init__(self, None, -1, TITLE, size=(1024, 768), pos=(20, 20))
+#         wx.Frame.__init__(self, None, -1, TITLE, size=(1920, 960), pos=(0, 0))
         # Every resources are accessible
+#         self.Nodes, self.Edges = Dynamics.Network1()
         self.Nodes, self.Edges = Dynamics.Network2()
-#         self.Customers = Dynamics.gen_Customer(4.5, 5000, 0.3, self.Nodes)
-        self.Customers = []
+        self.Customers = Dynamics.gen_Customer(4.5, 5000, 0.3, self.Nodes)
         self.NumOfTotalCustomer = len(self.Customers)
         self.PRTs = Dynamics.gen_PRT(40, self.Nodes)
         
@@ -152,21 +151,16 @@ class MainFrame(wx.Frame):
 
         self.Show(True)
         
-#---------------------------------------------------------------------------------------------------        
+        self.dispatcher = self.select_dispatcher()
+        if self.dispatcher == None:
+            return
         
-#         self.dispatcher = self.select_dispatcher()
-#         if self.dispatcher == None:
-#             return
-#---------------------------------------------------------------------------------------------------        
-        self.dispatcher = Algorithms.NN0
-#---------------------------------------------------------------------------------------------------
-
         Dynamics.init_dynamics(self.Nodes, self.PRTs, self.Customers, self.dispatcher)
         
         self.SetTitle(TITLE + ' - ' + self.dispatcher.__name__)
         self.vp.SetFocus()
-        if Is_CustomerWaitingTime_chart_appeared:
-            self.CWTC = CustomerWaitingTime_chart(self)
+        
+        self.CWTC = CustomerWaitingTime_chart(self)
         
         ##############################
         
@@ -175,8 +169,7 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_CLOSE, self.OnClose)
         
     def OnClose(self, event):
-        if Is_CustomerWaitingTime_chart_appeared:
-            self.CWTC.Destroy()
+        self.CWTC.Destroy()
         self.Destroy()
     
     def select_dispatcher(self):
@@ -245,9 +238,7 @@ class MainFrame(wx.Frame):
         for c in Dynamics.waiting_customers:
             self.waiting_customers_in_node[c.sn.id].append(c.id) 
         self.vp.RefreshGC()
-        
-        if Is_CustomerWaitingTime_chart_appeared:
-            self.CWTC.cp.RefreshGC()
+        self.CWTC.cp.RefreshGC()
         
         if self.next_stat_update_time < time():
             self.next_stat_update_time = time() + STAT_UPDATE_INTERVAL
@@ -457,8 +448,8 @@ class ViewPanel(DragZoomPanel):
         self.SetBackgroundColour(wx.WHITE)
         self.Bind(wx.EVT_PAINT, self.OnPaint)
         self.Bind(wx.EVT_SIZE, self.OnSize)
-        from Dynamics import STATION, JUNCTION, DOT1, DOT2
-        global STATION, JUNCTION, DOT1, DOT2
+        from Dynamics import STATION, JUNCTION, DOT
+        global STATION, JUNCTION, DOT
     
     def OnMouseWheel(self, e):
         if e.ControlDown():
@@ -496,12 +487,7 @@ class ViewPanel(DragZoomPanel):
                 gc.SetPen(wx.Pen(wx.Colour(0, 0, 0), 0.01))
                 gc.DrawEllipse(-JUNCTION_DIAMETER / 2, -JUNCTION_DIAMETER / 2, JUNCTION_DIAMETER, JUNCTION_DIAMETER)
             else:
-#                 assert n.nodeType == DOT1 or 
-#                 ------------------------------------------------------
-                gc.SetBrush(wx.Brush(wx.Colour(255, 255, 255)))
-                gc.SetPen(wx.Pen(wx.Colour(0, 0, 0), 0.01))
-                gc.DrawEllipse(-JUNCTION_DIAMETER / 2, -JUNCTION_DIAMETER / 2, JUNCTION_DIAMETER, JUNCTION_DIAMETER)
-#                 ------------------------------------------------------
+                assert n.nodeType == DOT
             gc.SetTransform(old_tr)
             
         for n_id, waiting_c_in_node in self.Parent.Parent.Parent.Parent.waiting_customers_in_node.iteritems():
@@ -548,7 +534,7 @@ class ViewPanel(DragZoomPanel):
                 gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
                 gc.DrawLines([(ex, ey), (ex - int((ux * 5)) + int(px * 3), ey - int(uy * 5) + int(py * 3))])
                 gc.DrawLines([(ex, ey), (ex - int(ux * 5) - int(px * 3), ey - int(uy * 5) - int(py * 3))])
-            elif prev_n.nodeType == DOT2 and next_n.nodeType == JUNCTION:
+            elif prev_n.nodeType == DOT and next_n.nodeType == JUNCTION:
                 sx = prev_n.px
                 sy = prev_n.py
                 ex = next_n.px - ux * JUNCTION_DIAMETER / 2
@@ -556,42 +542,20 @@ class ViewPanel(DragZoomPanel):
                 gc.SetFont(wx.Font(5, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
                 gc.DrawLines([(ex, ey), (ex - int((ux * 5)) + int(px * 3), ey - int(uy * 5) + int(py * 3))])
                 gc.DrawLines([(ex, ey), (ex - int(ux * 5) - int(px * 3), ey - int(uy * 5) - int(py * 3))])
-            elif prev_n.nodeType == JUNCTION and next_n.nodeType == DOT2 :
+            elif prev_n.nodeType == JUNCTION and next_n.nodeType == DOT :
                 sx = prev_n.px + ux * JUNCTION_DIAMETER / 2
                 sy = prev_n.py + uy * JUNCTION_DIAMETER / 2
                 ex = next_n.px
                 ey = next_n.py
                 gc.SetFont(wx.Font(5, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-            elif prev_n.nodeType == DOT2 and next_n.nodeType == DOT2 :
+            elif prev_n.nodeType == DOT and next_n.nodeType == DOT :
                 sx = prev_n.px
                 sy = prev_n.py
                 ex = next_n.px
                 ey = next_n.py
+#                 gc.DrawLines([(sx, sy), (ex, ey)])
                 gc.SetFont(wx.Font(5, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-            elif prev_n.nodeType == JUNCTION and next_n.nodeType == DOT1 :
-                sx = prev_n.px + ux * JUNCTION_DIAMETER / 2
-                sy = prev_n.py + uy * JUNCTION_DIAMETER / 2
-                ex = next_n.px
-                ey = next_n.py
-                gc.SetFont(wx.Font(5, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-                gc.DrawLines([(ex, ey), (ex - int((ux * 5)) + int(px * 3), ey - int(uy * 5) + int(py * 3))])
-                gc.DrawLines([(ex, ey), (ex - int(ux * 5) - int(px * 3), ey - int(uy * 5) - int(py * 3))])
-            elif prev_n.nodeType == DOT1 and next_n.nodeType == DOT1 :
-                sx = prev_n.px
-                sy = prev_n.py
-                ex = next_n.px
-                ey = next_n.py
-                gc.SetFont(wx.Font(5, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-                gc.DrawLines([(ex, ey), (ex - int((ux * 5)) + int(px * 3), ey - int(uy * 5) + int(py * 3))])
-                gc.DrawLines([(ex, ey), (ex - int(ux * 5) - int(px * 3), ey - int(uy * 5) - int(py * 3))])
-            elif prev_n.nodeType == DOT1 and next_n.nodeType == JUNCTION :
-                sx = prev_n.px
-                sy = prev_n.py
-                ex = next_n.px - ux * JUNCTION_DIAMETER / 2
-                ey = next_n.py - uy * JUNCTION_DIAMETER / 2
-                gc.SetFont(wx.Font(5, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-                gc.DrawLines([(ex, ey), (ex - int((ux * 5)) + int(px * 3), ey - int(uy * 5) + int(py * 3))])
-                gc.DrawLines([(ex, ey), (ex - int(ux * 5) - int(px * 3), ey - int(uy * 5) - int(py * 3))])
+#                 continue
             else:
                 assert False 
             gc.DrawLines([(sx, sy), (ex, ey)])

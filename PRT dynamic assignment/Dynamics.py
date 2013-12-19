@@ -4,11 +4,9 @@ from random import randrange, seed, expovariate, random, choice, sample, uniform
 from heapq import heappush, heappop
 from itertools import chain
 import Algorithms
-
 #---------------------------------------------------------------------
 # Network example
-TRANSFER, STATION, JUNCTION, DOT1, DOT2 = range(5)
-
+TRANSFER, STATION, JUNCTION, DOT = range(4)
 S2J_SPEED = 6
 
 def findNode(nID):
@@ -17,55 +15,38 @@ def findNode(nID):
             return n
     else:
         False
-
 def Network2():
-    C_len = [0, 170, 150, 200, 230, 180, 250]
+    C_len = [0, 210, 150, 200, 230, 180, 200]
     C = [sum(C_len[:i + 1]) for i in range(len(C_len))]
     
-    R_len = [0, 150, 250, 170, 250]
+    R_len = [0, 150, 180, 160, 210]
     R = [sum(R_len[:i + 1]) for i in range(len(R_len))]
     
     btwSJ = 70
     btwSD = 30
     S_Nodes = [
-             Node('0', C[1], R[0], STATION), Node('1', C[3], R[0], STATION), Node('2', C[5], R[0], STATION),
-             Node('3', C[0], R[1], STATION), Node('4', C[2], R[1], STATION), Node('5', C[4], R[1], STATION), Node('6', C[6], R[1], STATION),
-             Node('7', C[1], R[2], STATION), Node('8', C[3], R[2], STATION), Node('9', C[5], R[2], STATION),
-             Node('10', C[0], R[3], STATION), Node('11', C[2], R[3], STATION), Node('12', C[4], R[3], STATION), Node('13', C[6], R[3], STATION),
-             Node('14', C[1], R[4], STATION), Node('15', C[3], R[4], STATION), Node('16', C[5], R[4], STATION),
+             Node('0', C[1] - 50, R[0], STATION), Node('1', C[3] + 30, R[0], STATION), Node('2', C[5], R[0], STATION),
+             Node('3', C[0], R[1] + 25, TRANSFER), Node('4', C[2], R[1], STATION), Node('5', C[4], R[1] - 15, STATION), Node('6', C[6], R[1] + 20, STATION),
+             Node('7', C[1], R[2], STATION), Node('8', C[3] + 20, R[2], STATION), Node('9', C[5], R[2] + 10, STATION),
+             Node('10', C[0], R[3] + 40, STATION), Node('11', C[2], R[3], STATION), Node('12', C[4], R[3] + 20, STATION), Node('13', C[6], R[3] + 50, STATION),
+             Node('14', C[1] - 20, R[4], STATION), Node('15', C[3] - 15, R[4], STATION), Node('16', C[5] + 25, R[4], STATION),
              ]
     
-    JD1_Nodes = []
+    J_Nodes = []
     
     for i in range(len(S_Nodes)):
         if (0 <= i <= 2) or (7 <= i <= 9) or (14 <= i <= 16):
             W_px, W_py = S_Nodes[i].px - btwSJ, S_Nodes[i].py
             E_px, E_py = S_Nodes[i].px + btwSJ, S_Nodes[i].py
-            JD1_Nodes.append(Node(str(i) + 'W', W_px, W_py, JUNCTION))
-            JD1_Nodes.append(Node(str(i) + 'E', E_px, E_py, JUNCTION))
-            WD_px = (W_px + S_Nodes[i].px) / 2
-            ED_px = (E_px + S_Nodes[i].px) / 2
-            if i in [0, 2, 8, 14, 16]:
-                WD_py = ED_py = W_py - btwSD
-            else:
-                WD_py = ED_py = W_py + btwSD
-            JD1_Nodes.append(Node('WD' + str(i), WD_px , WD_py , DOT1))
-            JD1_Nodes.append(Node('ED' + str(i), ED_px , ED_py , DOT1))
+            J_Nodes.append(Node(str(i) + 'W', W_px, W_py, JUNCTION))
+            J_Nodes.append(Node(str(i) + 'E', E_px, E_py, JUNCTION))
         else:
             N_px, N_py = S_Nodes[i].px, S_Nodes[i].py - btwSJ
             S_px, S_py = S_Nodes[i].px, S_Nodes[i].py + btwSJ
-            JD1_Nodes.append(Node(str(i) + 'N', N_px, N_py, JUNCTION))
-            JD1_Nodes.append(Node(str(i) + 'S', S_px, S_py, JUNCTION))
-            ND_py = (N_py + S_Nodes[i].py) / 2
-            SD_py = (S_py + S_Nodes[i].py) / 2
-            if i in [4, 6, 10, 12]:
-                ND_px = SD_px = N_px - btwSD
-            else:
-                ND_px = SD_px = N_px + btwSD
-            JD1_Nodes.append(Node('ND' + str(i), ND_px , ND_py , DOT1))
-            JD1_Nodes.append(Node('SD' + str(i), SD_px , SD_py , DOT1))
+            J_Nodes.append(Node(str(i) + 'N', N_px, N_py, JUNCTION))
+            J_Nodes.append(Node(str(i) + 'S', S_px, S_py, JUNCTION))
     
-    Nodes = S_Nodes + JD1_Nodes
+    Nodes = S_Nodes + J_Nodes
     
     def findN(nID):
         for n in Nodes:
@@ -73,9 +54,67 @@ def Network2():
                 return n
         else:
             False 
-    JD2_Nodes = []
+    JDJ_Nodes = []
+    numOfNC = 18
+    JDJ_pos_info1 = [
+                    ('0W', '0E', numOfNC, 'Q41', 'CW'),
+                    ('1W', '1E', numOfNC, 'Q32', 'CCW'),
+                    ('2W', '2E', numOfNC, 'Q41', 'CW'),
+                    ('7E', '7W', numOfNC, 'Q32', 'CW'),
+                    ('8E', '8W', numOfNC, 'Q41', 'CCW'),
+                    ('9E', '9W', numOfNC, 'Q32', 'CW'),
+                    ('14E', '14W', numOfNC, 'Q41', 'CCW'),
+                    ('15E', '15W', numOfNC, 'Q32', 'CW'),
+                    ('16E', '16W', numOfNC, 'Q41', 'CCW'),
+                    
+                    ('3S', '3N', numOfNC, 'Q21', 'CCW'),
+                    ('4N', '4S', numOfNC, 'Q43', 'CCW'),
+                    ('5S', '5N', numOfNC, 'Q21', 'CCW'),
+                    ('6N', '6S', numOfNC, 'Q43', 'CCW'),
+                    ('10S', '10N', numOfNC, 'Q43', 'CW'),
+                    ('11N', '11S', numOfNC, 'Q21', 'CW'),
+                    ('12S', '12N', numOfNC, 'Q43', 'CW'),
+                    ('13N', '13S', numOfNC, 'Q21', 'CW'),
+                    ]
     
-    def set_posD_OnCurve(SN, EN, numOfN, quadrant, direction):
+    def set_posD_OnCurve1(SN, EN, numOfN, quadrant, direction, angle):
+        NS_OnCurve = []
+        for i in range(numOfN - 1):
+            C_px = (SN.px + EN.px) / 2
+            C_py = (SN.py + EN.py) / 2
+            if quadrant == 'Q32' or quadrant == 'Q41':
+                sx = abs(SN.px - EN.px) / 2
+                sy = btwSD
+            else:
+                sx = btwSD
+                sy = abs(SN.py - EN.py) / 2
+            if direction == 'CW':
+                if quadrant == 'Q21':
+                    teata = (pi / 180) * (-90 + angle * ((i + 1) / numOfN))
+                if quadrant == 'Q43':
+                    teata = (pi / 180) * (90 + angle * ((i + 1) / numOfN))
+                if quadrant == 'Q32':
+                    teata = (pi / 180) * (angle * ((i + 1) / numOfN))
+                if quadrant == 'Q41': 
+                    teata = (pi / 180) * (180 + angle * ((i + 1) / numOfN))
+            else:
+                assert direction != 'CW'
+                if quadrant == 'Q21':
+                    teata = (pi / 180) * (90 - 1 * angle * ((i + 1) / numOfN))
+                if quadrant == 'Q43':
+                    teata = (pi / 180) * (-90 - 1 * angle * ((i + 1) / numOfN))
+                if quadrant == 'Q41':
+                    teata = (pi / 180) * (-1 * angle * ((i + 1) / numOfN))
+                if quadrant == 'Q32':
+                    teata = (pi / 180) * (180 + -1 * angle * ((i + 1) / numOfN))
+                    
+            NS_OnCurve.append(Node(SN.id + '-' + str(i) + '-' + EN.id, C_px + sx * cos(teata) , C_py + sy * sin(teata), DOT))
+        JDJ_Nodes.append(NS_OnCurve)
+    
+    for SN_id, EN_id, numOfN, quadrant, direction in JDJ_pos_info1:
+        set_posD_OnCurve1(findN(SN_id), findN(EN_id), numOfN, quadrant, direction, 180)
+        
+    def set_posD_OnCurve2(SN, EN, numOfN, quadrant, direction, angle):
         NS_OnCurve = []
         for i in range(numOfN - 1):
             sx = abs(EN.px - SN.px)
@@ -83,47 +122,50 @@ def Network2():
             if direction == 'CW':
                 if quadrant == 'Q1':
                     C_px, C_py = SN.px, EN.py
-                    teata = (pi / 180) * (-90 + 90 * ((i + 1) / numOfN))
+                    teata = (pi / 180) * (-90 + angle * ((i + 1) / numOfN))
                 if quadrant == 'Q2':
                     C_px, C_py = EN.px, SN.py
-                    teata = (pi / 180) * (90 * ((i + 1) / numOfN))
+                    teata = (pi / 180) * (angle * ((i + 1) / numOfN))
                 if quadrant == 'Q3':
                     C_px, C_py = SN.px, EN.py
-                    teata = (pi / 180) * (90 + 90 * ((i + 1) / numOfN))
+                    teata = (pi / 180) * (90 + angle * ((i + 1) / numOfN))
                 if quadrant == 'Q4':
                     C_px, C_py = EN.px, SN.py
-                    teata = (pi / 180) * (180 + 90 * ((i + 1) / numOfN))
+                    teata = (pi / 180) * (180 + angle * ((i + 1) / numOfN))
             else :
                 assert direction != 'CW'
                 if quadrant == 'Q1':
                     C_px, C_py = EN.px, SN.py
-                    teata = (pi / 180) * (-90 * ((i + 1) / numOfN))
+                    teata = (pi / 180) * (-1 * angle * ((i + 1) / numOfN))
                 if quadrant == 'Q4':
                     C_px, C_py = SN.px, EN.py
-                    teata = (pi / 180) * (-90 - 90 * ((i + 1) / numOfN))
-            NS_OnCurve.append(Node(SN.id + '-' + str(i) + '-' + EN.id, C_px + sx * cos(teata) , C_py + sy * sin(teata), DOT2))
-        JD2_Nodes.append(NS_OnCurve)
+                    teata = (pi / 180) * (-90 - 1 * angle * ((i + 1) / numOfN))
+            NS_OnCurve.append(Node(SN.id + '-' + str(i) + '-' + EN.id, C_px + sx * cos(teata) , C_py + sy * sin(teata), DOT))
+        JDJ_Nodes.append(NS_OnCurve)
+
     
-    set_posD_OnCurve(findN('12N'), findN('8E'), 10, 'Q1', 'CCW')
-    set_posD_OnCurve(findN('8W'), findN('11N'), 10, 'Q4', 'CCW')
+    for SN_id, EN_id, numOfN, quadrant in [('12N', '8E', numOfNC, 'Q1'), ('8W', '11N', numOfNC, 'Q4')]:
+        set_posD_OnCurve2(findN(SN_id), findN(EN_id), numOfN, quadrant, 'CCW', 90)
     
-    set_posD_OnCurve(findN('0E'), findN('4N'), 10, 'Q1', 'CW')
-    set_posD_OnCurve(findN('2E'), findN('6N'), 10, 'Q1', 'CW')
+    JDJ_pos_info2 = [
+                    ('0E', '4N', numOfNC, 'Q1'),
+                    ('2E', '6N', numOfNC, 'Q1'),
+                    ('4S', '7E', numOfNC, 'Q2'),
+                    ('6S', '9E', numOfNC, 'Q2'),
+                    ('13S', '16E', numOfNC, 'Q2'),
+                    ('11S', '14E', numOfNC, 'Q2'),
+                    ('7W', '3S', numOfNC, 'Q3'),
+                    ('9W', '5S', numOfNC, 'Q3'),
+                    ('16W', '12S', numOfNC, 'Q3'),
+                    ('14W', '10S', numOfNC, 'Q3'),
+                    ('3N', '0W', numOfNC, 'Q4'),
+                    ('5N', '2W', numOfNC, 'Q4')
+                   ]
     
-    set_posD_OnCurve(findN('4S'), findN('7E'), 10, 'Q2', 'CW')
-    set_posD_OnCurve(findN('6S'), findN('9E'), 10, 'Q2', 'CW')
-    set_posD_OnCurve(findN('13S'), findN('16E'), 10, 'Q2', 'CW')
-    set_posD_OnCurve(findN('11S'), findN('14E'), 10, 'Q2', 'CW')
+    for SN_id, EN_id, numOfN, quadrant in JDJ_pos_info2:
+        set_posD_OnCurve2(findN(SN_id), findN(EN_id), numOfN, quadrant, 'CW', 90)
     
-    set_posD_OnCurve(findN('7W'), findN('3S'), 10, 'Q3', 'CW')
-    set_posD_OnCurve(findN('9W'), findN('5S'), 10, 'Q3', 'CW')
-    set_posD_OnCurve(findN('16W'), findN('12S'), 10, 'Q3', 'CW')
-    set_posD_OnCurve(findN('14W'), findN('10S'), 10, 'Q3', 'CW')
-    
-    set_posD_OnCurve(findN('3N'), findN('0W'), 10, 'Q4', 'CW')
-    set_posD_OnCurve(findN('5N'), findN('2W'), 10, 'Q4', 'CW')
-    
-    Nodes = S_Nodes + JD1_Nodes + [x for x in chain(*JD2_Nodes)]
+    Nodes = S_Nodes + J_Nodes + [x for x in chain(*JDJ_Nodes)]
     
     Edges = []
     
@@ -133,23 +175,16 @@ def Network2():
             Edges.append(Edge(findN(Nid + 'W'), findN(Nid), S2J_SPEED))
             Edges.append(Edge(findN(Nid), findN(Nid + 'E'), S2J_SPEED))
             
-            Edges.append(Edge(findN(Nid + 'W'), findN('WD' + Nid)))
-            Edges.append(Edge(findN('WD' + Nid), findN('ED' + Nid)))
-            Edges.append(Edge(findN('ED' + Nid), findN(Nid + 'E')))
         elif (7 <= i <= 9) or (14 <= i <= 16):
             Edges.append(Edge(findN(Nid), findN(Nid + 'W'), S2J_SPEED))
             Edges.append(Edge(findN(Nid + 'E'), findN(Nid), S2J_SPEED))
-        
-            Edges.append(Edge(findN(Nid + 'E'), findN('ED' + Nid)))
-            Edges.append(Edge(findN('ED' + Nid), findN('WD' + Nid)))
-            Edges.append(Edge(findN('WD' + Nid), findN(Nid + 'W')))
         else:
-            Edges.append(Edge(findN(Nid + 'S'), findN(Nid), S2J_SPEED))
-            Edges.append(Edge(findN(Nid), findN(Nid + 'N'), S2J_SPEED))
-            
-            Edges.append(Edge(findN(Nid + 'S'), findN('SD' + Nid)))
-            Edges.append(Edge(findN('SD' + Nid), findN('ND' + Nid)))
-            Edges.append(Edge(findN('ND' + Nid), findN(Nid + 'N')))
+            if Nid in ['3', '5', '10', '12']:
+                Edges.append(Edge(findN(Nid + 'S'), findN(Nid), S2J_SPEED))
+                Edges.append(Edge(findN(Nid), findN(Nid + 'N'), S2J_SPEED))
+            else:
+                Edges.append(Edge(findN(Nid), findN(Nid + 'S'), S2J_SPEED))
+                Edges.append(Edge(findN(Nid + 'N'), findN(Nid) , S2J_SPEED))
     
     Edges.append(Edge(findN('0E'), findN('1W')))
     Edges.append(Edge(findN('1E'), findN('2W')))
@@ -161,17 +196,19 @@ def Network2():
     Edges.append(Edge(findN('8W'), findN('7E')))
     Edges.append(Edge(findN('12N'), findN('5S')))
     
-    for JD2N in JD2_Nodes:
+    for JD2N in JDJ_Nodes:
         SN_id, _, EN_id = JD2N[0].id.split('-')
-        
-    
-    
+        Edges.append(Edge(findN(SN_id), JD2N[0]))
+        for i, n in enumerate(JD2N):
+            if i == len(JD2N) - 1:
+                Edges.append(Edge(JD2N[-1], findN(EN_id)))
+                break
+            Edges.append(Edge(JD2N[i], JD2N[i + 1]))
     
     for i, n in enumerate(Nodes):
         n.no = i
         
     return Nodes, Edges
-    
 
 def Network1():
     c0 = 0
@@ -204,30 +241,30 @@ def Network1():
                 Node('14', c3, r3, STATION), Node('14W', c3 - btwSJ, r3, JUNCTION), Node('14N', c3, r3 - btwSJ, JUNCTION),
                 
                 Node('3E', c2 + btwSJ, r0, JUNCTION),
-                Node('3-7.D1', c3 - ((r1 - r0) - btwSJ) + ((r1 - r0) - btwSJ) * cos((pi / 180) * -90 * (11 / 11)), r1 - btwSJ + ((r1 - r0) - btwSJ) * sin((pi / 180) * -90 * (11 / 11)), DOT2),
-                Node('3-7.D2', c3 - ((r1 - r0) - btwSJ) + ((r1 - r0) - btwSJ) * cos((pi / 180) * -90 * (10 / 11)), r1 - btwSJ + ((r1 - r0) - btwSJ) * sin((pi / 180) * -90 * (10 / 11)), DOT2),
-                Node('3-7.D3', c3 - ((r1 - r0) - btwSJ) + ((r1 - r0) - btwSJ) * cos((pi / 180) * -90 * (9 / 11)), r1 - btwSJ + ((r1 - r0) - btwSJ) * sin((pi / 180) * -90 * (9 / 11)), DOT2),
-                Node('3-7.D4', c3 - ((r1 - r0) - btwSJ) + ((r1 - r0) - btwSJ) * cos((pi / 180) * -90 * (8 / 11)), r1 - btwSJ + ((r1 - r0) - btwSJ) * sin((pi / 180) * -90 * (8 / 11)), DOT2),
-                Node('3-7.D5', c3 - ((r1 - r0) - btwSJ) + ((r1 - r0) - btwSJ) * cos((pi / 180) * -90 * (7 / 11)), r1 - btwSJ + ((r1 - r0) - btwSJ) * sin((pi / 180) * -90 * (7 / 11)), DOT2),
-                Node('3-7.D6', c3 - ((r1 - r0) - btwSJ) + ((r1 - r0) - btwSJ) * cos((pi / 180) * -90 * (6 / 11)), r1 - btwSJ + ((r1 - r0) - btwSJ) * sin((pi / 180) * -90 * (6 / 11)), DOT2),
-                Node('3-7.D7', c3 - ((r1 - r0) - btwSJ) + ((r1 - r0) - btwSJ) * cos((pi / 180) * -90 * (5 / 11)), r1 - btwSJ + ((r1 - r0) - btwSJ) * sin((pi / 180) * -90 * (5 / 11)), DOT2),
-                Node('3-7.D8', c3 - ((r1 - r0) - btwSJ) + ((r1 - r0) - btwSJ) * cos((pi / 180) * -90 * (4 / 11)), r1 - btwSJ + ((r1 - r0) - btwSJ) * sin((pi / 180) * -90 * (4 / 11)), DOT2),
-                Node('3-7.D9', c3 - ((r1 - r0) - btwSJ) + ((r1 - r0) - btwSJ) * cos((pi / 180) * -90 * (3 / 11)), r1 - btwSJ + ((r1 - r0) - btwSJ) * sin((pi / 180) * -90 * (3 / 11)), DOT2),
-                Node('3-7.D10', c3 - ((r1 - r0) - btwSJ) + ((r1 - r0) - btwSJ) * cos((pi / 180) * -90 * (2 / 11)), r1 - btwSJ + ((r1 - r0) - btwSJ) * sin((pi / 180) * -90 * (2 / 11)), DOT2),
-                Node('3-7.D11', c3 - ((r1 - r0) - btwSJ) + ((r1 - r0) - btwSJ) * cos((pi / 180) * -90 * (1 / 11)), r1 - btwSJ + ((r1 - r0) - btwSJ) * sin((pi / 180) * -90 * (1 / 11)), DOT2),
+                Node('3-7.D1', c3 - ((r1 - r0) - btwSJ) + ((r1 - r0) - btwSJ) * cos((pi / 180) * -90 * (11 / 11)), r1 - btwSJ + ((r1 - r0) - btwSJ) * sin((pi / 180) * -90 * (11 / 11)), DOT),
+                Node('3-7.D2', c3 - ((r1 - r0) - btwSJ) + ((r1 - r0) - btwSJ) * cos((pi / 180) * -90 * (10 / 11)), r1 - btwSJ + ((r1 - r0) - btwSJ) * sin((pi / 180) * -90 * (10 / 11)), DOT),
+                Node('3-7.D3', c3 - ((r1 - r0) - btwSJ) + ((r1 - r0) - btwSJ) * cos((pi / 180) * -90 * (9 / 11)), r1 - btwSJ + ((r1 - r0) - btwSJ) * sin((pi / 180) * -90 * (9 / 11)), DOT),
+                Node('3-7.D4', c3 - ((r1 - r0) - btwSJ) + ((r1 - r0) - btwSJ) * cos((pi / 180) * -90 * (8 / 11)), r1 - btwSJ + ((r1 - r0) - btwSJ) * sin((pi / 180) * -90 * (8 / 11)), DOT),
+                Node('3-7.D5', c3 - ((r1 - r0) - btwSJ) + ((r1 - r0) - btwSJ) * cos((pi / 180) * -90 * (7 / 11)), r1 - btwSJ + ((r1 - r0) - btwSJ) * sin((pi / 180) * -90 * (7 / 11)), DOT),
+                Node('3-7.D6', c3 - ((r1 - r0) - btwSJ) + ((r1 - r0) - btwSJ) * cos((pi / 180) * -90 * (6 / 11)), r1 - btwSJ + ((r1 - r0) - btwSJ) * sin((pi / 180) * -90 * (6 / 11)), DOT),
+                Node('3-7.D7', c3 - ((r1 - r0) - btwSJ) + ((r1 - r0) - btwSJ) * cos((pi / 180) * -90 * (5 / 11)), r1 - btwSJ + ((r1 - r0) - btwSJ) * sin((pi / 180) * -90 * (5 / 11)), DOT),
+                Node('3-7.D8', c3 - ((r1 - r0) - btwSJ) + ((r1 - r0) - btwSJ) * cos((pi / 180) * -90 * (4 / 11)), r1 - btwSJ + ((r1 - r0) - btwSJ) * sin((pi / 180) * -90 * (4 / 11)), DOT),
+                Node('3-7.D9', c3 - ((r1 - r0) - btwSJ) + ((r1 - r0) - btwSJ) * cos((pi / 180) * -90 * (3 / 11)), r1 - btwSJ + ((r1 - r0) - btwSJ) * sin((pi / 180) * -90 * (3 / 11)), DOT),
+                Node('3-7.D10', c3 - ((r1 - r0) - btwSJ) + ((r1 - r0) - btwSJ) * cos((pi / 180) * -90 * (2 / 11)), r1 - btwSJ + ((r1 - r0) - btwSJ) * sin((pi / 180) * -90 * (2 / 11)), DOT),
+                Node('3-7.D11', c3 - ((r1 - r0) - btwSJ) + ((r1 - r0) - btwSJ) * cos((pi / 180) * -90 * (1 / 11)), r1 - btwSJ + ((r1 - r0) - btwSJ) * sin((pi / 180) * -90 * (1 / 11)), DOT),
                 Node('7N', c3, r1 - btwSJ, JUNCTION),
                 
                 Node('12W', c1 - btwSJ, r3, JUNCTION),
-                Node('12-8.D1', c1 - btwSJ + ((c1 - c0) - btwSJ) * cos((pi / 180) * (-180 + -90 * (10 / 11))), r2 + btwSJ + ((c1 - c0) - btwSJ) * sin((pi / 180) * (-180 + -90 * (10 / 11))), DOT2),
-                Node('12-8.D2', c1 - btwSJ + ((c1 - c0) - btwSJ) * cos((pi / 180) * (-180 + -90 * (9 / 11))), r2 + btwSJ + ((c1 - c0) - btwSJ) * sin((pi / 180) * (-180 + -90 * (9 / 11))), DOT2),
-                Node('12-8.D3', c1 - btwSJ + ((c1 - c0) - btwSJ) * cos((pi / 180) * (-180 + -90 * (8 / 11))), r2 + btwSJ + ((c1 - c0) - btwSJ) * sin((pi / 180) * (-180 + -90 * (8 / 11))), DOT2),
-                Node('12-8.D4', c1 - btwSJ + ((c1 - c0) - btwSJ) * cos((pi / 180) * (-180 + -90 * (7 / 11))), r2 + btwSJ + ((c1 - c0) - btwSJ) * sin((pi / 180) * (-180 + -90 * (7 / 11))), DOT2),
-                Node('12-8.D5', c1 - btwSJ + ((c1 - c0) - btwSJ) * cos((pi / 180) * (-180 + -90 * (6 / 11))), r2 + btwSJ + ((c1 - c0) - btwSJ) * sin((pi / 180) * (-180 + -90 * (6 / 11))), DOT2),
-                Node('12-8.D6', c1 - btwSJ + ((c1 - c0) - btwSJ) * cos((pi / 180) * (-180 + -90 * (5 / 11))), r2 + btwSJ + ((c1 - c0) - btwSJ) * sin((pi / 180) * (-180 + -90 * (5 / 11))), DOT2),
-                Node('12-8.D7', c1 - btwSJ + ((c1 - c0) - btwSJ) * cos((pi / 180) * (-180 + -90 * (4 / 11))), r2 + btwSJ + ((c1 - c0) - btwSJ) * sin((pi / 180) * (-180 + -90 * (4 / 11))), DOT2),
-                Node('12-8.D8', c1 - btwSJ + ((c1 - c0) - btwSJ) * cos((pi / 180) * (-180 + -90 * (3 / 11))), r2 + btwSJ + ((c1 - c0) - btwSJ) * sin((pi / 180) * (-180 + -90 * (3 / 11))), DOT2),
-                Node('12-8.D9', c1 - btwSJ + ((c1 - c0) - btwSJ) * cos((pi / 180) * (-180 + -90 * (2 / 11))), r2 + btwSJ + ((c1 - c0) - btwSJ) * sin((pi / 180) * (-180 + -90 * (2 / 11))), DOT2),
-                Node('12-8.D10', c1 - btwSJ + ((c1 - c0) - btwSJ) * cos((pi / 180) * (-180 + -90 * (1 / 11))), r2 + btwSJ + ((c1 - c0) - btwSJ) * sin((pi / 180) * (-180 + -90 * (1 / 11))), DOT2),
+                Node('12-8.D1', c1 - btwSJ + ((c1 - c0) - btwSJ) * cos((pi / 180) * (-180 + -90 * (10 / 11))), r2 + btwSJ + ((c1 - c0) - btwSJ) * sin((pi / 180) * (-180 + -90 * (10 / 11))), DOT),
+                Node('12-8.D2', c1 - btwSJ + ((c1 - c0) - btwSJ) * cos((pi / 180) * (-180 + -90 * (9 / 11))), r2 + btwSJ + ((c1 - c0) - btwSJ) * sin((pi / 180) * (-180 + -90 * (9 / 11))), DOT),
+                Node('12-8.D3', c1 - btwSJ + ((c1 - c0) - btwSJ) * cos((pi / 180) * (-180 + -90 * (8 / 11))), r2 + btwSJ + ((c1 - c0) - btwSJ) * sin((pi / 180) * (-180 + -90 * (8 / 11))), DOT),
+                Node('12-8.D4', c1 - btwSJ + ((c1 - c0) - btwSJ) * cos((pi / 180) * (-180 + -90 * (7 / 11))), r2 + btwSJ + ((c1 - c0) - btwSJ) * sin((pi / 180) * (-180 + -90 * (7 / 11))), DOT),
+                Node('12-8.D5', c1 - btwSJ + ((c1 - c0) - btwSJ) * cos((pi / 180) * (-180 + -90 * (6 / 11))), r2 + btwSJ + ((c1 - c0) - btwSJ) * sin((pi / 180) * (-180 + -90 * (6 / 11))), DOT),
+                Node('12-8.D6', c1 - btwSJ + ((c1 - c0) - btwSJ) * cos((pi / 180) * (-180 + -90 * (5 / 11))), r2 + btwSJ + ((c1 - c0) - btwSJ) * sin((pi / 180) * (-180 + -90 * (5 / 11))), DOT),
+                Node('12-8.D7', c1 - btwSJ + ((c1 - c0) - btwSJ) * cos((pi / 180) * (-180 + -90 * (4 / 11))), r2 + btwSJ + ((c1 - c0) - btwSJ) * sin((pi / 180) * (-180 + -90 * (4 / 11))), DOT),
+                Node('12-8.D8', c1 - btwSJ + ((c1 - c0) - btwSJ) * cos((pi / 180) * (-180 + -90 * (3 / 11))), r2 + btwSJ + ((c1 - c0) - btwSJ) * sin((pi / 180) * (-180 + -90 * (3 / 11))), DOT),
+                Node('12-8.D9', c1 - btwSJ + ((c1 - c0) - btwSJ) * cos((pi / 180) * (-180 + -90 * (2 / 11))), r2 + btwSJ + ((c1 - c0) - btwSJ) * sin((pi / 180) * (-180 + -90 * (2 / 11))), DOT),
+                Node('12-8.D10', c1 - btwSJ + ((c1 - c0) - btwSJ) * cos((pi / 180) * (-180 + -90 * (1 / 11))), r2 + btwSJ + ((c1 - c0) - btwSJ) * sin((pi / 180) * (-180 + -90 * (1 / 11))), DOT),
                 Node('8S', c0, r2 + btwSJ, JUNCTION),
            ]
     
@@ -628,7 +665,7 @@ class PRT():
         
         path_n_to_nearStation = []
         path_e_to_nearStation = []
-        while next_n.nodeType == JUNCTION or next_n.nodeType == DOT1 or next_n.nodeType == DOT2:
+        while next_n.nodeType == JUNCTION or next_n.nodeType == DOT:
             if len(next_n.edges_outward) == 1:
                 path_n_to_nearStation.append(next_n.edges_outward[0]._to)
                 path_e_to_nearStation.append(next_n.edges_outward[0])
