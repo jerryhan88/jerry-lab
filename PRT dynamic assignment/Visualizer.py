@@ -208,7 +208,7 @@ class MainFrame(wx.Frame):
                 path_travel_time = self.now - prt.last_planed_time
                 edges_counter = 0
                 prev_n, next_n = None, None
-                sum_travel_time = 0
+                sum_travel_time = 0.0
                 for e in prt.path_e:
                     sum_travel_time += e.distance // min(Dynamics.PRT_SPEED, e.maxSpeed) 
                     edges_counter += 1 

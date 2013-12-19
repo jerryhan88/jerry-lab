@@ -55,7 +55,7 @@ def Network2():
         else:
             False 
     JDJ_Nodes = []
-    numOfNC = 18
+    numOfNC = 8
     JDJ_pos_info1 = [
                     ('0W', '0E', numOfNC, 'Q41', 'CW'),
                     ('1W', '1E', numOfNC, 'Q32', 'CCW'),
@@ -917,7 +917,8 @@ def test():
     from time import sleep
     
     # Generate all inputs: Network, Arrivals of customers, PRTs
-    Nodes, Edges = Network1()
+#     Nodes, Edges = Network1()
+    Nodes, Edges = Network2()
     Customers = gen_Customer(5.0, 5000, 0.0, Nodes)
     PRTs = gen_PRT(40, Nodes)    
     
