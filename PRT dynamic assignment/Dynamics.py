@@ -55,7 +55,7 @@ def Network2():
         else:
             False 
     JDJ_Nodes = []
-    numOfNC = 8
+    numOfNC = 5
     JDJ_pos_info1 = [
                     ('0W', '0E', numOfNC, 'Q41', 'CW'),
                     ('1W', '1E', numOfNC, 'Q32', 'CCW'),
@@ -662,7 +662,10 @@ class PRT():
         path_travel_time = cur_time - self.last_planed_time
         _, next_n, xth = Algorithms.find_PRT_position_on_PATH(self.path_e, path_travel_time)
         remain_travel_time = sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in self.path_e[:xth]) - path_travel_time
-        
+        print cur_time 
+        if cur_time >= 128.0:
+            print 1
+        print next_n, 'path:', self.path_e
         path_n_to_nearStation = []
         path_e_to_nearStation = []
         while next_n.nodeType == JUNCTION or next_n.nodeType == DOT:
@@ -742,6 +745,7 @@ class PRT():
         
         # Set things for next state
         path_travel_time = cur_time - self.last_planed_time
+        _, next_n, xth = Algorithms.find_PRT_position_on_PATH(self.path_e, path_travel_time)
         remain_travel_time = sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in self.path_e[:xth]) - path_travel_time
         next_n = self.path_n[-1]
         
@@ -860,7 +864,7 @@ def update_customerWaitingTimeMeasure(cur_time, numOfCustomerChange):
     # Update measure
     customers_waiting_time = NumOfWaitingCustomer * (cur_time - ChaningPointOfNWC)
     if customers_waiting_time > MaxCustomerWaitingTime:
-         MaxCustomerWaitingTime = customers_waiting_time
+        MaxCustomerWaitingTime = customers_waiting_time
     Total_customers_waiting_time += customers_waiting_time
 
     # Memorize things for the next calculation
@@ -925,8 +929,8 @@ def test():
     Algorithms.init_algorithms(Nodes)
     
     # Choose dispatcher
-    dispatcher = Algorithms.NN0
-#     dispatcher = Algorithms.NN1
+#     dispatcher = Algorithms.NN0
+    dispatcher = Algorithms.NN1
 #     dispatcher = Algorithms.NN2
 #     dispatcher = Algorithms.NN3
 #     dispatcher = Algorithms.NN4
@@ -946,29 +950,6 @@ def test():
     
     print 'IdleState_time: %.1f, ApproachingState_time: %.1f, TransitingState_time: %.1f, ParkingState_time: %.1f' % (IdleState_time, ApproachingState_time, TransitingState_time, ParkingState_time)
 
-def tests():
-    from time import sleep
-    import Network
-    
-    # Generage all inputs: Network, Arrivals of customers, PRTs
-    Nodes, Edges = gen_Network(*Network.network0())
-    for meanArrival, numOfCustomer, numOfPRT in [(4.0, 2000, 11), (1.0, 4000, 12), (10.5, 2000, 6), (3.0, 2000, 20), ]:
-        for NN in [Algorithms.NN0, Algorithms.NN1, Algorithms.NN2, Algorithms.NN3, Algorithms.NN4, Algorithms.NN5]:
-            dispatcher = NN
-            Customers = gen_Customer(meanArrival, numOfCustomer, Nodes)
-            PRTs = gen_PRT(numOfPRT, Nodes)
-            
-            init_dynamics(Nodes, PRTs, Customers, dispatcher)
-            
-            now = 0.0
-            while process_events(now):
-                now += 1
-                
-            print        
-            print 'Measure------------------------------------------------------------------------------------------------'
-            print 'T.TravedDist: %.1f, T.E.TravelDist: %.1f, T.FlowTime: %.1f, T.WaitTime: %.1f' % (Total_travel_distance, Total_empty_travel_distance, Total_customers_flow_time, Total_customers_waiting_time)
-            
-            print 'IdleState_time: %.1f, ApproachingState_time: %.1f, TransitingState_time: %.1f, ParkingState_time: %.1f' % (IdleState_time, ApproachingState_time, TransitingState_time, ParkingState_time)    
 if __name__ == '__main__':
     test()
 #     tests()

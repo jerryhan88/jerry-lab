@@ -119,7 +119,6 @@ def find_opt_matching(cur_time, target_PRTs, target_customers, Nodes):
     PRTbyCustomer_matrix = [[-Longest_dis / PRT_SPEED] * max_M_size for _ in range(max_M_size)]
     
     for prt_id, prt in enumerate(target_PRTs):
-        travel_distance = (cur_time - prt.last_planed_time) * PRT_SPEED
         path_travel_time = cur_time - prt.last_planed_time
         for i, cus in enumerate(target_customers):
             if prt.state == ST_IDLE:
