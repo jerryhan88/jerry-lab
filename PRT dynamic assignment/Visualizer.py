@@ -478,10 +478,18 @@ class ViewPanel(DragZoomPanel):
                 gc.SetPen(wx.Pen(wx.Colour(0, 0, 0), 1))
                 gc.DrawEllipse(-STATION_DIAMETER / 2, -STATION_DIAMETER / 2, STATION_DIAMETER, STATION_DIAMETER)
                 gc.SetFont(wx.Font(10, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-                if n.settingPRTs:
-                    PRTs_str = 'S #%d {' % len(n.settingPRTs) + ':'.join(('PRT%d(C%d)' % (prt.id, prt.transporting_customer.id)) for prt in n.settingPRTs) + '}'
-                    gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-                    gc.DrawText(PRTs_str, STATION_DIAMETER / 2 - 2, 22)
+#                 if n.settingPRTs:
+                PRTs_str = 'S #%d {' % len(n.settingPRTs) + ':'.join(('PRT%d(C%d)' % (prt.id, prt.transporting_customer.id)) for prt in n.settingPRTs) + '}'
+                gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+                gc.DrawText(PRTs_str, STATION_DIAMETER / 2 - 2, 22)
+                
+                PRTs_str = 'XE #%d {' % len(n.notEnterPRTs) + ':'.join(('PRT%d(C%d)' % (prt.id, prt.transporting_customer.id)) for prt in n.notEnterPRTs) + '}'
+                gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+                gc.DrawText(PRTs_str, STATION_DIAMETER / 2 - 8, 32)
+                
+                PRTs_str = 'XL #%d {' % len(n.notLeavePRTs) + ':'.join(('PRT%d' % (prt.id)) for prt in n.notLeavePRTs) + '}'
+                gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+                gc.DrawText(PRTs_str, STATION_DIAMETER / 2 - 8, 42)
                 
                 if len(n.id) > 1:
                     gc.DrawText('%s' % n.id, -7, -8)

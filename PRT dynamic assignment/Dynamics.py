@@ -10,7 +10,7 @@ TRANSFER, STATION, JUNCTION, DOT = range(4)
 S2J_SPEED = 6
 J2D_SPEED = 9
 
-numOfBerth = 3
+numOfBerth = 1
 
 def findNode(nID):
     for n in Nodes:
@@ -384,7 +384,8 @@ class Node():
         self.nodeType = nodeType
         self.no = None
         self.settingPRTs = []
-        self.waitingPRTs = [] 
+        self.notEnterPRTs = []
+        self.notLeavePRTs = []
         
         self.edges_inward = []
         self.edges_outward = []
@@ -441,7 +442,8 @@ class PRT():
         self.assigned_customer = None
         self.transporting_customer = None
         self.event_seq = []
-        self.isWaiting = False
+        self.isNotEnter = False
+        self.isNotLeave = False
         
         self.last_planed_time = 0.0
         self.path_n, self.path_e = [], []
@@ -467,6 +469,74 @@ class PRT():
                     return evt, target_prt.event_seq[len(target_prt.event_seq) - 2 - i]
             else:
                 assert False
+    
+    def check_settingPRTs_inNode(self, evt, cur_time, target_c):
+        if evt == 'T2I':
+            destS = self.path_n[-1]
+            if self.isNotEnter:
+                print '~~~~~~~~~~~~~~~~~~~~'
+                print 'print destS.settingPRTs: ', destS.settingPRTs
+                print 'before', destS.notEnterPRTs
+                
+                assert len(destS.settingPRTs) <= numOfBerth
+                
+                self.isNotEnter = False
+                destS.notEnterPRTs.remove(self)
+                print 'After', destS.notEnterPRTs
+                return True
+            else:
+                if len(destS.settingPRTs) > numOfBerth:
+                    print destS.settingPRTs
+                    print destS.settingPRTs[0].event_seq
+                    for prt in destS.settingPRTs:
+                        print prt.event_seq[-1]
+                    min_waitingTime = min(prt.event_seq[-1][0] - cur_time for prt in destS.settingPRTs)
+                    print cur_time, min_waitingTime
+                    
+                    self.isNotEnter = True
+                    destS.notEnterPRTs.append(self)
+                    evt_change_point = cur_time + min_waitingTime
+                    x = [evt_change_point, self.On_TransitingToIdle, target_c]
+                    self.event_seq.append(x)
+                    heappush(event_queue, x)
+                    print 'limit Capa, prt', self
+                    print destS.notEnterPRTs 
+                    return False
+                else:
+                    return True
+        else:
+            assert evt == 'A2S' or evt == 'I2S'
+            arriveS = self.arrived_n
+            if self.isNotLeave:
+                print 'before', arriveS.notLeavePRTs
+                assert len(arriveS.settingPRTs) <= numOfBerth
+                self.isNotLeave = False
+                arriveS.notLeavePRTs.remove(self)
+                print 'After', arriveS.notLeavePRTs
+                return True
+            else:
+                if len(arriveS.settingPRTs) > numOfBerth:
+                    print arriveS.settingPRTs
+                    for prt in arriveS.settingPRTs:
+                        print prt.event_seq[-1]
+                    min_waitingTime = min(prt.event_seq[-1][0] - cur_time for prt in arriveS.settingPRTs)
+                    print cur_time, min_waitingTime
+                    
+                    self.isNotLeave = True
+                    arriveS.notLeavePRTs.append(self)
+                    evt_change_point = cur_time + min_waitingTime
+                    if evt == 'A2S':
+                        x = [evt_change_point, self.On_ApproachingToSetting, target_c]
+                    else:
+                        assert evt == 'I2S'
+                        x = [evt_change_point, self.On_IdleToSetting, target_c]
+                    self.event_seq.append(x)
+                    heappush(event_queue, x)
+                    print 'limit Capa, prt', self
+                    print arriveS.notEnterPRTs 
+                    return False
+                else:
+                    return True
     
     def modify_passed_assignedPRT_event(self, cur_time, prev_PRT, target_c):
         # Modify event of tager_c's previous assigned PRT which is already scheduled
@@ -524,6 +594,10 @@ class PRT():
     def On_IdleToSetting(self, cur_time, target_c):
         logger('%.1f:    On_I2S - %s, ready for customer %s' % (cur_time, self, target_c))
         assert self.state == ST_IDLE
+        
+        if not self.check_settingPRTs_inNode('I2S', cur_time, target_c):
+            return None
+        
         prev_PRT = target_c.assigned_PRT
         
         # Measure update
@@ -538,6 +612,8 @@ class PRT():
         assert self.transporting_customer
         self.transporting_customer.assigned_PRT = self
         self.arrived_n.settingPRTs.append(self)
+        
+        assert len(self.arrived_n.settingPRTs) <= numOfBerth
         
         # Set things for next state
         seed(2)
@@ -580,6 +656,9 @@ class PRT():
         logger('%.1f:    On_A2S - %s, ready for customer %s' % (cur_time, self, target_c))
         assert self.state == ST_APPROACHING and self.assigned_customer == target_c
         
+        if not self.check_settingPRTs_inNode('A2S', cur_time, target_c):
+            return None
+        
         # Measure update
         global ApproachingState_time, NumOfPickedUpCustomer, Total_empty_travel_distance, Total_travel_distance
         ApproachingState_time += cur_time - self.stateChangingPoint
@@ -597,6 +676,8 @@ class PRT():
         assert self.transporting_customer
         self.assigned_customer = None
         self.arrived_n.settingPRTs.append(self)
+        
+        assert len(self.arrived_n.settingPRTs) <= numOfBerth
         
         # Set things for next state
         seed(2)
@@ -716,35 +797,11 @@ class PRT():
         assert self.path_n[-1].nodeType == STATION or self.path_n[-1].nodeType == TRANSFER
 
     def On_TransitingToIdle(self, cur_time, target_c):
-        logger('%.1f:    On_T2I - %s' % (cur_time, self))    
+        logger('%.1f:    On_T2I - %s, servicing customer (C%d)' % (cur_time, self, target_c.id))    
         assert self.state == ST_TRANSITING
-        destS = self.path_n[-1]
         
-        if self.isWaiting:
-            print 'before', destS.waitingPRTs
-            self.isWaiting = False
-            destS.waitingPRTs.remove(self)
-            print 'After', destS.waitingPRTs
-            assert False 
-        else:
-#             if len(destS.settingPRTs) > numOfBerth:
-            if len(destS.settingPRTs) > 1:
-                print destS.settingPRTs
-                print destS.settingPRTs[0].event_seq
-                for prt in destS.settingPRTs:
-                    print prt.event_seq[-1]
-                min_waitingTime = min(prt.event_seq[-1][0] - cur_time for prt in destS.settingPRTs)
-                print cur_time, min_waitingTime
-                
-                self.isWaiting = True
-                destS.waitingPRTs.append(self)
-                evt_change_point = cur_time + min_waitingTime
-                x = [evt_change_point, self.On_TransitingToIdle, target_c]
-                self.event_seq.append(x)
-                heappush(event_queue, x)
-                print 'limit Capa, prt', self
-                print destS.waitingPRTs 
-                return None
+        if not self.check_settingPRTs_inNode('T2I', cur_time, target_c):
+            return None
         
         # Measure update
         global TransitingState_time, NumOfServicedCustomer, Total_travel_distance, Total_customers_flow_time
