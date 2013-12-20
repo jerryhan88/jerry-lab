@@ -20,7 +20,7 @@ PRT_SIZE = STATION_DIAMETER / 5
 waiting_customers = []
 event_queue = []
 
-LOG_TO_OUTPUT = False
+LOG_TO_OUTPUT = True
 
 TITLE = 'PRT Simulator'
 

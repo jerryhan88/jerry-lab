@@ -10,6 +10,8 @@ TRANSFER, STATION, JUNCTION, DOT = range(4)
 S2J_SPEED = 6
 J2D_SPEED = 9
 
+numOfBerth = 3
+
 def findNode(nID):
     for n in Nodes:
         if n.id == nID:
@@ -382,6 +384,7 @@ class Node():
         self.nodeType = nodeType
         self.no = None
         self.settingPRTs = []
+        self.waitingPRTs = [] 
         
         self.edges_inward = []
         self.edges_outward = []
@@ -438,6 +441,7 @@ class PRT():
         self.assigned_customer = None
         self.transporting_customer = None
         self.event_seq = []
+        self.isWaiting = False
         
         self.last_planed_time = 0.0
         self.path_n, self.path_e = [], []
@@ -602,7 +606,7 @@ class PRT():
         heappush(event_queue, x)
     
     def On_SettingToTransiting(self, cur_time, target_c):
-        logger('%.1f:    On_I2T - %s, picking up customer-%s' % (cur_time, self, target_c))
+        logger('%.1f:    On_S2T - %s, picking up customer-%s' % (cur_time, self, target_c))
         assert self.state == ST_SETTING
         prev_PRT = target_c.assigned_PRT
         
@@ -613,6 +617,8 @@ class PRT():
         # State update
         self.set_stateChange(ST_TRANSITING, cur_time)
         self.arrived_n.settingPRTs.remove(self)
+        print 'removed PRT:', self
+        print 'node_settingPRTs', self.arrived_n.settingPRTs 
         
         # Set things for next state
         self.path_n, self.path_e = Algorithms.find_SP(self.transporting_customer.sn.no, self.transporting_customer.dn.no)
@@ -717,6 +723,32 @@ class PRT():
     def On_TransitingToIdle(self, cur_time, target_c):
         logger('%.1f:    On_T2I - %s' % (cur_time, self))    
         assert self.state == ST_TRANSITING
+        destS = self.path_n[-1]
+#         if len(destS.settingPRTs) > numOfBerth:
+        if len(destS.settingPRTs) > 1:
+            print destS.settingPRTs
+            print destS.settingPRTs[0].event_seq
+            for prt in destS.settingPRTs:
+                print prt.event_seq[-1]
+            min_waitingTime = min(prt.event_seq[-1][0] - cur_time for prt in destS.settingPRTs)
+            print cur_time, min_waitingTime
+            
+            self.isWaiting = True
+            destS.waitingPRTs.append(self)
+            evt_change_point = cur_time + min_waitingTime
+            x = [evt_change_point, self.On_TransitingToIdle, target_c]
+            self.event_seq.append(x)
+            heappush(event_queue, x)
+            print 'limit Capa, prt', self
+            return None
+        
+        if self.isWaiting:
+            print 'before', destS.waitingPRTs
+            self.isWaiting = False
+            destS.waitingPRTs.remove(self)
+            print 'After', destS.waitingPRTs
+            assert False 
+            
         
         # Measure update
         global TransitingState_time, NumOfServicedCustomer, Total_travel_distance, Total_customers_flow_time
