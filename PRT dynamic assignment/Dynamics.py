@@ -694,13 +694,10 @@ class PRT():
         _, next_n, xth = Algorithms.find_PRT_position_on_PATH(self.path_e, path_travel_time)
         remain_travel_time = sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in self.path_e[:xth]) - path_travel_time
         
-        print 'next_n:', next_n, xth
-        
         if next_n.nodeType == STATION or next_n.nodeType == TRANSFER:
             path_n_to_nearStation, path_e_to_nearStation = [next_n], []
         else:
             if next_n.nodeType != JUNCTION:
-                print next_n,
                 _, _, NextJ_id = next_n.id.split('-')
             else:
                 assert next_n.nodeType == JUNCTION
@@ -715,8 +712,6 @@ class PRT():
         heappush(event_queue, x)
         
         logger('            parking node: %s' % (self.path_n[-1].id))
-        print 'changed path: ', self.path_n
-        
         
         assert self.path_n[-1].nodeType == STATION or self.path_n[-1].nodeType == TRANSFER
 
@@ -724,23 +719,6 @@ class PRT():
         logger('%.1f:    On_T2I - %s' % (cur_time, self))    
         assert self.state == ST_TRANSITING
         destS = self.path_n[-1]
-#         if len(destS.settingPRTs) > numOfBerth:
-        if len(destS.settingPRTs) > 1:
-            print destS.settingPRTs
-            print destS.settingPRTs[0].event_seq
-            for prt in destS.settingPRTs:
-                print prt.event_seq[-1]
-            min_waitingTime = min(prt.event_seq[-1][0] - cur_time for prt in destS.settingPRTs)
-            print cur_time, min_waitingTime
-            
-            self.isWaiting = True
-            destS.waitingPRTs.append(self)
-            evt_change_point = cur_time + min_waitingTime
-            x = [evt_change_point, self.On_TransitingToIdle, target_c]
-            self.event_seq.append(x)
-            heappush(event_queue, x)
-            print 'limit Capa, prt', self
-            return None
         
         if self.isWaiting:
             print 'before', destS.waitingPRTs
@@ -748,7 +726,25 @@ class PRT():
             destS.waitingPRTs.remove(self)
             print 'After', destS.waitingPRTs
             assert False 
-            
+        else:
+#             if len(destS.settingPRTs) > numOfBerth:
+            if len(destS.settingPRTs) > 1:
+                print destS.settingPRTs
+                print destS.settingPRTs[0].event_seq
+                for prt in destS.settingPRTs:
+                    print prt.event_seq[-1]
+                min_waitingTime = min(prt.event_seq[-1][0] - cur_time for prt in destS.settingPRTs)
+                print cur_time, min_waitingTime
+                
+                self.isWaiting = True
+                destS.waitingPRTs.append(self)
+                evt_change_point = cur_time + min_waitingTime
+                x = [evt_change_point, self.On_TransitingToIdle, target_c]
+                self.event_seq.append(x)
+                heappush(event_queue, x)
+                print 'limit Capa, prt', self
+                print destS.waitingPRTs 
+                return None
         
         # Measure update
         global TransitingState_time, NumOfServicedCustomer, Total_travel_distance, Total_customers_flow_time
