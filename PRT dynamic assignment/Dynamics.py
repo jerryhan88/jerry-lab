@@ -8,6 +8,7 @@ import Algorithms
 # Network example
 TRANSFER, STATION, JUNCTION, DOT = range(4)
 S2J_SPEED = 6
+J2D_SPEED = 9
 
 def findNode(nID):
     for n in Nodes:
@@ -55,26 +56,43 @@ def Network2():
         else:
             False 
     JDJ_Nodes = []
-    numOfNC = 5
+    numOfNC = 10
     JDJ_pos_info1 = [
                     ('0W', '0E', numOfNC, 'Q41', 'CW'),
+                    ('0E', '0W', numOfNC, 'Q32', 'CW'),
                     ('1W', '1E', numOfNC, 'Q32', 'CCW'),
+                    ('1E', '1W', numOfNC, 'Q41', 'CCW'),
                     ('2W', '2E', numOfNC, 'Q41', 'CW'),
+                    ('2E', '2W', numOfNC, 'Q32', 'CW'),
                     ('7E', '7W', numOfNC, 'Q32', 'CW'),
+                    ('7W', '7E', numOfNC, 'Q41', 'CW'),
                     ('8E', '8W', numOfNC, 'Q41', 'CCW'),
+                    ('8W', '8E', numOfNC, 'Q32', 'CCW'),
                     ('9E', '9W', numOfNC, 'Q32', 'CW'),
+                    ('9W', '9E', numOfNC, 'Q41', 'CW'),
                     ('14E', '14W', numOfNC, 'Q41', 'CCW'),
+                    ('14W', '14E', numOfNC, 'Q32', 'CCW'),
                     ('15E', '15W', numOfNC, 'Q32', 'CW'),
+                    ('15W', '15E', numOfNC, 'Q41', 'CW'),
                     ('16E', '16W', numOfNC, 'Q41', 'CCW'),
+                    ('16W', '16E', numOfNC, 'Q32', 'CCW'),
                     
                     ('3S', '3N', numOfNC, 'Q21', 'CCW'),
+                    ('3N', '3S', numOfNC, 'Q43', 'CCW'),
                     ('4N', '4S', numOfNC, 'Q43', 'CCW'),
+                    ('4S', '4N', numOfNC, 'Q21', 'CCW'),
                     ('5S', '5N', numOfNC, 'Q21', 'CCW'),
+                    ('5N', '5S', numOfNC, 'Q43', 'CCW'),
                     ('6N', '6S', numOfNC, 'Q43', 'CCW'),
+                    ('6S', '6N', numOfNC, 'Q21', 'CCW'),
                     ('10S', '10N', numOfNC, 'Q43', 'CW'),
+                    ('10N', '10S', numOfNC, 'Q21', 'CW'),
                     ('11N', '11S', numOfNC, 'Q21', 'CW'),
+                    ('11S', '11N', numOfNC, 'Q43', 'CW'),
                     ('12S', '12N', numOfNC, 'Q43', 'CW'),
+                    ('12N', '12S', numOfNC, 'Q21', 'CW'),
                     ('13N', '13S', numOfNC, 'Q21', 'CW'),
+                    ('13S', '13N', numOfNC, 'Q43', 'CW'),
                     ]
     
     def set_posD_OnCurve1(SN, EN, numOfN, quadrant, direction, angle):
@@ -110,6 +128,8 @@ def Network2():
                     
             NS_OnCurve.append(Node(SN.id + '-' + str(i) + '-' + EN.id, C_px + sx * cos(teata) , C_py + sy * sin(teata), DOT))
         JDJ_Nodes.append(NS_OnCurve)
+    
+    numOfNC = 8
     
     for SN_id, EN_id, numOfN, quadrant, direction in JDJ_pos_info1:
         set_posD_OnCurve1(findN(SN_id), findN(EN_id), numOfN, quadrant, direction, 180)
@@ -198,10 +218,10 @@ def Network2():
     
     for JD2N in JDJ_Nodes:
         SN_id, _, EN_id = JD2N[0].id.split('-')
-        Edges.append(Edge(findN(SN_id), JD2N[0]))
+        Edges.append(Edge(findN(SN_id), JD2N[0], J2D_SPEED))
         for i, n in enumerate(JD2N):
             if i == len(JD2N) - 1:
-                Edges.append(Edge(JD2N[-1], findN(EN_id)))
+                Edges.append(Edge(JD2N[-1], findN(EN_id), J2D_SPEED))
                 break
             Edges.append(Edge(JD2N[i], JD2N[i + 1]))
     
@@ -360,6 +380,8 @@ class Node():
         self.id = _id
         self.px, self.py = px, py
         self.nodeType = nodeType
+        self.no = None
+        self.settingPRTs = []
         
         self.edges_inward = []
         self.edges_outward = []
@@ -511,6 +533,7 @@ class PRT():
         self.transporting_customer = remove_A_customerInWaitingList(target_c)
         assert self.transporting_customer
         self.transporting_customer.assigned_PRT = self
+        self.arrived_n.settingPRTs.append(self)
         
         # Set things for next state
         seed(2)
@@ -569,6 +592,7 @@ class PRT():
         self.transporting_customer = remove_A_customerInWaitingList(self.assigned_customer)
         assert self.transporting_customer
         self.assigned_customer = None
+        self.arrived_n.settingPRTs.append(self)
         
         # Set things for next state
         seed(2)
@@ -588,6 +612,7 @@ class PRT():
             
         # State update
         self.set_stateChange(ST_TRANSITING, cur_time)
+        self.arrived_n.settingPRTs.remove(self)
         
         # Set things for next state
         self.path_n, self.path_e = Algorithms.find_SP(self.transporting_customer.sn.no, self.transporting_customer.dn.no)
@@ -631,8 +656,8 @@ class PRT():
             evt_change_point = cur_time + remain_travel_time
         else:
             path_n_Rerouted, path_e_Rerouted = Algorithms.find_SP(next_n.no, target_c.sn.no)
-            self.path_n = self.path_n + path_n_Rerouted[1:]
-            self.path_e = self.path_e + path_e_Rerouted
+            self.path_n = self.path_n[:xth] + path_n_Rerouted[1:]
+            self.path_e = self.path_e[:xth] + path_e_Rerouted
             evt_change_point = cur_time + remain_travel_time + sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in path_e_Rerouted)
         x = [evt_change_point, self.On_ApproachingToSetting, target_c]
         self.event_seq.append(x)
@@ -662,33 +687,32 @@ class PRT():
         path_travel_time = cur_time - self.last_planed_time
         _, next_n, xth = Algorithms.find_PRT_position_on_PATH(self.path_e, path_travel_time)
         remain_travel_time = sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in self.path_e[:xth]) - path_travel_time
-        print cur_time 
-        if cur_time >= 128.0:
-            print 1
-        print next_n, 'path:', self.path_e
-        path_n_to_nearStation = []
-        path_e_to_nearStation = []
-        while next_n.nodeType == JUNCTION or next_n.nodeType == DOT:
-            if len(next_n.edges_outward) == 1:
-                path_n_to_nearStation.append(next_n.edges_outward[0]._to)
-                path_e_to_nearStation.append(next_n.edges_outward[0])
-                next_n = next_n.edges_outward[0]._to
+        
+        print 'next_n:', next_n, xth
+        
+        if next_n.nodeType == STATION or next_n.nodeType == TRANSFER:
+            path_n_to_nearStation, path_e_to_nearStation = [next_n], []
+        else:
+            if next_n.nodeType != JUNCTION:
+                print next_n,
+                _, _, NextJ_id = next_n.id.split('-')
             else:
-                for e in next_n.edges_outward:
-                    if e._to.nodeType == TRANSFER or e._to.nodeType == STATION :
-                        path_n_to_nearStation.append(e._to)
-                        path_e_to_nearStation.append(e)
-                        next_n = e._to
-                        break
-                else:
-                    assert False 
+                assert next_n.nodeType == JUNCTION
+                NextJ_id = next_n.id
+            NextS_id = NextJ_id[:-1] 
+            path_n_to_nearStation, path_e_to_nearStation = Algorithms.find_SP(findNode(NextJ_id).no, findNode(NextS_id).no)
+        
         evt_change_point = cur_time + remain_travel_time + sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in path_e_to_nearStation)
-        self.path_n, self.path_e = self.path_n[:xth + 1] + path_n_to_nearStation, self.path_e[:xth] + path_e_to_nearStation
+        self.path_n, self.path_e = self.path_n[:xth] + path_n_to_nearStation, self.path_e[:xth] + path_e_to_nearStation
         x = [evt_change_point, self.On_ParkingToIdle, None]
         self.event_seq.append(x)
         heappush(event_queue, x)
         
         logger('            parking node: %s' % (self.path_n[-1].id))
+        print 'changed path: ', self.path_n
+        
+        
+        assert self.path_n[-1].nodeType == STATION or self.path_n[-1].nodeType == TRANSFER
 
     def On_TransitingToIdle(self, cur_time, target_c):
         logger('%.1f:    On_T2I - %s' % (cur_time, self))    
@@ -714,6 +738,8 @@ class PRT():
         
     def On_ParkingToIdle(self, cur_time, args=None):
         logger('%.1f:    On_P2I - %s, arriving node: %s' % (cur_time, self, self.path_n[-1].id))
+        print self.path_n
+        assert self.path_n[-1].nodeType == STATION or self.path_n[-1].nodeType == TRANSFER 
         assert self.state == ST_PARKING
         
         # Measure update
