@@ -485,7 +485,7 @@ class PRT():
                 print 'After', destS.notEnterPRTs
                 return True
             else:
-                if len(destS.settingPRTs) > numOfBerth:
+                if len(destS.settingPRTs) >= numOfBerth:
                     print destS.settingPRTs
                     print destS.settingPRTs[0].event_seq
                     for prt in destS.settingPRTs:
@@ -515,7 +515,7 @@ class PRT():
                 print 'After', arriveS.notLeavePRTs
                 return True
             else:
-                if len(arriveS.settingPRTs) > numOfBerth:
+                if len(arriveS.settingPRTs) >= numOfBerth:
                     print arriveS.settingPRTs
                     for prt in arriveS.settingPRTs:
                         print prt.event_seq[-1]
