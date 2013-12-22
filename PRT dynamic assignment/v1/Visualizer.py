@@ -22,7 +22,6 @@ event_queue = []
 
 LOG_TO_OUTPUT = True
 
-
 TITLE = 'PRT Simulator'
 
 class CustomerWaitingTime_chart(wx.Frame):
@@ -219,18 +218,13 @@ class MainFrame(wx.Frame):
                         break
                 prev_n_arrival_time = prt.last_planed_time + sum(e.distance // min(Dynamics.PRT_SPEED, e.maxSpeed) for e in prt.path_e[:edges_counter - 1])
                 
-                if next_n:
-                    dx = next_n.px - prev_n.px
-                    dy = next_n.py - prev_n.py
-                    cos_theta = dx / sqrt(dx * dx + dy * dy)
-                    sin_theta = dy / sqrt(dx * dx + dy * dy)
-                    
-                    prt.px = prev_n.px + cos_theta * (self.now - prev_n_arrival_time) * min(Dynamics.PRT_SPEED, prt.path_e[edges_counter - 1].maxSpeed)
-                    prt.py = prev_n.py + sin_theta * (self.now - prev_n_arrival_time) * min(Dynamics.PRT_SPEED, prt.path_e[edges_counter - 1].maxSpeed)
-                else:
-                    prt.px = prt.path_n[-1].px
-                    prt.py = prt.path_n[-1].py
+                dx = next_n.px - prev_n.px
+                dy = next_n.py - prev_n.py
+                cos_theta = dx / sqrt(dx * dx + dy * dy)
+                sin_theta = dy / sqrt(dx * dx + dy * dy)
                 
+                prt.px = prev_n.px + cos_theta * (self.now - prev_n_arrival_time) * min(Dynamics.PRT_SPEED, prt.path_e[edges_counter - 1].maxSpeed)
+                prt.py = prev_n.py + sin_theta * (self.now - prev_n_arrival_time) * min(Dynamics.PRT_SPEED, prt.path_e[edges_counter - 1].maxSpeed)
             else:
                 assert prt.state == Dynamics.ST_IDLE 
                 prt.px, prt.py = prt.arrived_n.px, prt.arrived_n.py
@@ -489,22 +483,11 @@ class ViewPanel(DragZoomPanel):
                 gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
                 gc.DrawText(PRTs_str, STATION_DIAMETER / 2 - 2, 22)
                 
-                PRTs_str = 'SW #%d {' % len(n.setupWaitingPRTs) + ':'.join(('PRT%d' % (prt.id)) for prt in n.setupWaitingPRTs) + '}'
-                
-                notEnterPRTs = []
-                notLeavePRTs = []
-                for prt in n.setupWaitingPRTs:
-                    if prt.state == ST_TRANSITING:
-                        notEnterPRTs.append(prt)
-                    else:
-                        assert prt.state == ST_IDLE or prt.state == ST_APPROACHING
-                        notLeavePRTs.append(prt)
-                        
-                PRTs_str = 'XE #%d {' % len(notEnterPRTs) + ':'.join(('PRT%d(C%d)' % (prt.id, prt.transporting_customer.id)) for prt in notEnterPRTs) + '}'
+                PRTs_str = 'XE #%d {' % len(n.notEnterPRTs) + ':'.join(('PRT%d(C%d)' % (prt.id, prt.transporting_customer.id)) for prt in n.notEnterPRTs) + '}'
                 gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
                 gc.DrawText(PRTs_str, STATION_DIAMETER / 2 - 8, 32)
                 
-                PRTs_str = 'XL #%d {' % len(notLeavePRTs) + ':'.join(('PRT%d' % (prt.id)) for prt in notLeavePRTs) + '}'
+                PRTs_str = 'XL #%d {' % len(n.notLeavePRTs) + ':'.join(('PRT%d' % (prt.id)) for prt in n.notLeavePRTs) + '}'
                 gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
                 gc.DrawText(PRTs_str, STATION_DIAMETER / 2 - 8, 42)
                 

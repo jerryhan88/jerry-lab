@@ -477,17 +477,31 @@ class PRT():
             assert evt == 'I2S'
             targetS = self.arrived_n
         assert len(targetS.settingPRTs) <= numOfBerth
-            
-        # new arrival PRT
-        if len(targetS.settingPRTs) >= numOfBerth:
-            self.isSetupWaiting = True
-            target_c.isSetupWaiting = True
-            targetS.setupWaitingPRTs.append(self)
-            return False
+        
+        if self.isSetupWaiting:
+            # waiting PRT
+            firstWaiting_c = targetS.setupWaitingPRTs[0].event_seq[-1][2]
+            if firstWaiting_c == target_c:
+                self.isSetupWaiting = False
+                target_c.isSetupWaiting = False
+                assert self == targetS.setupWaitingPRTs.pop(0)
+                return True 
+            else:
+                print 1
+                min_waitingTime = min(prt.event_seq[-1][0] - cur_time for prt in targetS.settingPRTs) 
+                x = [cur_time + min_waitingTime, self.event_seq[-1][1], self.event_seq[-1][2]]
+                self.event_seq.append(x)
+                heappush(event_queue, x)
+                return False 
         else:
-            self.isSetupWaiting = False
-            target_c.isSetupWaiting = False
-            return True
+            # new arrival PRT
+            if len(targetS.settingPRTs) >= numOfBerth:
+                self.isSetupWaiting = True
+                target_c.isSetupWaiting = True
+                targetS.setupWaitingPRTs.append(self)
+                return False
+            else:
+                return True
     
     def modify_passed_assignedPRT_event(self, cur_time, prev_PRT, target_c):
         # Modify event of tager_c's previous assigned PRT which is already scheduled
@@ -564,6 +578,8 @@ class PRT():
         self.transporting_customer.assigned_PRT = self
         self.arrived_n.settingPRTs.append(self)
         
+#         assert len(self.arrived_n.settingPRTs) <= numOfBerth
+        
         # Set things for next state
         seed(2)
         evt_change_point = cur_time + uniform(*SETTING_TIME)
@@ -612,6 +628,7 @@ class PRT():
         global ApproachingState_time, NumOfPickedUpCustomer, Total_empty_travel_distance, Total_travel_distance
         ApproachingState_time += cur_time - self.stateChangingPoint
         NumOfPickedUpCustomer += 1
+        path_travel_time = cur_time - self.last_planed_time
         travel_distance = sum(e.distance for e in self.path_e)
         Total_empty_travel_distance += travel_distance 
         Total_travel_distance += travel_distance
@@ -625,6 +642,7 @@ class PRT():
         self.assigned_customer = None
         self.arrived_n.settingPRTs.append(self)
         
+#         assert len(self.arrived_n.settingPRTs) <= numOfBerth
         
         # Set things for next state
         seed(2)
@@ -636,6 +654,7 @@ class PRT():
     def On_SettingToTransiting(self, cur_time, target_c):
         logger('%.1f:    On_S2T - %s, picking up customer-%s' % (cur_time, self, target_c))
         assert self.state == ST_SETTING
+        prev_PRT = target_c.assigned_PRT
         
         # Measure update
         global SettingState_time
@@ -643,7 +662,6 @@ class PRT():
             
         # State update
         self.set_stateChange(ST_TRANSITING, cur_time)
-        # Update settingPRTs in target node
         self.arrived_n.settingPRTs.remove(self)
         
         # Set things for next state
@@ -655,12 +673,6 @@ class PRT():
         heappush(event_queue, x)
         
         logger('            path: %s' % (self.path_n))
-        
-        ## check setupWaitingPRT
-        
-        if self.arrived_n.setupWaitingPRTs:
-            firstWaitingPRT = self.arrived_n.setupWaitingPRTs.pop(0)
-            firstWaitingPRT.event_seq[-1][1](cur_time, firstWaitingPRT.event_seq[-1][2])
 
     def On_ApproachingToApproaching(self, cur_time, target_c):
         if self.state == ST_PARKING:
@@ -774,6 +786,7 @@ class PRT():
         
     def On_ParkingToIdle(self, cur_time, args=None):
         logger('%.1f:    On_P2I - %s, arriving node: %s' % (cur_time, self, self.path_n[-1].id))
+        print self.path_n
         assert self.path_n[-1].nodeType == STATION or self.path_n[-1].nodeType == TRANSFER 
         assert self.state == ST_PARKING
         
@@ -985,8 +998,8 @@ def test():
     # Generate all inputs: Network, Arrivals of customers, PRTs
 #     Nodes, Edges = Network1()
     Nodes, Edges = Network2()
-    Customers = gen_Customer(4.2, 5000, 0.3, Nodes)
-    PRTs = gen_PRT(50, Nodes)    
+    Customers = gen_Customer(5.0, 5000, 0.0, Nodes)
+    PRTs = gen_PRT(40, Nodes)    
     
     Algorithms.init_algorithms(Nodes)
     

@@ -1,5 +1,6 @@
 from __future__ import division
 from math import sqrt
+from munkres import Munkres
 from igraph import Graph
 import dlib
 from itertools import izip
