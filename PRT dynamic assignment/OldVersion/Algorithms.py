@@ -70,7 +70,7 @@ def NN1(event_time, PRTs, waiting_customers, Nodes):
     from Dynamics import ST_IDLE, ST_APPROACHING
     # Target PRT: I/A
     on_notify_assignmentment_point(None)
-    target_PRTs = [prt for prt in PRTs if not prt.isSetupWaiting and (prt.state == ST_IDLE or prt.state == ST_APPROACHING)]
+    target_PRTs = [prt for prt in PRTs if prt.state == ST_IDLE or prt.state == ST_APPROACHING]
     if not target_PRTs: return None
     target_customers = [c for c in waiting_customers if not c.isSetupWaiting]
     reassignment(event_time, target_PRTs, target_customers, Nodes)

@@ -560,9 +560,6 @@ class PRT():
         logger('%.1f:    On_I2S - %s, ready for customer %s' % (cur_time, self, target_c))
         assert self.state == ST_IDLE
         
-        if not self.check_settingPRTs_inNode('I2S', cur_time, target_c):
-            return None
-        
         prev_PRT = target_c.assigned_PRT
         
         # Measure update
@@ -620,9 +617,6 @@ class PRT():
     def On_ApproachingToSetting(self, cur_time, target_c):
         logger('%.1f:    On_A2S - %s, ready for customer %s' % (cur_time, self, target_c))
         assert self.state == ST_APPROACHING and self.assigned_customer == target_c
-        
-        if not self.check_settingPRTs_inNode('A2S', cur_time, target_c):
-            return None
         
         # Measure update
         global ApproachingState_time, NumOfPickedUpCustomer, Total_empty_travel_distance, Total_travel_distance
@@ -762,9 +756,6 @@ class PRT():
     def On_TransitingToIdle(self, cur_time, target_c):
         logger('%.1f:    On_T2I - %s, servicing customer (C%d)' % (cur_time, self, target_c.id))    
         assert self.state == ST_TRANSITING
-        
-        if not self.check_settingPRTs_inNode('T2I', cur_time, target_c):
-            return None
         
         # Measure update
         global TransitingState_time, NumOfServicedCustomer, Total_travel_distance, Total_customers_flow_time
