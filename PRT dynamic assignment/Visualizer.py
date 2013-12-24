@@ -211,13 +211,13 @@ class MainFrame(wx.Frame):
                 prev_n, next_n = None, None
                 sum_travel_time = 0.0
                 for e in prt.path_e:
-                    sum_travel_time += e.distance // min(Dynamics.PRT_SPEED, e.maxSpeed) 
+                    sum_travel_time += e.distance / min(Dynamics.PRT_SPEED, e.maxSpeed) 
                     edges_counter += 1 
                     if sum_travel_time >= path_travel_time:
                         prev_n = e._from
                         next_n = e._to
                         break
-                prev_n_arrival_time = prt.last_planed_time + sum(e.distance // min(Dynamics.PRT_SPEED, e.maxSpeed) for e in prt.path_e[:edges_counter - 1])
+                prev_n_arrival_time = prt.last_planed_time + sum(e.distance / min(Dynamics.PRT_SPEED, e.maxSpeed) for e in prt.path_e[:edges_counter - 1])
                 
                 if next_n:
                     dx = next_n.px - prev_n.px

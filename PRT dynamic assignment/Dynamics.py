@@ -10,7 +10,7 @@ TRANSFER, STATION, JUNCTION, DOT = range(4)
 S2J_SPEED = 6
 J2D_SPEED = 9
 
-numOfBerth = 1
+numOfBerth = 5
 
 def findNode(nID):
     for n in Nodes:
@@ -591,7 +591,7 @@ class PRT():
         # Set things for next state
         self.path_n, self.path_e = Algorithms.find_SP(self.arrived_n.no, self.assigned_customer.sn.no)
         self.last_planed_time = cur_time
-        evt_change_point = cur_time + sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in self.path_e)
+        evt_change_point = cur_time + sum(e.distance / min(PRT_SPEED, e.maxSpeed) for e in self.path_e)
         x = [evt_change_point, self.On_ApproachingToSetting, target_c]
         self.event_seq.append(x)
         heappush(event_queue, x)
@@ -649,7 +649,7 @@ class PRT():
         # Set things for next state
         self.path_n, self.path_e = Algorithms.find_SP(self.transporting_customer.sn.no, self.transporting_customer.dn.no)
         self.last_planed_time = cur_time
-        evt_change_point = cur_time + sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in self.path_e)
+        evt_change_point = cur_time + sum(e.distance / min(PRT_SPEED, e.maxSpeed) for e in self.path_e)
         x = [evt_change_point, self.On_TransitingToIdle, target_c]
         self.event_seq.append(x)
         heappush(event_queue, x)
@@ -686,7 +686,7 @@ class PRT():
         # Set things for next state
         path_travel_time = cur_time - self.last_planed_time
         _, next_n, xth = Algorithms.find_PRT_position_on_PATH(self.path_e, path_travel_time)
-        remain_travel_time = sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in self.path_e[:xth]) - path_travel_time
+        remain_travel_time = sum(e.distance / min(PRT_SPEED, e.maxSpeed) for e in self.path_e[:xth]) - path_travel_time
         
         
         if next_n == target_c.sn:
@@ -696,7 +696,7 @@ class PRT():
             path_n_Rerouted, path_e_Rerouted = Algorithms.find_SP(next_n.no, target_c.sn.no)
             self.path_n = self.path_n[:xth] + path_n_Rerouted[1:]
             self.path_e = self.path_e[:xth] + path_e_Rerouted
-            evt_change_point = cur_time + remain_travel_time + sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in path_e_Rerouted)
+            evt_change_point = cur_time + remain_travel_time + sum(e.distance / min(PRT_SPEED, e.maxSpeed) for e in path_e_Rerouted)
         x = [evt_change_point, self.On_ApproachingToSetting, target_c]
         self.event_seq.append(x)
         heappush(event_queue, x)
@@ -724,7 +724,7 @@ class PRT():
         # Set things for next state
         path_travel_time = cur_time - self.last_planed_time
         _, next_n, xth = Algorithms.find_PRT_position_on_PATH(self.path_e, path_travel_time)
-        remain_travel_time = sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in self.path_e[:xth]) - path_travel_time
+        remain_travel_time = sum(e.distance / min(PRT_SPEED, e.maxSpeed) for e in self.path_e[:xth]) - path_travel_time
         
         if next_n.nodeType == STATION or next_n.nodeType == TRANSFER:
             path_n_to_nearStation, path_e_to_nearStation = [next_n], []
@@ -737,7 +737,7 @@ class PRT():
             NextS_id = NextJ_id[:-1] 
             path_n_to_nearStation, path_e_to_nearStation = Algorithms.find_SP(findNode(NextJ_id).no, findNode(NextS_id).no)
         
-        evt_change_point = cur_time + remain_travel_time + sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in path_e_to_nearStation)
+        evt_change_point = cur_time + remain_travel_time + sum(e.distance / min(PRT_SPEED, e.maxSpeed) for e in path_e_to_nearStation)
         self.path_n, self.path_e = self.path_n[:xth] + path_n_to_nearStation, self.path_e[:xth] + path_e_to_nearStation
         x = [evt_change_point, self.On_ParkingToIdle, None]
         self.event_seq.append(x)
@@ -807,7 +807,7 @@ class PRT():
         # Set things for next state
         path_travel_time = cur_time - self.last_planed_time
         _, next_n, xth = Algorithms.find_PRT_position_on_PATH(self.path_e, path_travel_time)
-        remain_travel_time = sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in self.path_e[:xth]) - path_travel_time
+        remain_travel_time = sum(e.distance / min(PRT_SPEED, e.maxSpeed) for e in self.path_e[:xth]) - path_travel_time
         next_n = self.path_n[-1]
         
         if next_n == target_c.sn:
@@ -817,7 +817,7 @@ class PRT():
             path_n_Rerouted, path_e_Rerouted = Algorithms.find_SP(next_n.no, target_c.sn.no)
             self.path_n = self.path_n + path_n_Rerouted[1:]
             self.path_e = self.path_e + path_e_Rerouted
-            evt_change_point = cur_time + remain_travel_time + sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in path_e_Rerouted)
+            evt_change_point = cur_time + remain_travel_time + sum(e.distance / min(PRT_SPEED, e.maxSpeed) for e in path_e_Rerouted)
         x = [evt_change_point, self.On_ApproachingToSetting, target_c]
         self.event_seq.append(x)
         heappush(event_queue, x)
@@ -882,8 +882,8 @@ def gen_PRT(numOfPRT, Nodes):
 #---------------------------------------------------------------------
 # Prepare dynamics run
 PRT_SPEED = 12  # unit (m/s)
-SETTING_TIME = (5.0, 10.0)
-# SETTING_TIME = (45.0, 60.0)
+# SETTING_TIME = (5.0, 10.0)
+SETTING_TIME = (45.0, 60.0)
 waiting_customers = []
 event_queue = []
 

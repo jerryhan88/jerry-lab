@@ -20,14 +20,14 @@ def init_algorithms(_Nodes):
     for i, n in enumerate(Nodes):
         for e in n.edges_outward:
             E.append((e._from.no, e._to.no))
-            W.append(e.distance // e.maxSpeed)
+            W.append(e.distance / e.maxSpeed)
     network = Graph(len(Nodes), E, True, edge_attrs={'weight': W})
 
 def on_notify_assignmentment_point(args=None):
     print '-----------------------------------------------------------------------(Re)assignment!!' 
 
 def get_all_dispatchers():
-    return {'NN0': NN0, 'NN1': NN1, 'NN2': NN2, 'NN3': NN3, 'NN4': NN4, 'NN5': NN5}
+    return {'NNBA-I': NN0, 'NNBA-IA': NN1, 'NNBA-IT': NN2, 'NNBA-IAP': NN3, 'NNBA-IAT': NN4, 'NNBA-IATP': NN5}
 
 def reassignment(event_time, target_PRTs, target_customers, Nodes):
     _target_customers = target_customers[:]
@@ -60,9 +60,9 @@ def NN0(event_time, PRTs, waiting_customers, Nodes):
     from Dynamics import ST_IDLE
     # Target PRT: I
     on_notify_assignmentment_point(None)
-    target_PRTs = [prt for prt in PRTs if prt.state == ST_IDLE]
+    target_PRTs = [prt for prt in PRTs if not prt.isSetupWaiting and prt.state == ST_IDLE]
     if not target_PRTs: return None
-    target_customers = [customer for customer in waiting_customers if not customer.assigned_PRT]
+    target_customers = [customer for customer in waiting_customers if not customer.assigned_PRT and not customer.isSetupWaiting]
     reassignment(event_time, target_PRTs, target_customers, Nodes)
 
 def NN1(event_time, PRTs, waiting_customers, Nodes):
@@ -80,34 +80,34 @@ def NN2(event_time, PRTs, waiting_customers, Nodes):
     on_notify_assignmentment_point(None)
     target_PRTs = [prt for prt in PRTs if prt.state == ST_IDLE or prt.state == ST_TRANSITING ]
     if not target_PRTs: return None
-    target_customers = [customer for customer in waiting_customers if not customer.assigned_PRT]
+    target_customers = [customer for customer in waiting_customers if not customer.assigned_PRT and not customer.isSetupWaiting]
     reassignment(event_time, target_PRTs, target_customers, Nodes)
 
 def NN3(event_time, PRTs, waiting_customers, Nodes):
     from Dynamics import ST_IDLE, ST_APPROACHING, ST_PARKING
     # Target PRT: I/A/P
     on_notify_assignmentment_point(None)
-    target_PRTs = [prt for prt in PRTs if prt.state == ST_IDLE or prt.state == ST_APPROACHING or prt.state == ST_PARKING]
+    target_PRTs = [prt for prt in PRTs if not prt.isSetupWaiting and (prt.state == ST_IDLE or prt.state == ST_APPROACHING or prt.state == ST_PARKING)]
     if not target_PRTs: return None
-    target_customers = waiting_customers
+    target_customers = [c for c in waiting_customers if not c.isSetupWaiting]
     reassignment(event_time, target_PRTs, target_customers, Nodes)
 
 def NN4(event_time, PRTs, waiting_customers, Nodes):
     from Dynamics import ST_IDLE, ST_APPROACHING, ST_TRANSITING
     # Target PRT: I/A/T
     on_notify_assignmentment_point(None)
-    target_PRTs = [prt for prt in PRTs if prt.state == ST_IDLE or prt.state == ST_APPROACHING or prt.state == ST_TRANSITING]
+    target_PRTs = [prt for prt in PRTs if not prt.isSetupWaiting and (prt.state == ST_IDLE or prt.state == ST_APPROACHING or prt.state == ST_TRANSITING)]
     if not target_PRTs: return None
-    target_customers = waiting_customers
+    target_customers = [c for c in waiting_customers if not c.isSetupWaiting]
     reassignment(event_time, target_PRTs, target_customers, Nodes)            
 
 def NN5(event_time, PRTs, waiting_customers, Nodes):
     from Dynamics import ST_IDLE, ST_APPROACHING, ST_TRANSITING, ST_PARKING
     # Target PRT: I/A/T/P
     on_notify_assignmentment_point(None)
-    target_PRTs = [prt for prt in PRTs if prt.state == ST_IDLE or prt.state == ST_APPROACHING or prt.state == ST_TRANSITING or prt.state == ST_PARKING]
+    target_PRTs = [prt for prt in PRTs if not prt.isSetupWaiting and (prt.state == ST_IDLE or prt.state == ST_APPROACHING or prt.state == ST_TRANSITING or prt.state == ST_PARKING)]
     if not target_PRTs: return None
-    target_customers = waiting_customers
+    target_customers = [c for c in waiting_customers if not c.isSetupWaiting]
     reassignment(event_time, target_PRTs, target_customers, Nodes)
 
 def find_opt_matching(cur_time, target_PRTs, target_customers, Nodes):
@@ -129,13 +129,13 @@ def find_opt_matching(cur_time, target_PRTs, target_customers, Nodes):
             elif prt.state == ST_APPROACHING:
                 # Calculate remain distance to next node
                 _, next_n, xth = find_PRT_position_on_PATH(prt.path_e, path_travel_time)
-                remain_travel_time = sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in prt.path_e[:xth]) - path_travel_time
+                remain_travel_time = sum(e.distance / min(PRT_SPEED, e.maxSpeed) for e in prt.path_e[:xth]) - path_travel_time
                 # Calculate distance to location a customer is waiting
                 _, path_e = find_SP(next_n.no, cus.sn.no)
                 
             elif prt.state == ST_TRANSITING:
                 # Calculate remain distance to destination of the boarding customer
-                remain_travel_time = sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in prt.path_e) - path_travel_time
+                remain_travel_time = sum(e.distance / min(PRT_SPEED, e.maxSpeed) for e in prt.path_e) - path_travel_time
                 # Calculate distance to location a customer is waiting
                 _, path_e = find_SP(prt.path_n[-1].no, cus.sn.no)
                 
@@ -143,15 +143,15 @@ def find_opt_matching(cur_time, target_PRTs, target_customers, Nodes):
                 # Calculate remain distance to next node
                 _, next_n, xth = find_PRT_position_on_PATH(prt.path_e, path_travel_time)
 #                 assert next_n == prt.path_n[-1]
-                remain_travel_time = sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in prt.path_e[:xth]) - path_travel_time
+                remain_travel_time = sum(e.distance / min(PRT_SPEED, e.maxSpeed) for e in prt.path_e[:xth]) - path_travel_time
                  
                 # Calculate distance to location a customer is waiting
                 _, path_e = find_SP(next_n.no, cus.sn.no)
             else:
                 assert False
             _, determinded_path_e = find_SP(cus.sn.no, cus.dn.no)
-            processing_time = sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in determinded_path_e )
-            PRTbyCustomer_matrix[prt_id][i] = -(processing_time + sum(e.distance // min(PRT_SPEED, e.maxSpeed) for e in path_e) + remain_travel_time)
+            processing_time = sum(e.distance / min(PRT_SPEED, e.maxSpeed) for e in determinded_path_e )
+            PRTbyCustomer_matrix[prt_id][i] = -(processing_time + sum(e.distance / min(PRT_SPEED, e.maxSpeed) for e in path_e) + remain_travel_time)
     
     # Apply Hungarian method        
     assignment_results = []
@@ -170,7 +170,7 @@ def find_PRT_position_on_PATH(path_e, path_travel_time):
     sum_travel_time = 0
     xth = 0
     for e in path_e:
-        sum_travel_time += e.distance // min(PRT_SPEED, e.maxSpeed) 
+        sum_travel_time += e.distance / min(PRT_SPEED, e.maxSpeed) 
         xth += 1 
         if sum_travel_time >= path_travel_time:
             return e._from, e._to, xth
@@ -196,7 +196,7 @@ def find_SP0(sn, en, Nodes):
                 n.visited = True
         for e in n.edges_outward:
             consi_n = e._to
-            tentative_minTime = n.minTime + e.distance // e.maxSpeed
+            tentative_minTime = n.minTime + e.distance / e.maxSpeed
             if consi_n.minTime >= tentative_minTime:
                 consi_n.minTime = tentative_minTime
                 if not consi_n.visited and consi_n not in todo:
@@ -209,7 +209,7 @@ def find_SP0(sn, en, Nodes):
     while consi_n:
         path_n.append(consi_n)
         for e in consi_n.edges_inward:
-            if e._from.minTime + e.distance // e.maxSpeed == consi_n.minTime:
+            if e._from.minTime + e.distance / e.maxSpeed == consi_n.minTime:
                 consi_n = e._from
                 path_e.append(e)
                 break 
