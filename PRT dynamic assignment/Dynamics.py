@@ -25,8 +25,8 @@ def Network2():
     R_len = [0, 150, 180, 160, 210]
     R = [sum(R_len[:i + 1]) for i in range(len(R_len))]
     
-    btwSJ = 70
-    btwSD = 30
+    btwSJ = 50
+    
     S_Nodes = [
              Node('0', C[1] - 50, R[0], STATION), Node('1', C[3] + 30, R[0], STATION), Node('2', C[5], R[0], STATION),
              Node('3', C[0], R[1] + 25, TRANSFER), Node('4', C[2], R[1], STATION), Node('5', C[4], R[1] - 15, STATION), Node('6', C[6], R[1] + 20, STATION),
@@ -58,83 +58,450 @@ def Network2():
         else:
             False 
     JDJ_Nodes = []
-    numOfNC = 10
+    
     JDJ_pos_info1 = [
-                    ('0W', '0E', numOfNC, 'Q41', 'CW'),
-                    ('0E', '0W', numOfNC, 'Q32', 'CW'),
-                    ('1W', '1E', numOfNC, 'Q32', 'CCW'),
-                    ('1E', '1W', numOfNC, 'Q41', 'CCW'),
-                    ('2W', '2E', numOfNC, 'Q41', 'CW'),
-                    ('2E', '2W', numOfNC, 'Q32', 'CW'),
-                    ('7E', '7W', numOfNC, 'Q32', 'CW'),
-                    ('7W', '7E', numOfNC, 'Q41', 'CW'),
-                    ('8E', '8W', numOfNC, 'Q41', 'CCW'),
-                    ('8W', '8E', numOfNC, 'Q32', 'CCW'),
-                    ('9E', '9W', numOfNC, 'Q32', 'CW'),
-                    ('9W', '9E', numOfNC, 'Q41', 'CW'),
-                    ('14E', '14W', numOfNC, 'Q41', 'CCW'),
-                    ('14W', '14E', numOfNC, 'Q32', 'CCW'),
-                    ('15E', '15W', numOfNC, 'Q32', 'CW'),
-                    ('15W', '15E', numOfNC, 'Q41', 'CW'),
-                    ('16E', '16W', numOfNC, 'Q41', 'CCW'),
-                    ('16W', '16E', numOfNC, 'Q32', 'CCW'),
+                    ('0W', '0E', 'Q41', 'CW'),
+                    ('1W', '1E', 'Q32', 'CCW'),
+                    ('2W', '2E', 'Q41', 'CW'),
+                    ('7E', '7W', 'Q32', 'CW'),
+                    ('8E', '8W', 'Q41', 'CCW'),
+                    ('9E', '9W', 'Q32', 'CW'),
+                    ('14E', '14W', 'Q41', 'CCW'),
+                    ('15E', '15W', 'Q32', 'CW'),
+                    ('16E', '16W', 'Q41', 'CCW'),
                     
-                    ('3S', '3N', numOfNC, 'Q21', 'CCW'),
-                    ('3N', '3S', numOfNC, 'Q43', 'CCW'),
-                    ('4N', '4S', numOfNC, 'Q43', 'CCW'),
-                    ('4S', '4N', numOfNC, 'Q21', 'CCW'),
-                    ('5S', '5N', numOfNC, 'Q21', 'CCW'),
-                    ('5N', '5S', numOfNC, 'Q43', 'CCW'),
-                    ('6N', '6S', numOfNC, 'Q43', 'CCW'),
-                    ('6S', '6N', numOfNC, 'Q21', 'CCW'),
-                    ('10S', '10N', numOfNC, 'Q43', 'CW'),
-                    ('10N', '10S', numOfNC, 'Q21', 'CW'),
-                    ('11N', '11S', numOfNC, 'Q21', 'CW'),
-                    ('11S', '11N', numOfNC, 'Q43', 'CW'),
-                    ('12S', '12N', numOfNC, 'Q43', 'CW'),
-                    ('12N', '12S', numOfNC, 'Q21', 'CW'),
-                    ('13N', '13S', numOfNC, 'Q21', 'CW'),
-                    ('13S', '13N', numOfNC, 'Q43', 'CW'),
+                    ('3S', '3N', 'Q21', 'CCW'),
+                    ('4N', '4S', 'Q43', 'CCW'),
+                    ('5S', '5N', 'Q21', 'CCW'),
+                    ('6N', '6S', 'Q43', 'CCW'),
+                    ('10S', '10N', 'Q43', 'CW'),
+                    ('11N', '11S', 'Q21', 'CW'),
+                    ('12S', '12N', 'Q43', 'CW'),
+                    ('13N', '13S', 'Q21', 'CW'),
                     ]
     
-    def set_posD_OnCurve1(SN, EN, numOfN, quadrant, direction, angle):
+    def set_posD_OnCurve1(SN, EN, quadrant, direction):
         NS_OnCurve = []
-        for i in range(numOfN - 1):
-            C_px = (SN.px + EN.px) / 2
-            C_py = (SN.py + EN.py) / 2
-            if quadrant == 'Q32' or quadrant == 'Q41':
-                sx = abs(SN.px - EN.px) / 2
-                sy = btwSD
-            else:
-                sx = btwSD
-                sy = abs(SN.py - EN.py) / 2
-            if direction == 'CW':
-                if quadrant == 'Q21':
-                    teata = (pi / 180) * (-90 + angle * ((i + 1) / numOfN))
-                if quadrant == 'Q43':
-                    teata = (pi / 180) * (90 + angle * ((i + 1) / numOfN))
-                if quadrant == 'Q32':
-                    teata = (pi / 180) * (angle * ((i + 1) / numOfN))
-                if quadrant == 'Q41': 
-                    teata = (pi / 180) * (180 + angle * ((i + 1) / numOfN))
-            else:
-                assert direction != 'CW'
-                if quadrant == 'Q21':
-                    teata = (pi / 180) * (90 - 1 * angle * ((i + 1) / numOfN))
-                if quadrant == 'Q43':
-                    teata = (pi / 180) * (-90 - 1 * angle * ((i + 1) / numOfN))
-                if quadrant == 'Q41':
-                    teata = (pi / 180) * (-1 * angle * ((i + 1) / numOfN))
-                if quadrant == 'Q32':
-                    teata = (pi / 180) * (180 + -1 * angle * ((i + 1) / numOfN))
+        # SD: distance between a station and a driving link
+        SD = 10
+        # R: circles radius
+        # # this one decide a degree of curve links 
+        R = 24
+        # L: length of a strait link
+        L = 20
+        # CLL: curved links length
+        CLL = btwSJ - L
+        assert R >= SD
+        assert R >= CLL / 2
+        
+        if direction == 'CW':
+            if quadrant == 'Q21':
+                CC1_x, CC1_y = (SD - R), -CLL 
+                CC2_x, CC2_y = (2 * sqrt(R ** 2 - (abs(-CLL / 2 - CC1_y)) ** 2) + SD - R), 0
+                
+                curveSx, curveSy = 0, -sqrt(R ** 2 - (CC2_x) ** 2)
+# #                 
+                curveCy = -CLL / 2
+                curveCx = -sqrt(R ** 2 - (abs(curveCy - CC2_y)) ** 2) + CC2_x
+                
+                curve_pos = []
+#                 curve_pos.append((CC1_x, CC1_y))
+#                 curve_pos.append((curveSx, curveSy))
+#                 curve_pos.append((curveCx, curveCy))
+#                 curve_pos.append((CC2_x, CC2_y))
+                
+                for x in range(3):
+                    p_y = curveSy + (x + 1) * (curveCy - curveSy) / 4
+                    p_x = -sqrt(R ** 2 - (abs(p_y - CC2_y)) ** 2) + CC2_x
+                    curve_pos.append((p_x, p_y))
+                curve_pos.append((curveCx, curveCy))
+                for x in range(4):
+                    p_y = curveCy + (x + 1) * (CC1_y - curveCy) / 5
+                    p_x = sqrt(R ** 2 - (abs(p_y - CC1_y)) ** 2) + CC1_x
+                    curve_pos.append((p_x, p_y))
+# #                 
+                curve_pos.append((SD, -(btwSJ - L)))
+                curve_pos.append((SD, -(btwSJ)))
+                curve_pos.append((SD, -(btwSJ + L)))
+# #                 
+                CC1_x, CC1_y = (SD - R), -(btwSJ + L)
+                CC2_x, CC2_y = (2 * sqrt(R ** 2 - (abs(-(btwSJ + L + CLL / 2) - CC1_y)) ** 2) + SD - R), -2 * btwSJ
+#                  
+                curveCy = CC2_y + CLL / 2  
+                curveCx = -sqrt(R ** 2 - (abs(curveCy - CC2_y)) ** 2) + CC2_x
+                curveEx, curveEy = 0, CC2_y + sqrt(R ** 2 - (CC2_x) ** 2)
+# # 
+#                 curve_pos.append((CC1_x, CC1_y))
+#                 curve_pos.append((curveCx, curveCy))
+#                 curve_pos.append((curveEx, curveEy))
+#                 curve_pos.append((CC2_x, CC2_y))
+# #                 
+                for x in range(4):
+                    p_y = CC1_y + (x + 1) * (curveCy - CC1_y) / 5
+                    p_x = sqrt(R ** 2 - (abs(p_y - CC1_y)) ** 2) + CC1_x
+                    curve_pos.append((p_x, p_y))
+                curve_pos.append((curveCx, curveCy))
+                for x in range(3):
+                    p_y = curveCy + (x + 1) * (curveEy - curveCy) / 4
+                    p_x = -sqrt(R ** 2 - (abs(p_y - CC2_y)) ** 2) + CC2_x
+                    curve_pos.append((p_x, p_y))
+#                 
+                for i, (px, py) in enumerate(curve_pos):
+                    NS_OnCurve.append(Node(SN.id + '-' + str(i) + '-' + EN.id, SN.px + px, SN.py - py, DOT))
                     
-            NS_OnCurve.append(Node(SN.id + '-' + str(i) + '-' + EN.id, C_px + sx * cos(teata) , C_py + sy * sin(teata), DOT))
+            if quadrant == 'Q43':
+                CC1_x, CC1_y = -(SD - R), CLL 
+                CC2_x, CC2_y = -(2 * sqrt(R ** 2 - (abs(CLL / 2 - CC1_y)) ** 2) + SD - R), 0
+                
+                curveSx, curveSy = 0, sqrt(R ** 2 - (CC2_x) ** 2)
+#                 
+                curveCy = CLL / 2
+                curveCx = sqrt(R ** 2 - (abs(curveCy - CC2_y)) ** 2) + CC2_x
+                
+                curve_pos = []
+#                 curve_pos.append((CC1_x, CC1_y))
+#                 curve_pos.append((curveSx, curveSy))
+#                 curve_pos.append((curveCx, curveCy))
+#                 curve_pos.append((CC2_x, CC2_y))
+                
+                for x in range(3):
+                    p_y = curveSy + (x + 1) * (curveCy - curveSy) / 4
+                    p_x = sqrt(R ** 2 - (abs(p_y - CC2_y)) ** 2) + CC2_x
+                    curve_pos.append((p_x, p_y))
+                curve_pos.append((curveCx, curveCy))
+                for x in range(4):
+                    p_y = curveCy + (x + 1) * (CC1_y - curveCy) / 5
+                    p_x = -sqrt(R ** 2 - (abs(p_y - CC1_y)) ** 2) + CC1_x
+                    curve_pos.append((p_x, p_y))
+#                 
+                curve_pos.append((-SD, (btwSJ - L)))
+                curve_pos.append((-SD, (btwSJ)))
+                curve_pos.append((-SD, (btwSJ + L)))
+#                 
+                CC1_x, CC1_y = -(SD - R), btwSJ + L
+                CC2_x, CC2_y = -(2 * sqrt(R ** 2 - (abs(btwSJ + L + CLL / 2 - CC1_y)) ** 2) + SD - R), 2 * btwSJ
+                 
+                curveCy = CC2_y - CLL / 2  
+                curveCx = sqrt(R ** 2 - (abs(curveCy - CC2_y)) ** 2) + CC2_x
+                curveEx, curveEy = 0, CC2_y - sqrt(R ** 2 - (CC2_x) ** 2)
+# 
+#                 curve_pos.append((CC1_x, CC1_y))
+#                 curve_pos.append((curveCx, curveCy))
+#                 curve_pos.append((curveEx, curveEy))
+#                 curve_pos.append((CC2_x, CC2_y))
+#                 
+                for x in range(4):
+                    p_y = CC1_y + (x + 1) * (curveCy - CC1_y) / 5
+                    p_x = -sqrt(R ** 2 - (abs(p_y - CC1_y)) ** 2) + CC1_x
+                    curve_pos.append((p_x, p_y))
+                curve_pos.append((curveCx, curveCy))
+                for x in range(3):
+                    p_y = curveCy + (x + 1) * (curveEy - curveCy) / 4
+                    p_x = sqrt(R ** 2 - (abs(p_y - CC2_y)) ** 2) + CC2_x
+                    curve_pos.append((p_x, p_y))
+                
+                for i, (px, py) in enumerate(curve_pos):
+                    NS_OnCurve.append(Node(SN.id + '-' + str(i) + '-' + EN.id, SN.px + px, SN.py - py, DOT))
+            if quadrant == 'Q41':
+                # circles center
+                CC1_x, CC1_y = CLL, (SD - R)
+                CC2_x, CC2_y = 0, (2 * sqrt(R ** 2 - (abs(CLL / 2 - CC1_x)) ** 2) + SD - R)
+                
+                curveSx, curveSy = sqrt(R ** 2 - (CC2_y) ** 2), 0
+                
+                curveCx = CLL / 2
+                curveCy = -sqrt(R ** 2 - (abs(curveCx - CC2_x)) ** 2) + CC2_y
+                
+                curve_pos = []
+                for x in range(3):
+                    p_x = curveSx + (x + 1) * (curveCx - curveSx) / 4
+                    p_y = -sqrt(R ** 2 - (abs(p_x - CC2_x)) ** 2) + CC2_y
+                    curve_pos.append((p_x, p_y))
+                
+                curve_pos.append((curveCx, curveCy))
+        
+                for x in range(4):
+                    p_x = curveCx + (x + 1) * (CC1_x - curveCx) / 5
+                    p_y = sqrt(R ** 2 - (abs(p_x - CC1_x)) ** 2) + CC1_y
+                    curve_pos.append((p_x, p_y))
+                
+                curve_pos.append((btwSJ - L, SD))
+                curve_pos.append((btwSJ, SD))
+                curve_pos.append((btwSJ + L, SD))
+                
+                CC1_x, CC1_y = btwSJ + L, (SD - R)
+                CC2_x, CC2_y = 2 * btwSJ, (2 * sqrt(R ** 2 - (abs(btwSJ + L + CLL / 2 - CC1_x)) ** 2) + SD - R)
+                
+                curveCx = CC2_x - CLL / 2
+                curveCy = -sqrt(R ** 2 - (abs(curveCx - CC2_x)) ** 2) + CC2_y
+                
+                curveEx, curveEy = CC2_x - sqrt(R ** 2 - (CC2_y) ** 2), 0
+                
+                for x in range(4):
+                    p_x = CC1_x + (x + 1) * (curveCx - CC1_x) / 5
+                    p_y = sqrt(R ** 2 - (abs(p_x - CC1_x)) ** 2) + CC1_y
+                    curve_pos.append((p_x, p_y))
+                curve_pos.append((curveCx, curveCy))
+                for x in range(3):
+                    p_x = curveCx + (x + 1) * (curveEx - curveCx) / 4
+                    p_y = -sqrt(R ** 2 - (abs(p_x - CC2_x)) ** 2) + CC2_y
+                    curve_pos.append((p_x, p_y))
+                for i, (px, py) in enumerate(curve_pos):
+                    NS_OnCurve.append(Node(SN.id + '-' + str(i) + '-' + EN.id, SN.px + px, SN.py - py, DOT))
+            if quadrant == 'Q32':
+                # circles center
+                CC1_x, CC1_y = CLL, -(SD - R)
+                CC2_x, CC2_y = 0, -(2 * sqrt(R ** 2 - (abs(CLL / 2 - CC1_x)) ** 2) + SD - R)
+                
+                curveSx, curveSy = sqrt(R ** 2 - (CC2_y) ** 2), 0
+                
+                curveCx = CLL / 2
+                curveCy = sqrt(R ** 2 - (abs(curveCx - CC2_x)) ** 2) + CC2_y
+                curve_pos = []
+#                 curve_pos.append((CC1_x, CC1_y))
+#                 curve_pos.append((curveSx, curveSy))
+#                 curve_pos.append((curveCx, curveCy))
+#                 curve_pos.append((CC2_x, CC2_y))
+                
+                for x in range(3):
+                    p_x = curveSx + (x + 1) * (curveCx - curveSx) / 4
+                    p_y = sqrt(R ** 2 - (abs(p_x - CC2_x)) ** 2) + CC2_y
+                    curve_pos.append((p_x, p_y))
+                
+                curve_pos.append((curveCx, curveCy))
+                
+                for x in range(4):
+                    p_x = curveCx + (x + 1) * (CC1_x - curveCx) / 5
+                    p_y = -sqrt(R ** 2 - (abs(p_x - CC1_x)) ** 2) + CC1_y
+                    curve_pos.append((p_x, p_y))
+                
+                curve_pos.append(((btwSJ - L), -SD))
+                curve_pos.append(((btwSJ), -SD))
+                curve_pos.append(((btwSJ + L), -SD))
+                
+                CC1_x, CC1_y = btwSJ + L, -(SD - R)
+                CC2_x, CC2_y = 2 * btwSJ, -(2 * sqrt(R ** 2 - (abs(btwSJ + L + CLL / 2 - CC1_x)) ** 2) + SD - R)
+                
+                curveCx = CC2_x - CLL / 2
+                curveCy = sqrt(R ** 2 - (abs(curveCx - CC2_x)) ** 2) + CC2_y
+                
+                curveEx, curveEy = CC2_x - sqrt(R ** 2 - (CC2_y) ** 2), 0
+                
+                for x in range(4):
+                    p_x = CC1_x + (x + 1) * (curveCx - CC1_x) / 5
+                    p_y = -sqrt(R ** 2 - (abs(p_x - CC1_x)) ** 2) + CC1_y
+                    curve_pos.append((p_x, p_y))
+                curve_pos.append((curveCx, curveCy))
+                for x in range(3):
+                    p_x = curveCx + (x + 1) * (curveEx - curveCx) / 4
+                    p_y = sqrt(R ** 2 - (abs(p_x - CC2_x)) ** 2) + CC2_y
+                    curve_pos.append((p_x, p_y))
+                    
+                
+                for i, (px, py) in enumerate(curve_pos):
+                    NS_OnCurve.append(Node(SN.id + '-' + str(i) + '-' + EN.id, SN.px - px, SN.py - py, DOT))
+        else:
+            assert direction == 'CCW'
+            if quadrant == 'Q41':
+                # circles center
+                CC1_x, CC1_y = CLL, (SD - R)
+                CC2_x, CC2_y = 0, (2 * sqrt(R ** 2 - (abs(CLL / 2 - CC1_x)) ** 2) + SD - R)
+                
+                curveSx, curveSy = sqrt(R ** 2 - (CC2_y) ** 2), 0
+                
+                curveCx = CLL / 2
+                curveCy = -sqrt(R ** 2 - (abs(curveCx - CC2_x)) ** 2) + CC2_y
+                curve_pos = []
+                
+                for x in range(3):
+                    p_x = curveSx + (x + 1) * (curveCx - curveSx) / 4
+                    p_y = -sqrt(R ** 2 - (abs(p_x - CC2_x)) ** 2) + CC2_y
+                    curve_pos.append((p_x, p_y))
+#                 
+                curve_pos.append((curveCx, curveCy))
+                 
+                for x in range(4):
+                    p_x = curveCx + (x + 1) * (CC1_x - curveCx) / 5
+                    p_y = sqrt(R ** 2 - (abs(p_x - CC1_x)) ** 2) + CC1_y
+                    curve_pos.append((p_x, p_y))
+#                 
+                curve_pos.append(((btwSJ - L), SD))
+                curve_pos.append(((btwSJ), SD))
+                curve_pos.append(((btwSJ + L), SD))
+#                 
+                CC1_x, CC1_y = btwSJ + L, (SD - R)
+                CC2_x, CC2_y = 2 * btwSJ, (2 * sqrt(R ** 2 - (abs(btwSJ + L + CLL / 2 - CC1_x)) ** 2) + SD - R)
+                 
+                curveCx = CC2_x - CLL / 2
+                curveCy = -sqrt(R ** 2 - (abs(curveCx - CC2_x)) ** 2) + CC2_y
+                 
+                curveEx, curveEy = CC2_x - sqrt(R ** 2 - (CC2_y) ** 2), 0
+                 
+                for x in range(4):
+                    p_x = CC1_x + (x + 1) * (curveCx - CC1_x) / 5
+                    p_y = sqrt(R ** 2 - (abs(p_x - CC1_x)) ** 2) + CC1_y
+                    curve_pos.append((p_x, p_y))
+                curve_pos.append((curveCx, curveCy))
+                for x in range(3):
+                    p_x = curveCx + (x + 1) * (curveEx - curveCx) / 4
+                    p_y = -sqrt(R ** 2 - (abs(p_x - CC2_x)) ** 2) + CC2_y
+                    curve_pos.append((p_x, p_y))
+                    
+                
+                for i, (px, py) in enumerate(curve_pos):
+                    NS_OnCurve.append(Node(SN.id + '-' + str(i) + '-' + EN.id, SN.px - px, SN.py - py, DOT))
+            if quadrant == 'Q32':
+                # circles center
+                CC1_x, CC1_y = CLL, -(SD - R)
+                CC2_x, CC2_y = 0, -(2 * sqrt(R ** 2 - (abs(CLL / 2 - CC1_x)) ** 2) + SD - R)
+                
+                curveSx, curveSy = sqrt(R ** 2 - (CC2_y) ** 2), 0
+                
+                curveCx = CLL / 2
+                curveCy = sqrt(R ** 2 - (abs(curveCx - CC2_x)) ** 2) + CC2_y
+                curve_pos = []
+#                 curve_pos.append((CC1_x, CC1_y))
+#                 curve_pos.append((curveSx, curveSy))
+#                 curve_pos.append((curveCx, curveCy))
+#                 curve_pos.append((CC2_x, CC2_y))                
+                
+                for x in range(3):
+                    p_x = curveSx + (x + 1) * (curveCx - curveSx) / 4
+                    p_y = sqrt(R ** 2 - (abs(p_x - CC2_x)) ** 2) + CC2_y
+                    curve_pos.append((p_x, p_y))
+                curve_pos.append((curveCx, curveCy))
+                for x in range(4):
+                    p_x = curveCx + (x + 1) * (CC1_x - curveCx) / 5
+                    p_y = -sqrt(R ** 2 - (abs(p_x - CC1_x)) ** 2) + CC1_y
+                    curve_pos.append((p_x, p_y))
+                curve_pos.append(((btwSJ - L), -SD))
+                curve_pos.append(((btwSJ), -SD))
+                curve_pos.append(((btwSJ + L), -SD))
+                
+                CC1_x, CC1_y = btwSJ + L, -(SD - R)
+                CC2_x, CC2_y = 2 * btwSJ, -(2 * sqrt(R ** 2 - (abs(btwSJ + L + CLL / 2 - CC1_x)) ** 2) + SD - R)
+                  
+                curveCx = CC2_x - CLL / 2
+                curveCy = sqrt(R ** 2 - (abs(curveCx - CC2_x)) ** 2) + CC2_y
+                  
+                curveEx, curveEy = CC2_x - sqrt(R ** 2 - (CC2_y) ** 2), 0
+                  
+                for x in range(4):
+                    p_x = CC1_x + (x + 1) * (curveCx - CC1_x) / 5
+                    p_y = -sqrt(R ** 2 - (abs(p_x - CC1_x)) ** 2) + CC1_y
+                    curve_pos.append((p_x, p_y))
+                curve_pos.append((curveCx, curveCy))
+                for x in range(3):
+                    p_x = curveCx + (x + 1) * (curveEx - curveCx) / 4
+                    p_y = sqrt(R ** 2 - (abs(p_x - CC2_x)) ** 2) + CC2_y
+                    curve_pos.append((p_x, p_y))
+                for i, (px, py) in enumerate(curve_pos):
+                    NS_OnCurve.append(Node(SN.id + '-' + str(i) + '-' + EN.id, SN.px + px, SN.py - py, DOT))
+            if quadrant == 'Q21':
+                CC1_x, CC1_y = -(SD - R), CLL 
+                CC2_x, CC2_y = -(2 * sqrt(R ** 2 - (abs(CLL / 2 - CC1_y)) ** 2) + SD - R), 0
+                
+                curveSx, curveSy = 0, sqrt(R ** 2 - (CC2_x) ** 2)
+                
+                curveCy = CLL / 2
+                curveCx = sqrt(R ** 2 - (abs(curveCy - CC2_y)) ** 2) + CC2_x
+                
+                curve_pos = []
+#                 curve_pos.append((CC1_x, CC1_y))
+#                 curve_pos.append((curveSx, curveSy))
+#                 curve_pos.append((curveCx, curveCy))
+#                 curve_pos.append((CC2_x, CC2_y))                 
+                
+                for x in range(3):
+                    p_y = curveSy + (x + 1) * (curveCy - curveSy) / 4
+                    p_x = sqrt(R ** 2 - (abs(p_y - CC2_y)) ** 2) + CC2_x
+                    curve_pos.append((p_x, p_y))
+                curve_pos.append((curveCx, curveCy))
+                for x in range(4):
+                    p_y = curveCy + (x + 1) * (CC1_y - curveCy) / 5
+                    p_x = -sqrt(R ** 2 - (abs(p_y - CC1_y)) ** 2) + CC1_x
+                    curve_pos.append((p_x, p_y))
+                curve_pos.append((-SD, (btwSJ - L)))
+                curve_pos.append((-SD, (btwSJ)))
+                curve_pos.append((-SD, (btwSJ + L)))
+                
+                CC1_x, CC1_y = -(SD - R), btwSJ + L
+                CC2_x, CC2_y = -(2 * sqrt(R ** 2 - (abs(btwSJ + L + CLL / 2 - CC1_y)) ** 2) + SD - R), 2 * btwSJ
+                curveCy = CC2_y - CLL / 2  
+                curveCx = sqrt(R ** 2 - (abs(curveCy - CC2_y)) ** 2) + CC2_x
+                curveEx, curveEy = 0, CC2_y - sqrt(R ** 2 - (CC2_x) ** 2)
+                for x in range(4):
+                    p_y = CC1_y + (x + 1) * (curveCy - CC1_y) / 5
+                    p_x = -sqrt(R ** 2 - (abs(p_y - CC1_y)) ** 2) + CC1_x
+                    curve_pos.append((p_x, p_y))
+                curve_pos.append((curveCx, curveCy))
+                for x in range(3):
+                    p_y = curveCy + (x + 1) * (curveEy - curveCy) / 4
+                    p_x = sqrt(R ** 2 - (abs(p_y - CC2_y)) ** 2) + CC2_x
+                    curve_pos.append((p_x, p_y))
+                
+                for i, (px, py) in enumerate(curve_pos):
+                    NS_OnCurve.append(Node(SN.id + '-' + str(i) + '-' + EN.id, SN.px - px, SN.py - py, DOT))
+            if quadrant == 'Q43':
+                CC1_x, CC1_y = -(SD - R), -CLL 
+                CC2_x, CC2_y = -(2 * sqrt(R ** 2 - (abs(-CLL / 2 - CC1_y)) ** 2) + SD - R), 0
+                
+                curveSx, curveSy = 0, -sqrt(R ** 2 - (CC2_x) ** 2)
+                
+                curveCy = -CLL / 2
+                curveCx = sqrt(R ** 2 - (abs(curveCy - CC2_y)) ** 2) + CC2_x
+                
+                curve_pos = []
+#                 curve_pos.append((CC1_x, CC1_y))
+#                 curve_pos.append((curveSx, curveSy))
+#                 curve_pos.append((curveCx, curveCy))
+#                 curve_pos.append((CC2_x, CC2_y))
+                
+                for x in range(3):
+                    p_y = curveSy + (x + 1) * (curveCy - curveSy) / 4
+                    p_x = sqrt(R ** 2 - (abs(p_y - CC2_y)) ** 2) + CC2_x
+                    curve_pos.append((p_x, p_y))
+                curve_pos.append((curveCx, curveCy))
+                for x in range(4):
+                    p_y = curveCy + (x + 1) * (CC1_y - curveCy) / 5
+                    p_x = -sqrt(R ** 2 - (abs(p_y - CC1_y)) ** 2) + CC1_x
+                    curve_pos.append((p_x, p_y))
+                
+                curve_pos.append((-SD, -(btwSJ - L)))
+                curve_pos.append((-SD, -(btwSJ)))
+                curve_pos.append((-SD, -(btwSJ + L)))
+                
+                CC1_x, CC1_y = -(SD - R), -(btwSJ + L)
+                CC2_x, CC2_y = -(2 * sqrt(R ** 2 - (abs(-1 * (btwSJ + L + CLL / 2) - CC1_y)) ** 2) + SD - R), -2 * btwSJ
+                
+                curveCy = CC2_y + CLL / 2  
+                curveCx = sqrt(R ** 2 - (abs(curveCy - CC2_y)) ** 2) + CC2_x
+                curveEx, curveEy = 0, CC2_y + sqrt(R ** 2 - (CC2_x) ** 2)
+
+#                 curve_pos.append((CC1_x, CC1_y))
+#                 curve_pos.append((curveCx, curveCy))
+#                 curve_pos.append((curveEx, curveEy))
+#                 curve_pos.append((CC2_x, CC2_y))
+                
+                for x in range(4):
+                    p_y = CC1_y + (x + 1) * (curveCy - CC1_y) / 5
+                    p_x = -sqrt(R ** 2 - (abs(p_y - CC1_y)) ** 2) + CC1_x
+                    curve_pos.append((p_x, p_y))
+                curve_pos.append((curveCx, curveCy))
+                for x in range(3):
+                    p_y = curveCy + (x + 1) * (curveEy - curveCy) / 4
+                    p_x = sqrt(R ** 2 - (abs(p_y - CC2_y)) ** 2) + CC2_x
+                    curve_pos.append((p_x, p_y))
+                
+                for i, (px, py) in enumerate(curve_pos):
+                    NS_OnCurve.append(Node(SN.id + '-' + str(i) + '-' + EN.id, SN.px + px, SN.py - py, DOT))
+                                
         JDJ_Nodes.append(NS_OnCurve)
     
     numOfNC = 8
     
-#     for SN_id, EN_id, numOfN, quadrant, direction in JDJ_pos_info1:
-#         set_posD_OnCurve1(findN(SN_id), findN(EN_id), numOfN, quadrant, direction, 180)
+    for SN_id, EN_id, quadrant, direction in JDJ_pos_info1:
+        set_posD_OnCurve1(findN(SN_id), findN(EN_id), quadrant, direction)
         
     def set_posD_OnCurve2(SN, EN, numOfN, quadrant, direction, angle):
         NS_OnCurve = []
@@ -219,132 +586,19 @@ def Network2():
     Edges.append(Edge(findN('12N'), findN('5S')))
     
     for JD2N in JDJ_Nodes:
-        SN_id, _, EN_id = JD2N[0].id.split('-')
-        Edges.append(Edge(findN(SN_id), JD2N[0], J2D_SPEED))
-        for i, n in enumerate(JD2N):
-            if i == len(JD2N) - 1:
-                Edges.append(Edge(JD2N[-1], findN(EN_id), J2D_SPEED))
-                break
-            Edges.append(Edge(JD2N[i], JD2N[i + 1]))
+        if JD2N: 
+            SN_id, _, EN_id = JD2N[0].id.split('-')
+            Edges.append(Edge(findN(SN_id), JD2N[0], J2D_SPEED))
+            for i, n in enumerate(JD2N):
+                if i == len(JD2N) - 1:
+                    Edges.append(Edge(JD2N[-1], findN(EN_id), J2D_SPEED))
+                    break
+                Edges.append(Edge(JD2N[i], JD2N[i + 1]))
     
     for i, n in enumerate(Nodes):
         n.no = i
         
     return Nodes, Edges
-
-def Network1():
-    c0 = 0
-    c1 = c0 + 450
-    c2 = c1 + 350
-    c3 = c2 + 500
-    
-    r0 = 0
-    r1 = r0 + 300 
-    r2 = r1 + 500
-    r3 = r2 + 450
-    
-    btwSJ = 70
-    
-    global Nodes
-    Nodes = [
-                Node('1', c0, r0, STATION), Node('1E', c0 + btwSJ, r0, JUNCTION), Node('1S', c0, r0 + btwSJ, JUNCTION),
-                Node('2', c1, r0, STATION), Node('2E', c1 + btwSJ, r0, JUNCTION), Node('2W', c1 - btwSJ, r0, JUNCTION), Node('2S', c1, r0 + btwSJ, JUNCTION),
-                Node('3', c2, r0, STATION), Node('3W', c2 - btwSJ, r0, JUNCTION), Node('3S', c2, r0 + btwSJ, JUNCTION),
-                Node('4', c0, r1, STATION), Node('4E', c0 + btwSJ, r1, JUNCTION), Node('4N', c0, r1 - btwSJ, JUNCTION), Node('4S', c0, r1 + btwSJ, JUNCTION),
-                Node('5', c1, r1, TRANSFER), Node('5E', c1 + btwSJ, r1, JUNCTION), Node('5W', c1 - btwSJ, r1, JUNCTION), Node('5N', c1, r1 - btwSJ, JUNCTION), Node('5S', c1, r1 + btwSJ, JUNCTION),
-                Node('6', c2, r1, STATION), Node('6E', c2 + btwSJ, r1, JUNCTION), Node('6W', c2 - btwSJ, r1, JUNCTION), Node('6S', c2, r1 + btwSJ, JUNCTION), Node('6N', c2, r1 - btwSJ, JUNCTION),
-                Node('7', c3, r1, STATION), Node('7W', c3 - btwSJ, r1, JUNCTION), Node('7S', c3, r1 + btwSJ, JUNCTION),
-                Node('8', c0, r2, STATION), Node('8E', c0 + btwSJ, r2, JUNCTION), Node('8N', c0, r2 - btwSJ, JUNCTION),
-                Node('9', c1, r2, STATION), Node('9E', c1 + btwSJ, r2, JUNCTION), Node('9W', c1 - btwSJ, r2, JUNCTION), Node('9S', c1, r2 + btwSJ, JUNCTION), Node('9N', c1, r2 - btwSJ, JUNCTION),
-                Node('10', c2, r2, STATION), Node('10E', c2 + btwSJ, r2, JUNCTION), Node('10W', c2 - btwSJ, r2, JUNCTION), Node('10S', c2, r2 + btwSJ, JUNCTION), Node('10N', c2, r2 - btwSJ, JUNCTION),
-                Node('11', c3, r2, STATION), Node('11W', c3 - btwSJ, r2, JUNCTION), Node('11S', c3, r2 + btwSJ, JUNCTION), Node('11N', c3, r2 - btwSJ, JUNCTION),
-                Node('12', c1, r3, STATION), Node('12E', c1 + btwSJ, r3, JUNCTION), Node('12N', c1, r3 - btwSJ, JUNCTION),
-                Node('13', c2, r3, STATION), Node('13E', c2 + btwSJ, r3, JUNCTION), Node('13W', c2 - btwSJ, r3, JUNCTION), Node('13N', c2, r3 - btwSJ, JUNCTION),
-                Node('14', c3, r3, STATION), Node('14W', c3 - btwSJ, r3, JUNCTION), Node('14N', c3, r3 - btwSJ, JUNCTION),
-                
-                Node('3E', c2 + btwSJ, r0, JUNCTION),
-                Node('3-7.D1', c3 - ((r1 - r0) - btwSJ) + ((r1 - r0) - btwSJ) * cos((pi / 180) * -90 * (11 / 11)), r1 - btwSJ + ((r1 - r0) - btwSJ) * sin((pi / 180) * -90 * (11 / 11)), DOT),
-                Node('3-7.D2', c3 - ((r1 - r0) - btwSJ) + ((r1 - r0) - btwSJ) * cos((pi / 180) * -90 * (10 / 11)), r1 - btwSJ + ((r1 - r0) - btwSJ) * sin((pi / 180) * -90 * (10 / 11)), DOT),
-                Node('3-7.D3', c3 - ((r1 - r0) - btwSJ) + ((r1 - r0) - btwSJ) * cos((pi / 180) * -90 * (9 / 11)), r1 - btwSJ + ((r1 - r0) - btwSJ) * sin((pi / 180) * -90 * (9 / 11)), DOT),
-                Node('3-7.D4', c3 - ((r1 - r0) - btwSJ) + ((r1 - r0) - btwSJ) * cos((pi / 180) * -90 * (8 / 11)), r1 - btwSJ + ((r1 - r0) - btwSJ) * sin((pi / 180) * -90 * (8 / 11)), DOT),
-                Node('3-7.D5', c3 - ((r1 - r0) - btwSJ) + ((r1 - r0) - btwSJ) * cos((pi / 180) * -90 * (7 / 11)), r1 - btwSJ + ((r1 - r0) - btwSJ) * sin((pi / 180) * -90 * (7 / 11)), DOT),
-                Node('3-7.D6', c3 - ((r1 - r0) - btwSJ) + ((r1 - r0) - btwSJ) * cos((pi / 180) * -90 * (6 / 11)), r1 - btwSJ + ((r1 - r0) - btwSJ) * sin((pi / 180) * -90 * (6 / 11)), DOT),
-                Node('3-7.D7', c3 - ((r1 - r0) - btwSJ) + ((r1 - r0) - btwSJ) * cos((pi / 180) * -90 * (5 / 11)), r1 - btwSJ + ((r1 - r0) - btwSJ) * sin((pi / 180) * -90 * (5 / 11)), DOT),
-                Node('3-7.D8', c3 - ((r1 - r0) - btwSJ) + ((r1 - r0) - btwSJ) * cos((pi / 180) * -90 * (4 / 11)), r1 - btwSJ + ((r1 - r0) - btwSJ) * sin((pi / 180) * -90 * (4 / 11)), DOT),
-                Node('3-7.D9', c3 - ((r1 - r0) - btwSJ) + ((r1 - r0) - btwSJ) * cos((pi / 180) * -90 * (3 / 11)), r1 - btwSJ + ((r1 - r0) - btwSJ) * sin((pi / 180) * -90 * (3 / 11)), DOT),
-                Node('3-7.D10', c3 - ((r1 - r0) - btwSJ) + ((r1 - r0) - btwSJ) * cos((pi / 180) * -90 * (2 / 11)), r1 - btwSJ + ((r1 - r0) - btwSJ) * sin((pi / 180) * -90 * (2 / 11)), DOT),
-                Node('3-7.D11', c3 - ((r1 - r0) - btwSJ) + ((r1 - r0) - btwSJ) * cos((pi / 180) * -90 * (1 / 11)), r1 - btwSJ + ((r1 - r0) - btwSJ) * sin((pi / 180) * -90 * (1 / 11)), DOT),
-                Node('7N', c3, r1 - btwSJ, JUNCTION),
-                
-                Node('12W', c1 - btwSJ, r3, JUNCTION),
-                Node('12-8.D1', c1 - btwSJ + ((c1 - c0) - btwSJ) * cos((pi / 180) * (-180 + -90 * (10 / 11))), r2 + btwSJ + ((c1 - c0) - btwSJ) * sin((pi / 180) * (-180 + -90 * (10 / 11))), DOT),
-                Node('12-8.D2', c1 - btwSJ + ((c1 - c0) - btwSJ) * cos((pi / 180) * (-180 + -90 * (9 / 11))), r2 + btwSJ + ((c1 - c0) - btwSJ) * sin((pi / 180) * (-180 + -90 * (9 / 11))), DOT),
-                Node('12-8.D3', c1 - btwSJ + ((c1 - c0) - btwSJ) * cos((pi / 180) * (-180 + -90 * (8 / 11))), r2 + btwSJ + ((c1 - c0) - btwSJ) * sin((pi / 180) * (-180 + -90 * (8 / 11))), DOT),
-                Node('12-8.D4', c1 - btwSJ + ((c1 - c0) - btwSJ) * cos((pi / 180) * (-180 + -90 * (7 / 11))), r2 + btwSJ + ((c1 - c0) - btwSJ) * sin((pi / 180) * (-180 + -90 * (7 / 11))), DOT),
-                Node('12-8.D5', c1 - btwSJ + ((c1 - c0) - btwSJ) * cos((pi / 180) * (-180 + -90 * (6 / 11))), r2 + btwSJ + ((c1 - c0) - btwSJ) * sin((pi / 180) * (-180 + -90 * (6 / 11))), DOT),
-                Node('12-8.D6', c1 - btwSJ + ((c1 - c0) - btwSJ) * cos((pi / 180) * (-180 + -90 * (5 / 11))), r2 + btwSJ + ((c1 - c0) - btwSJ) * sin((pi / 180) * (-180 + -90 * (5 / 11))), DOT),
-                Node('12-8.D7', c1 - btwSJ + ((c1 - c0) - btwSJ) * cos((pi / 180) * (-180 + -90 * (4 / 11))), r2 + btwSJ + ((c1 - c0) - btwSJ) * sin((pi / 180) * (-180 + -90 * (4 / 11))), DOT),
-                Node('12-8.D8', c1 - btwSJ + ((c1 - c0) - btwSJ) * cos((pi / 180) * (-180 + -90 * (3 / 11))), r2 + btwSJ + ((c1 - c0) - btwSJ) * sin((pi / 180) * (-180 + -90 * (3 / 11))), DOT),
-                Node('12-8.D9', c1 - btwSJ + ((c1 - c0) - btwSJ) * cos((pi / 180) * (-180 + -90 * (2 / 11))), r2 + btwSJ + ((c1 - c0) - btwSJ) * sin((pi / 180) * (-180 + -90 * (2 / 11))), DOT),
-                Node('12-8.D10', c1 - btwSJ + ((c1 - c0) - btwSJ) * cos((pi / 180) * (-180 + -90 * (1 / 11))), r2 + btwSJ + ((c1 - c0) - btwSJ) * sin((pi / 180) * (-180 + -90 * (1 / 11))), DOT),
-                Node('8S', c0, r2 + btwSJ, JUNCTION),
-           ]
-    
-    Edges = [
-                Edge(findNode('1'), findNode('1E'), S2J_SPEED), Edge(findNode('1S'), findNode('1'), S2J_SPEED),
-                Edge(findNode('2W'), findNode('2'), S2J_SPEED), Edge(findNode('2E'), findNode('2'), S2J_SPEED), Edge(findNode('2'), findNode('2S'), S2J_SPEED),
-                Edge(findNode('3'), findNode('3W'), S2J_SPEED), Edge(findNode('3'), findNode('3E'), S2J_SPEED), Edge(findNode('3S'), findNode('3'), S2J_SPEED),
-                Edge(findNode('4E'), findNode('4'), S2J_SPEED), Edge(findNode('4'), findNode('4S'), S2J_SPEED), Edge(findNode('4'), findNode('4N'), S2J_SPEED),
-                Edge(findNode('5'), findNode('5E'), S2J_SPEED), Edge(findNode('5'), findNode('5W'), S2J_SPEED), Edge(findNode('5S'), findNode('5'), S2J_SPEED), Edge(findNode('5N'), findNode('5'), S2J_SPEED),
-                Edge(findNode('6E'), findNode('6'), S2J_SPEED), Edge(findNode('6W'), findNode('6'), S2J_SPEED), Edge(findNode('6'), findNode('6S'), S2J_SPEED), Edge(findNode('6'), findNode('6N'), S2J_SPEED),
-                Edge(findNode('7'), findNode('7W'), S2J_SPEED), Edge(findNode('7S'), findNode('7'), S2J_SPEED), Edge(findNode('7N'), findNode('7'), S2J_SPEED),
-                Edge(findNode('8'), findNode('8E'), S2J_SPEED), Edge(findNode('8S'), findNode('8'), S2J_SPEED), Edge(findNode('8N'), findNode('8'), S2J_SPEED),
-                Edge(findNode('9E'), findNode('9'), S2J_SPEED), Edge(findNode('9W'), findNode('9'), S2J_SPEED), Edge(findNode('9'), findNode('9S'), S2J_SPEED), Edge(findNode('9'), findNode('9N'), S2J_SPEED),
-                Edge(findNode('10'), findNode('10E'), S2J_SPEED), Edge(findNode('10'), findNode('10W'), S2J_SPEED), Edge(findNode('10S'), findNode('10'), S2J_SPEED), Edge(findNode('10N'), findNode('10'), S2J_SPEED),
-                Edge(findNode('11W'), findNode('11'), S2J_SPEED), Edge(findNode('11'), findNode('11S'), S2J_SPEED), Edge(findNode('11'), findNode('11N'), S2J_SPEED),
-                Edge(findNode('12'), findNode('12E'), S2J_SPEED), Edge(findNode('12'), findNode('12W'), S2J_SPEED), Edge(findNode('12N'), findNode('12'), S2J_SPEED),
-                Edge(findNode('13W'), findNode('13'), S2J_SPEED), Edge(findNode('13E'), findNode('13'), S2J_SPEED), Edge(findNode('13'), findNode('13N'), S2J_SPEED),
-                Edge(findNode('14'), findNode('14W'), S2J_SPEED), Edge(findNode('14N'), findNode('14'), S2J_SPEED),
-                
-                Edge(findNode('1E'), findNode('2W')), Edge(findNode('3W'), findNode('2E')),
-                Edge(findNode('4N'), findNode('1S')), Edge(findNode('2S'), findNode('5N')), Edge(findNode('6N'), findNode('3S')),
-                Edge(findNode('5W'), findNode('4E')), Edge(findNode('5E'), findNode('6W')), Edge(findNode('7W'), findNode('6E')),
-                Edge(findNode('4S'), findNode('8N')), Edge(findNode('9N'), findNode('5S')), Edge(findNode('6S'), findNode('10N')), Edge(findNode('11N'), findNode('7S')),
-                Edge(findNode('8E'), findNode('9W')), Edge(findNode('10W'), findNode('9E')), Edge(findNode('10E'), findNode('11W')),
-                Edge(findNode('9S'), findNode('12N')), Edge(findNode('13N'), findNode('10S')), Edge(findNode('11S'), findNode('14N')),
-                Edge(findNode('12E'), findNode('13W')), Edge(findNode('14W'), findNode('13E')),
-                
-                Edge(findNode('1S'), findNode('1E')),
-                Edge(findNode('2E'), findNode('2S')), Edge(findNode('2W'), findNode('2S')),
-                Edge(findNode('3S'), findNode('3E')), Edge(findNode('3S'), findNode('3W')),
-                Edge(findNode('4E'), findNode('4S')), Edge(findNode('4E'), findNode('4N')),
-                Edge(findNode('5S'), findNode('5E')), Edge(findNode('5S'), findNode('5W')), Edge(findNode('5N'), findNode('5E')), Edge(findNode('5N'), findNode('5W')),
-                Edge(findNode('6E'), findNode('6S')), Edge(findNode('6W'), findNode('6S')), Edge(findNode('6E'), findNode('6N')), Edge(findNode('6W'), findNode('6N')),
-                Edge(findNode('7S'), findNode('7W')), Edge(findNode('7N'), findNode('7W')),
-                Edge(findNode('8S'), findNode('8E')), Edge(findNode('8N'), findNode('8E')),
-                Edge(findNode('9E'), findNode('9S')), Edge(findNode('9W'), findNode('9S')), Edge(findNode('9E'), findNode('9N')), Edge(findNode('9W'), findNode('9N')),
-                Edge(findNode('10S'), findNode('10E')), Edge(findNode('10S'), findNode('10W')), Edge(findNode('10N'), findNode('10E')), Edge(findNode('10N'), findNode('10W')),
-                Edge(findNode('11W'), findNode('11S')), Edge(findNode('11W'), findNode('11N')),
-                Edge(findNode('12N'), findNode('12E')), Edge(findNode('12N'), findNode('12W')),
-                Edge(findNode('13E'), findNode('13N')), Edge(findNode('13W'), findNode('13N')),
-                Edge(findNode('14N'), findNode('14W')),
-                
-                Edge(findNode('3E'), findNode('3-7.D1')), Edge(findNode('3-7.D1'), findNode('3-7.D2')), Edge(findNode('3-7.D2'), findNode('3-7.D3')),
-                Edge(findNode('3-7.D3'), findNode('3-7.D4')), Edge(findNode('3-7.D4'), findNode('3-7.D5')), Edge(findNode('3-7.D5'), findNode('3-7.D6')),
-                Edge(findNode('3-7.D6'), findNode('3-7.D7')), Edge(findNode('3-7.D7'), findNode('3-7.D8')), Edge(findNode('3-7.D8'), findNode('3-7.D9')),
-                Edge(findNode('3-7.D9'), findNode('3-7.D10')), Edge(findNode('3-7.D10'), findNode('3-7.D11')), Edge(findNode('3-7.D11'), findNode('7N')),
-                
-                Edge(findNode('12W'), findNode('12-8.D1')), Edge(findNode('12-8.D1'), findNode('12-8.D2')), Edge(findNode('12-8.D2'), findNode('12-8.D3')),
-                Edge(findNode('12-8.D3'), findNode('12-8.D4')), Edge(findNode('12-8.D4'), findNode('12-8.D5')), Edge(findNode('12-8.D5'), findNode('12-8.D6')),
-                Edge(findNode('12-8.D6'), findNode('12-8.D7')), Edge(findNode('12-8.D7'), findNode('12-8.D8')), Edge(findNode('12-8.D8'), findNode('12-8.D9')),
-                Edge(findNode('12-8.D9'), findNode('12-8.D10')), Edge(findNode('12-8.D10'), findNode('8S')),
-            
-             ]    
-    for i, n in enumerate(Nodes):
-        n.no = i
-        
-    return Nodes, Edges
-
 
 #---------------------------------------------------------------------
 # For calculating measure
@@ -656,7 +910,7 @@ class PRT():
         
         logger('            path: %s' % (self.path_n))
         
-        ## check setupWaitingPRT
+        # # check setupWaitingPRT
         
         if self.arrived_n.setupWaitingPRTs:
             firstWaitingPRT = self.arrived_n.setupWaitingPRTs.pop(0)

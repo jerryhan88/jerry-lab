@@ -12,10 +12,10 @@ CLOCK_INCR_DIFF = sqrt(2)
 
 STAT_UPDATE_INTERVAL = 1.0  # sec
 
-STATION_DIAMETER = 30
-JUNCTION_DIAMETER = STATION_DIAMETER / 4
-CUSTOMER_RADIUS = STATION_DIAMETER / 3
-PRT_SIZE = STATION_DIAMETER / 5
+STATION_DIAMETER = 8
+JUNCTION_DIAMETER = 5
+CUSTOMER_RADIUS = 30 / 3
+PRT_SIZE = 30 / 5
 
 waiting_customers = []
 event_queue = []
@@ -152,7 +152,7 @@ class MainFrame(wx.Frame):
 
         self.Show(True)
         
-#         self.dispatcher = self.select_dispatcher()
+        self.dispatcher = self.select_dispatcher()
         
         self.dispatcher = Algorithms.NN1 
         
@@ -164,7 +164,7 @@ class MainFrame(wx.Frame):
         self.SetTitle(TITLE + ' - ' + self.dispatcher.__name__)
         self.vp.SetFocus()
         
-#         self.CWTC = CustomerWaitingTime_chart(self)
+        self.CWTC = CustomerWaitingTime_chart(self)
         
         ##############################
         
@@ -173,7 +173,7 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_CLOSE, self.OnClose)
         
     def OnClose(self, event):
-#         self.CWTC.Destroy()
+        self.CWTC.Destroy()
         self.Destroy()
     
     def select_dispatcher(self):
@@ -247,7 +247,7 @@ class MainFrame(wx.Frame):
         for c in Dynamics.waiting_customers:
             self.waiting_customers_in_node[c.sn.id].append(c.id) 
         self.vp.RefreshGC()
-#         self.CWTC.cp.RefreshGC()
+        self.CWTC.cp.RefreshGC()
         
         if self.next_stat_update_time < time():
             self.next_stat_update_time = time() + STAT_UPDATE_INTERVAL
@@ -512,15 +512,18 @@ class ViewPanel(DragZoomPanel):
                 gc.DrawText(PRTs_str, STATION_DIAMETER / 2 - 8, 42)
                 
                 if len(n.id) > 1:
-                    gc.DrawText('%s' % n.id, -7, -8)
+                    gc.DrawText('%s' % n.id, -14, 5)
                 else:
-                    gc.DrawText('%s' % n.id, -3, -8)
+                    gc.DrawText('%s' % n.id, -10, 5)
             elif n.nodeType == JUNCTION:
                 gc.SetBrush(wx.Brush(wx.Colour(255, 255, 255)))
                 gc.SetPen(wx.Pen(wx.Colour(0, 0, 0), 0.01))
                 gc.DrawEllipse(-JUNCTION_DIAMETER / 2, -JUNCTION_DIAMETER / 2, JUNCTION_DIAMETER, JUNCTION_DIAMETER)
             else:
                 assert n.nodeType == DOT
+#                 gc.SetBrush(wx.Brush(wx.Colour(255, 255, 255)))
+#                 gc.SetPen(wx.Pen(wx.Colour(0, 0, 0), 0.01))
+#                 gc.DrawEllipse(-1, -1, 2, 2)
             gc.SetTransform(old_tr)
             
         for n_id, waiting_c_in_node in self.Parent.Parent.Parent.Parent.waiting_customers_in_node.iteritems():
@@ -549,32 +552,32 @@ class ViewPanel(DragZoomPanel):
                 ex = next_n.px - ux * JUNCTION_DIAMETER / 2
                 ey = next_n.py - uy * JUNCTION_DIAMETER / 2
                 gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-                gc.DrawLines([(ex, ey), (ex - int((ux * 5)) + int(px * 3), ey - int(uy * 5) + int(py * 3))])
-                gc.DrawLines([(ex, ey), (ex - int(ux * 5) - int(px * 3), ey - int(uy * 5) - int(py * 3))])  
+                gc.DrawLines([(ex, ey), (ex - int((ux * 5)) + int(px * 2), ey - int(uy * 5) + int(py * 2))])
+                gc.DrawLines([(ex, ey), (ex - int(ux * 5) - int(px * 2), ey - int(uy * 5) - int(py * 2))])  
             elif prev_n.nodeType == JUNCTION and (next_n.nodeType == TRANSFER or next_n.nodeType == STATION):
                 sx = prev_n.px + ux * JUNCTION_DIAMETER / 2
                 sy = prev_n.py + uy * JUNCTION_DIAMETER / 2
                 ex = next_n.px - ux * STATION_DIAMETER / 2
                 ey = next_n.py - uy * STATION_DIAMETER / 2
                 gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-                gc.DrawLines([(ex, ey), (ex - int((ux * 5)) + int(px * 3), ey - int(uy * 5) + int(py * 3))])
-                gc.DrawLines([(ex, ey), (ex - int(ux * 5) - int(px * 3), ey - int(uy * 5) - int(py * 3))])
+                gc.DrawLines([(ex, ey), (ex - int((ux * 4)) + int(px * 2), ey - int(uy * 4) + int(py * 2))])
+                gc.DrawLines([(ex, ey), (ex - int(ux * 4) - int(px * 2), ey - int(uy * 4) - int(py * 2))])
             elif prev_n.nodeType == JUNCTION and next_n.nodeType == JUNCTION:
                 sx = prev_n.px + ux * JUNCTION_DIAMETER / 2
                 sy = prev_n.py + uy * JUNCTION_DIAMETER / 2
                 ex = next_n.px - ux * JUNCTION_DIAMETER / 2
                 ey = next_n.py - uy * JUNCTION_DIAMETER / 2
                 gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-                gc.DrawLines([(ex, ey), (ex - int((ux * 5)) + int(px * 3), ey - int(uy * 5) + int(py * 3))])
-                gc.DrawLines([(ex, ey), (ex - int(ux * 5) - int(px * 3), ey - int(uy * 5) - int(py * 3))])
+                gc.DrawLines([(ex, ey), (ex - int((ux * 4)) + int(px * 2), ey - int(uy * 4) + int(py * 2))])
+                gc.DrawLines([(ex, ey), (ex - int(ux * 4) - int(px * 2), ey - int(uy * 4) - int(py * 2))])
             elif prev_n.nodeType == DOT and next_n.nodeType == JUNCTION:
                 sx = prev_n.px
                 sy = prev_n.py
                 ex = next_n.px - ux * JUNCTION_DIAMETER / 2
                 ey = next_n.py - uy * JUNCTION_DIAMETER / 2
                 gc.SetFont(wx.Font(5, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-                gc.DrawLines([(ex, ey), (ex - int((ux * 5)) + int(px * 3), ey - int(uy * 5) + int(py * 3))])
-                gc.DrawLines([(ex, ey), (ex - int(ux * 5) - int(px * 3), ey - int(uy * 5) - int(py * 3))])
+                gc.DrawLines([(ex, ey), (ex - int((ux * 4)) + int(px * 2), ey - int(uy * 4) + int(py * 2))])
+                gc.DrawLines([(ex, ey), (ex - int(ux * 4) - int(px * 2), ey - int(uy * 4) - int(py * 2))])
             elif prev_n.nodeType == JUNCTION and next_n.nodeType == DOT :
                 sx = prev_n.px + ux * JUNCTION_DIAMETER / 2
                 sy = prev_n.py + uy * JUNCTION_DIAMETER / 2
