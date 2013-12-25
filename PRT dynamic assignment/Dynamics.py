@@ -133,8 +133,8 @@ def Network2():
     
     numOfNC = 8
     
-    for SN_id, EN_id, numOfN, quadrant, direction in JDJ_pos_info1:
-        set_posD_OnCurve1(findN(SN_id), findN(EN_id), numOfN, quadrant, direction, 180)
+#     for SN_id, EN_id, numOfN, quadrant, direction in JDJ_pos_info1:
+#         set_posD_OnCurve1(findN(SN_id), findN(EN_id), numOfN, quadrant, direction, 180)
         
     def set_posD_OnCurve2(SN, EN, numOfN, quadrant, direction, angle):
         NS_OnCurve = []

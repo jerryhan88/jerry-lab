@@ -152,7 +152,10 @@ class MainFrame(wx.Frame):
 
         self.Show(True)
         
-        self.dispatcher = self.select_dispatcher()
+#         self.dispatcher = self.select_dispatcher()
+        
+        self.dispatcher = Algorithms.NN1 
+        
         if self.dispatcher == None:
             return
         
@@ -161,7 +164,7 @@ class MainFrame(wx.Frame):
         self.SetTitle(TITLE + ' - ' + self.dispatcher.__name__)
         self.vp.SetFocus()
         
-        self.CWTC = CustomerWaitingTime_chart(self)
+#         self.CWTC = CustomerWaitingTime_chart(self)
         
         ##############################
         
@@ -170,7 +173,7 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_CLOSE, self.OnClose)
         
     def OnClose(self, event):
-        self.CWTC.Destroy()
+#         self.CWTC.Destroy()
         self.Destroy()
     
     def select_dispatcher(self):
@@ -244,7 +247,7 @@ class MainFrame(wx.Frame):
         for c in Dynamics.waiting_customers:
             self.waiting_customers_in_node[c.sn.id].append(c.id) 
         self.vp.RefreshGC()
-        self.CWTC.cp.RefreshGC()
+#         self.CWTC.cp.RefreshGC()
         
         if self.next_stat_update_time < time():
             self.next_stat_update_time = time() + STAT_UPDATE_INTERVAL
