@@ -10,7 +10,7 @@ TRANSFER, STATION, JUNCTION, DOT = range(4)
 S2J_SPEED = 6
 J2D_SPEED = 9
 
-numOfBerth = 5
+numOfBerth = 2
 
 def findNode(nID):
     for n in Nodes:

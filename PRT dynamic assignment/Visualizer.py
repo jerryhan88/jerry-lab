@@ -103,7 +103,7 @@ class MainFrame(wx.Frame):
         # Every resources are accessible
 #         self.Nodes, self.Edges = Dynamics.Network1()
         self.Nodes, self.Edges = Dynamics.Network2()
-        self.Customers = Dynamics.gen_Customer(4.2, 5000, 0.3, self.Nodes)
+        self.Customers = Dynamics.gen_Customer(6.2, 5000, 0.3, self.Nodes)
         self.NumOfTotalCustomer = len(self.Customers)
         self.PRTs = Dynamics.gen_PRT(50, self.Nodes)
         
@@ -490,7 +490,7 @@ class ViewPanel(DragZoomPanel):
 #                 if n.settingPRTs:
                 PRTs_str = 'S #%d {' % len(n.settingPRTs) + ':'.join(('PRT%d(C%d)' % (prt.id, prt.transporting_customer.id)) for prt in n.settingPRTs) + '}'
                 gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-                gc.DrawText(PRTs_str, STATION_DIAMETER / 2 - 2, 22)
+                gc.DrawText(PRTs_str, STATION_DIAMETER / 2 - 2, 12)
                 
                 PRTs_str = 'SW #%d {' % len(n.setupWaitingPRTs) + ':'.join(('PRT%d' % (prt.id)) for prt in n.setupWaitingPRTs) + '}'
                 
@@ -505,11 +505,11 @@ class ViewPanel(DragZoomPanel):
                         
                 PRTs_str = 'XE #%d {' % len(notEnterPRTs) + ':'.join(('PRT%d(C%d)' % (prt.id, prt.transporting_customer.id)) for prt in notEnterPRTs) + '}'
                 gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-                gc.DrawText(PRTs_str, STATION_DIAMETER / 2 - 8, 32)
+                gc.DrawText(PRTs_str, STATION_DIAMETER / 2 - 8, 22)
                 
                 PRTs_str = 'XL #%d {' % len(notLeavePRTs) + ':'.join(('PRT%d' % (prt.id)) for prt in notLeavePRTs) + '}'
                 gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-                gc.DrawText(PRTs_str, STATION_DIAMETER / 2 - 8, 42)
+                gc.DrawText(PRTs_str, STATION_DIAMETER / 2 - 8, 32)
                 
                 if len(n.id) > 1:
                     gc.DrawText('%s' % n.id, -14, 5)
@@ -530,13 +530,13 @@ class ViewPanel(DragZoomPanel):
             if waiting_c_in_node:
                 waiting_c_str = 'C #%d [' % len(waiting_c_in_node) + ':'.join(('C%d' % c_id) for c_id in waiting_c_in_node) + ']'
                 gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-                gc.DrawText(waiting_c_str, Dynamics.findNode(n_id).px + STATION_DIAMETER / 2, Dynamics.findNode(n_id).py - STATION_DIAMETER / 2 - 9)
+                gc.DrawText(waiting_c_str, Dynamics.findNode(n_id).px + STATION_DIAMETER / 2, Dynamics.findNode(n_id).py - STATION_DIAMETER / 2 )
         
         for n_id, idlePRT_in_node in self.Parent.Parent.Parent.Parent.idlePRT_in_node.iteritems():
             if idlePRT_in_node:
                 PRTs_str = 'I #%d (' % len(idlePRT_in_node) + ':'.join(('PRT%d' % prt_id) for prt_id in idlePRT_in_node) + ')'
                 gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-                gc.DrawText(PRTs_str, Dynamics.findNode(n_id).px + STATION_DIAMETER / 2, Dynamics.findNode(n_id).py + STATION_DIAMETER / 2 - 5)
+                gc.DrawText(PRTs_str, Dynamics.findNode(n_id).px + STATION_DIAMETER / 2, Dynamics.findNode(n_id).py + STATION_DIAMETER / 2 - 3)
         
         for e in self.Parent.Parent.Parent.Parent.Edges:
             prev_n, next_n = e._from, e._to
