@@ -4,13 +4,52 @@ from random import randrange, seed, expovariate, random, choice, sample, uniform
 from heapq import heappush, heappop
 from itertools import chain
 import Algorithms
+
 #---------------------------------------------------------------------
-# Network example
-TRANSFER, STATION, JUNCTION, DOT = range(4)
+# parameter setting
+PRT_SPEED = 12  # unit (m/s)
 S2J_SPEED = 6
 J2D_SPEED = 9
-
 numOfBerth = 2
+SETTING_TIME = (45.0, 60.0) # unit (sec)
+
+#---------------------------------------------------------------------
+# node type and states of PRT
+TRANSFER, STATION, JUNCTION, DOT = range(4)
+ST_IDLE, ST_APPROACHING, ST_SETTING, ST_TRANSITING, ST_PARKING = range(5)
+
+# event queue for simulation and current customers in system (simulation)
+waiting_customers = []
+event_queue = []
+
+# check arrival of customer
+on_notify_customer_arrival = lambda x: None
+
+#---------------------------------------------------------------------
+# For calculating measure
+WaitingCustomerChanges = []
+WaitingTimeChanges = []
+
+Total_empty_travel_distance = 0.0
+NumOfPickedUpCustomer = 0
+
+Total_travel_distance = 0.0
+Total_customers_flow_time = 0.0
+NumOfServicedCustomer = 0
+
+Total_customers_waiting_time = 0.0
+NumOfWaitingCustomer = 0
+ChaningPointOfNWC = 0.0
+MaxCustomerWaitingTime = 0.0
+
+IdleState_time = 0.0
+ApproachingState_time = 0.0
+SettingState_time = 0.0
+TransitingState_time = 0.0
+ParkingState_time = 0.0
+
+NumOfCustomerArrivals = 0
+
 
 def findNode(nID):
     for n in Nodes:
@@ -119,23 +158,14 @@ def Network2():
                     p_y = curveCy + (x + 1) * (CC1_y - curveCy) / 5
                     p_x = sqrt(R ** 2 - (abs(p_y - CC1_y)) ** 2) + CC1_x
                     curve_pos.append((p_x, p_y))
-# #                 
                 curve_pos.append((SD, -(btwSJ - L)))
                 curve_pos.append((SD, -(btwSJ)))
                 curve_pos.append((SD, -(btwSJ + L)))
-# #                 
                 CC1_x, CC1_y = (SD - R), -(btwSJ + L)
                 CC2_x, CC2_y = (2 * sqrt(R ** 2 - (abs(-(btwSJ + L + CLL / 2) - CC1_y)) ** 2) + SD - R), -2 * btwSJ
-#                  
                 curveCy = CC2_y + CLL / 2  
                 curveCx = -sqrt(R ** 2 - (abs(curveCy - CC2_y)) ** 2) + CC2_x
                 curveEx, curveEy = 0, CC2_y + sqrt(R ** 2 - (CC2_x) ** 2)
-# # 
-#                 curve_pos.append((CC1_x, CC1_y))
-#                 curve_pos.append((curveCx, curveCy))
-#                 curve_pos.append((curveEx, curveEy))
-#                 curve_pos.append((CC2_x, CC2_y))
-# #                 
                 for x in range(4):
                     p_y = CC1_y + (x + 1) * (curveCy - CC1_y) / 5
                     p_x = sqrt(R ** 2 - (abs(p_y - CC1_y)) ** 2) + CC1_x
@@ -145,7 +175,6 @@ def Network2():
                     p_y = curveCy + (x + 1) * (curveEy - curveCy) / 4
                     p_x = -sqrt(R ** 2 - (abs(p_y - CC2_y)) ** 2) + CC2_x
                     curve_pos.append((p_x, p_y))
-#                 
                 for i, (px, py) in enumerate(curve_pos):
                     NS_OnCurve.append(Node(SN.id + '-' + str(i) + '-' + EN.id, SN.px + px, SN.py - py, DOT))
                     
@@ -154,16 +183,11 @@ def Network2():
                 CC2_x, CC2_y = -(2 * sqrt(R ** 2 - (abs(CLL / 2 - CC1_y)) ** 2) + SD - R), 0
                 
                 curveSx, curveSy = 0, sqrt(R ** 2 - (CC2_x) ** 2)
-#                 
                 curveCy = CLL / 2
                 curveCx = sqrt(R ** 2 - (abs(curveCy - CC2_y)) ** 2) + CC2_x
                 
                 curve_pos = []
-#                 curve_pos.append((CC1_x, CC1_y))
-#                 curve_pos.append((curveSx, curveSy))
-#                 curve_pos.append((curveCx, curveCy))
-#                 curve_pos.append((CC2_x, CC2_y))
-                
+
                 for x in range(3):
                     p_y = curveSy + (x + 1) * (curveCy - curveSy) / 4
                     p_x = sqrt(R ** 2 - (abs(p_y - CC2_y)) ** 2) + CC2_x
@@ -173,23 +197,15 @@ def Network2():
                     p_y = curveCy + (x + 1) * (CC1_y - curveCy) / 5
                     p_x = -sqrt(R ** 2 - (abs(p_y - CC1_y)) ** 2) + CC1_x
                     curve_pos.append((p_x, p_y))
-#                 
                 curve_pos.append((-SD, (btwSJ - L)))
                 curve_pos.append((-SD, (btwSJ)))
                 curve_pos.append((-SD, (btwSJ + L)))
-#                 
                 CC1_x, CC1_y = -(SD - R), btwSJ + L
                 CC2_x, CC2_y = -(2 * sqrt(R ** 2 - (abs(btwSJ + L + CLL / 2 - CC1_y)) ** 2) + SD - R), 2 * btwSJ
                  
                 curveCy = CC2_y - CLL / 2  
                 curveCx = sqrt(R ** 2 - (abs(curveCy - CC2_y)) ** 2) + CC2_x
                 curveEx, curveEy = 0, CC2_y - sqrt(R ** 2 - (CC2_x) ** 2)
-# 
-#                 curve_pos.append((CC1_x, CC1_y))
-#                 curve_pos.append((curveCx, curveCy))
-#                 curve_pos.append((curveEx, curveEy))
-#                 curve_pos.append((CC2_x, CC2_y))
-#                 
                 for x in range(4):
                     p_y = CC1_y + (x + 1) * (curveCy - CC1_y) / 5
                     p_x = -sqrt(R ** 2 - (abs(p_y - CC1_y)) ** 2) + CC1_x
@@ -258,11 +274,6 @@ def Network2():
                 curveCx = CLL / 2
                 curveCy = sqrt(R ** 2 - (abs(curveCx - CC2_x)) ** 2) + CC2_y
                 curve_pos = []
-#                 curve_pos.append((CC1_x, CC1_y))
-#                 curve_pos.append((curveSx, curveSy))
-#                 curve_pos.append((curveCx, curveCy))
-#                 curve_pos.append((CC2_x, CC2_y))
-                
                 for x in range(3):
                     p_x = curveSx + (x + 1) * (curveCx - curveSx) / 4
                     p_y = sqrt(R ** 2 - (abs(p_x - CC2_x)) ** 2) + CC2_y
@@ -317,18 +328,15 @@ def Network2():
                     p_x = curveSx + (x + 1) * (curveCx - curveSx) / 4
                     p_y = -sqrt(R ** 2 - (abs(p_x - CC2_x)) ** 2) + CC2_y
                     curve_pos.append((p_x, p_y))
-#                 
                 curve_pos.append((curveCx, curveCy))
                  
                 for x in range(4):
                     p_x = curveCx + (x + 1) * (CC1_x - curveCx) / 5
                     p_y = sqrt(R ** 2 - (abs(p_x - CC1_x)) ** 2) + CC1_y
                     curve_pos.append((p_x, p_y))
-#                 
                 curve_pos.append(((btwSJ - L), SD))
                 curve_pos.append(((btwSJ), SD))
                 curve_pos.append(((btwSJ + L), SD))
-#                 
                 CC1_x, CC1_y = btwSJ + L, (SD - R)
                 CC2_x, CC2_y = 2 * btwSJ, (2 * sqrt(R ** 2 - (abs(btwSJ + L + CLL / 2 - CC1_x)) ** 2) + SD - R)
                  
@@ -360,10 +368,6 @@ def Network2():
                 curveCx = CLL / 2
                 curveCy = sqrt(R ** 2 - (abs(curveCx - CC2_x)) ** 2) + CC2_y
                 curve_pos = []
-#                 curve_pos.append((CC1_x, CC1_y))
-#                 curve_pos.append((curveSx, curveSy))
-#                 curve_pos.append((curveCx, curveCy))
-#                 curve_pos.append((CC2_x, CC2_y))                
                 
                 for x in range(3):
                     p_x = curveSx + (x + 1) * (curveCx - curveSx) / 4
@@ -407,10 +411,6 @@ def Network2():
                 curveCx = sqrt(R ** 2 - (abs(curveCy - CC2_y)) ** 2) + CC2_x
                 
                 curve_pos = []
-#                 curve_pos.append((CC1_x, CC1_y))
-#                 curve_pos.append((curveSx, curveSy))
-#                 curve_pos.append((curveCx, curveCy))
-#                 curve_pos.append((CC2_x, CC2_y))                 
                 
                 for x in range(3):
                     p_y = curveSy + (x + 1) * (curveCy - curveSy) / 4
@@ -452,10 +452,6 @@ def Network2():
                 curveCx = sqrt(R ** 2 - (abs(curveCy - CC2_y)) ** 2) + CC2_x
                 
                 curve_pos = []
-#                 curve_pos.append((CC1_x, CC1_y))
-#                 curve_pos.append((curveSx, curveSy))
-#                 curve_pos.append((curveCx, curveCy))
-#                 curve_pos.append((CC2_x, CC2_y))
                 
                 for x in range(3):
                     p_y = curveSy + (x + 1) * (curveCy - curveSy) / 4
@@ -478,11 +474,6 @@ def Network2():
                 curveCx = sqrt(R ** 2 - (abs(curveCy - CC2_y)) ** 2) + CC2_x
                 curveEx, curveEy = 0, CC2_y + sqrt(R ** 2 - (CC2_x) ** 2)
 
-#                 curve_pos.append((CC1_x, CC1_y))
-#                 curve_pos.append((curveCx, curveCy))
-#                 curve_pos.append((curveEx, curveEy))
-#                 curve_pos.append((CC2_x, CC2_y))
-                
                 for x in range(4):
                     p_y = CC1_y + (x + 1) * (curveCy - CC1_y) / 5
                     p_x = -sqrt(R ** 2 - (abs(p_y - CC1_y)) ** 2) + CC1_x
@@ -600,36 +591,7 @@ def Network2():
         
     return Nodes, Edges
 
-#---------------------------------------------------------------------
-# For calculating measure
-Total_empty_travel_distance = 0.0
-NumOfPickedUpCustomer = 0
-
-Total_travel_distance = 0.0
-Total_customers_flow_time = 0.0
-NumOfServicedCustomer = 0
-
-Total_customers_waiting_time = 0.0
-NumOfWaitingCustomer = 0
-ChaningPointOfNWC = 0.0
-MaxCustomerWaitingTime = 0.0
-
-IdleState_time = 0.0
-ApproachingState_time = 0.0
-SettingState_time = 0.0
-TransitingState_time = 0.0
-ParkingState_time = 0.0
-
-NumOfCustomerArrivals = 0
-
-#---------------------------------------------------------------------
-# For charting measure
-WaitingCustomerChanges = []
-WaitingTimeChanges = []
-
-#---------------------------------------------------------------------
 # Classes
-
 class Node():
     BIG_NUM = 1000000
     def __init__(self, _id, px, py, nodeType):
@@ -680,8 +642,6 @@ class Customer():
     
     def __repr__(self):
         return '(C%d) %s->%s' % (self.id, self.sn.id, self.dn.id)
-
-ST_IDLE, ST_APPROACHING, ST_SETTING, ST_TRANSITING, ST_PARKING = range(5)
 
 class PRT():
     _id = 0
@@ -1091,7 +1051,6 @@ def gen_Network(ns, ns_connection):
 
 def gen_Customer(average_arrival, num_customers, imbalanceLevel, Nodes):
     seed(4)  # 1000, 2000, 3000
-#     seed(5)
     accu_pd = []
     pd = [expovariate(1.0 / average_arrival) for _ in range(num_customers)]
     for i, t in enumerate(pd):
@@ -1133,14 +1092,6 @@ def gen_PRT(numOfPRT, Nodes):
         PRTs.append(PRT(Nodes[target_n_id]))
     return PRTs
 
-#---------------------------------------------------------------------
-# Prepare dynamics run
-PRT_SPEED = 12  # unit (m/s)
-# SETTING_TIME = (5.0, 10.0)
-SETTING_TIME = (45.0, 60.0)
-waiting_customers = []
-event_queue = []
-
 def init_dynamics(_Nodes, _PRTs, _Customers, _dispatcher):
     global Total_empty_travel_distance, NumOfPickedUpCustomer, Total_travel_distance, Total_customers_flow_time, NumOfServicedCustomer  
     Total_empty_travel_distance = 0.0
@@ -1171,8 +1122,6 @@ def init_dynamics(_Nodes, _PRTs, _Customers, _dispatcher):
 
 def logger(s):
     print s
-
-on_notify_customer_arrival = lambda x: None
 
 def update_customerWaitingTimeMeasure(cur_time, numOfCustomerChange):
     global Total_customers_waiting_time, NumOfWaitingCustomer, ChaningPointOfNWC, MaxCustomerWaitingTime, WaitingCustomerChanges, WaitingTimeChanges

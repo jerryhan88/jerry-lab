@@ -27,7 +27,7 @@ def on_notify_assignmentment_point(args=None):
     print '-----------------------------------------------------------------------(Re)assignment!!' 
 
 def get_all_dispatchers():
-    return {'NNBA-I': NN0, 'NNBA-IA': NN1, 'NNBA-IT': NN2, 'NNBA-IAP': NN3, 'NNBA-IAT': NN4, 'NNBA-IATP': NN5}
+    return {'NNBA-I': NNBA_I, 'NNBA-IA': NNBA_IA, 'NNBA-IT': NNBA_IT, 'NNBA-IAP': NNBA_IAP, 'NNBA-IAT': NNBA_IAT, 'NNBA-IATP': NNBA_IATP}
 
 def reassignment(event_time, target_PRTs, target_customers, Nodes):
     _target_customers = target_customers[:]
@@ -56,7 +56,7 @@ def reassignment(event_time, target_PRTs, target_customers, Nodes):
     for chosen_prt, target_c in RA:
         chosen_prt.re_assign_customer(event_time, target_c)
 
-def NN0(event_time, PRTs, waiting_customers, Nodes):
+def NNBA_I(event_time, PRTs, waiting_customers, Nodes):
     from Dynamics import ST_IDLE
     # Target PRT: I
     on_notify_assignmentment_point(None)
@@ -65,7 +65,7 @@ def NN0(event_time, PRTs, waiting_customers, Nodes):
     target_customers = [customer for customer in waiting_customers if not customer.assigned_PRT and not customer.isSetupWaiting]
     reassignment(event_time, target_PRTs, target_customers, Nodes)
 
-def NN1(event_time, PRTs, waiting_customers, Nodes):
+def NNBA_IA(event_time, PRTs, waiting_customers, Nodes):
     from Dynamics import ST_IDLE, ST_APPROACHING
     # Target PRT: I/A
     on_notify_assignmentment_point(None)
@@ -74,7 +74,7 @@ def NN1(event_time, PRTs, waiting_customers, Nodes):
     target_customers = [c for c in waiting_customers if not c.isSetupWaiting]
     reassignment(event_time, target_PRTs, target_customers, Nodes)
 
-def NN2(event_time, PRTs, waiting_customers, Nodes):
+def NNBA_IT(event_time, PRTs, waiting_customers, Nodes):
     from Dynamics import ST_IDLE, ST_TRANSITING
     # Target PRT: I/T
     on_notify_assignmentment_point(None)
@@ -83,7 +83,7 @@ def NN2(event_time, PRTs, waiting_customers, Nodes):
     target_customers = [customer for customer in waiting_customers if not customer.assigned_PRT and not customer.isSetupWaiting]
     reassignment(event_time, target_PRTs, target_customers, Nodes)
 
-def NN3(event_time, PRTs, waiting_customers, Nodes):
+def NNBA_IAP(event_time, PRTs, waiting_customers, Nodes):
     from Dynamics import ST_IDLE, ST_APPROACHING, ST_PARKING
     # Target PRT: I/A/P
     on_notify_assignmentment_point(None)
@@ -92,7 +92,7 @@ def NN3(event_time, PRTs, waiting_customers, Nodes):
     target_customers = [c for c in waiting_customers if not c.isSetupWaiting]
     reassignment(event_time, target_PRTs, target_customers, Nodes)
 
-def NN4(event_time, PRTs, waiting_customers, Nodes):
+def NNBA_IAT(event_time, PRTs, waiting_customers, Nodes):
     from Dynamics import ST_IDLE, ST_APPROACHING, ST_TRANSITING
     # Target PRT: I/A/T
     on_notify_assignmentment_point(None)
@@ -101,7 +101,7 @@ def NN4(event_time, PRTs, waiting_customers, Nodes):
     target_customers = [c for c in waiting_customers if not c.isSetupWaiting]
     reassignment(event_time, target_PRTs, target_customers, Nodes)            
 
-def NN5(event_time, PRTs, waiting_customers, Nodes):
+def NNBA_IATP(event_time, PRTs, waiting_customers, Nodes):
     from Dynamics import ST_IDLE, ST_APPROACHING, ST_TRANSITING, ST_PARKING
     # Target PRT: I/A/T/P
     on_notify_assignmentment_point(None)
