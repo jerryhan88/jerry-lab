@@ -11,7 +11,8 @@ PRT_SPEED = 12  # unit (m/s)
 S2J_SPEED = 6
 J2D_SPEED = 9
 numOfBerth = 2
-SETTING_TIME = (45.0, 60.0) # unit (sec)
+# SETTING_TIME = (45.0, 60.0) # unit (sec)
+SETTING_TIME = (4.0, 6.0) # unit (sec)
 
 #---------------------------------------------------------------------
 # node type and states of PRT

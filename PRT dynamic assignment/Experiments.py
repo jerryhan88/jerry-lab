@@ -29,19 +29,19 @@ data_accu_et = 0.0
 def on_notify_customer_arrival(customer):
     if Dynamics.NumOfCustomerArrivals == int(NumOfTotalCustomer / 10):
         Dynamics.NumOfCustomerArrivals = 0
-         
+          
         Dynamics.Total_empty_travel_distance = 0.0
         Dynamics.NumOfPickedUpCustomer = 0
-         
+          
         Dynamics.Total_travel_distance = 0.0
         Dynamics.Total_customers_flow_time = 0.0
         Dynamics.NumOfServicedCustomer = 0
-         
+          
         Dynamics.Total_customers_waiting_time = 0.0
         Dynamics.NumOfWaitingCustomer = 0
         Dynamics.ChaningPointOfNWC = 0.0
         Dynamics.MaxCustomerWaitingTime = 0.0
-         
+          
         Dynamics.IdleState_time = 0.0
         Dynamics.ApproachingState_time = 0.0
         Dynamics.SettingState_time = 0.0
@@ -157,12 +157,12 @@ def run_excelWriteVersion(dispatchers, meanTimeArrivals, imbalanceLevel, numOfPR
         for MTA in meanTimeArrivals:
             for dispatcher in dispatchers:
                 row = sheet1.row(ex)
-                row.write(DN,dispatcher.__name__)
+                row.write(DN, dispatcher.__name__)
                 row.write(mTA, MTA)
                 row.write(NOP, nPRTs)
                 
                 Nodes, Edges = Dynamics.Network2()
-                Customers = Dynamics.gen_Customer(MTA, 20, imbalanceLevel, Nodes)
+                Customers = Dynamics.gen_Customer(MTA, 5000, imbalanceLevel, Nodes)
                 global NumOfTotalCustomer
                 NumOfTotalCustomer = len(Customers)
                 PRTs = Dynamics.gen_PRT(nPRTs, Nodes)
@@ -179,22 +179,22 @@ def run_excelWriteVersion(dispatchers, meanTimeArrivals, imbalanceLevel, numOfPR
                 global NumOfCustomerArrivals, Total_empty_travel_distance, NumOfPickedUpCustomer, Total_travel_distance, Total_customers_flow_time, NumOfServicedCustomer, Total_customers_waiting_time, MaxCustomerWaitingTime
                 global IdleState_time, ApproachingState_time, SettingState_time, TransitingState_time, ParkingState_time, data_accu_st, data_accu_et
                 
-                row.write(compuTime, et)
+                row.write(compuTime, round(et, 2))
                 
-                row.write(TTDist,Total_travel_distance)
-                row.write(ATDist,(Dynamics.Total_travel_distance / Dynamics.NumOfServicedCustomer))
-                row.write(TETDist,Total_empty_travel_distance)
-                row.write(AETDist,(Total_empty_travel_distance / NumOfPickedUpCustomer))
-                row.write(TWTime,Total_customers_waiting_time)
-                row.write(AWTime,(Total_customers_waiting_time / NumOfCustomerArrivals))
-                row.write(MWTime,MaxCustomerWaitingTime)
-                row.write(TFTime,Total_customers_flow_time)
-                row.write(AFTime,(Total_customers_flow_time /NumOfServicedCustomer))
-                row.write(Idle,IdleState_time)
-                row.write(Approaching,ApproachingState_time)
-                row.write(Setting,SettingState_time)
-                row.write(Transiting,TransitingState_time)
-                row.write(Parking,ParkingState_time)
+                row.write(TTDist, round(Total_travel_distance, 2))
+                row.write(ATDist, round((Dynamics.Total_travel_distance / NumOfServicedCustomer), 2))
+                row.write(TETDist, round(Total_empty_travel_distance, 2))
+                row.write(AETDist, round((Total_empty_travel_distance / NumOfPickedUpCustomer), 2))
+                row.write(TWTime, round(Total_customers_waiting_time, 2))
+                row.write(AWTime, round((Total_customers_waiting_time / NumOfCustomerArrivals), 2))
+                row.write(MWTime, round(MaxCustomerWaitingTime, 2))
+                row.write(TFTime, round(Total_customers_flow_time, 2))
+                row.write(AFTime, round((Total_customers_flow_time / NumOfServicedCustomer), 2))
+                row.write(Idle, round(IdleState_time, 2))
+                row.write(Approaching, round(ApproachingState_time, 2))
+                row.write(Setting, round(SettingState_time, 2))
+                row.write(Transiting, round(TransitingState_time, 2))
+                row.write(Parking, round(ParkingState_time, 2))
                 
                 ex += 1
                 
@@ -203,9 +203,9 @@ def run_excelWriteVersion(dispatchers, meanTimeArrivals, imbalanceLevel, numOfPR
 
 if __name__ == '__main__':
     dispatcher = Algorithms.get_all_dispatchers().values()
-    meanTimeArrival = (6.0, 7.0)
+    meanTimeArrival = (7.0,)
     imbalanceLevel = 0.5
-    numOfPRTs = [30, 40]
+    numOfPRTs = [30,]
      
     run_excelWriteVersion(dispatcher, meanTimeArrival, imbalanceLevel, numOfPRTs)
     
