@@ -28,8 +28,6 @@ data_accu_et = 0.0
 
 def on_notify_customer_arrival(customer):
     if Dynamics.NumOfCustomerArrivals == int(NumOfTotalCustomer / 10):
-        Dynamics.NumOfCustomerArrivals = 0
-          
         Dynamics.Total_empty_travel_distance = 0.0
         Dynamics.NumOfPickedUpCustomer = 0
           
@@ -52,13 +50,13 @@ def on_notify_customer_arrival(customer):
 
     if Dynamics.NumOfCustomerArrivals == NumOfTotalCustomer:
         global NumOfCustomerArrivals, Total_empty_travel_distance, NumOfPickedUpCustomer
-        NumOfCustomerArrivals = Dynamics.NumOfCustomerArrivals
+        NumOfCustomerArrivals = Dynamics.NumOfCustomerArrivals - int(NumOfTotalCustomer / 10)
         Total_empty_travel_distance = Dynamics.Total_empty_travel_distance
         NumOfPickedUpCustomer = Dynamics.NumOfPickedUpCustomer
         global Total_travel_distance, Total_customers_flow_time, NumOfServicedCustomer 
         Total_travel_distance = Dynamics.Total_travel_distance 
         Total_customers_flow_time = Dynamics.Total_customers_flow_time 
-        NumOfServicedCustomer = Dynamics.NumOfServicedCustomer 
+        NumOfServicedCustomer = Dynamics.NumOfServicedCustomer
         global Total_customers_waiting_time, MaxCustomerWaitingTime 
         Total_customers_waiting_time = Dynamics.Total_customers_waiting_time
         MaxCustomerWaitingTime = Dynamics.MaxCustomerWaitingTime 
@@ -162,7 +160,7 @@ def run_excelWriteVersion(dispatchers, meanTimeArrivals, imbalanceLevel, numOfPR
                 row.write(NOP, nPRTs)
                 
                 Nodes, Edges = Dynamics.Network2()
-                Customers = Dynamics.gen_Customer(MTA, 5000, imbalanceLevel, Nodes)
+                Customers = Dynamics.gen_Customer(MTA, 100, imbalanceLevel, Nodes)
                 global NumOfTotalCustomer
                 NumOfTotalCustomer = len(Customers)
                 PRTs = Dynamics.gen_PRT(nPRTs, Nodes)
@@ -182,7 +180,7 @@ def run_excelWriteVersion(dispatchers, meanTimeArrivals, imbalanceLevel, numOfPR
                 row.write(compuTime, round(et, 2))
                 
                 row.write(TTDist, round(Total_travel_distance, 2))
-                row.write(ATDist, round((Dynamics.Total_travel_distance / NumOfServicedCustomer), 2))
+                row.write(ATDist, round((Total_travel_distance / NumOfServicedCustomer), 2))
                 row.write(TETDist, round(Total_empty_travel_distance, 2))
                 row.write(AETDist, round((Total_empty_travel_distance / NumOfPickedUpCustomer), 2))
                 row.write(TWTime, round(Total_customers_waiting_time, 2))
