@@ -154,7 +154,7 @@ class MainFrame(wx.Frame):
         
         self.dispatcher = self.select_dispatcher()
         
-        self.dispatcher = Algorithms.NN1 
+#         self.dispatcher = Algorithms.NN1 
         
         if self.dispatcher == None:
             return
