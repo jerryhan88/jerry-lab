@@ -4,7 +4,6 @@ from util import DragZoomPanel
 import wx, Dynamics, Algorithms
 from Dynamics import ST_IDLE, ST_APPROACHING, ST_SETTING, ST_TRANSITING, ST_PARKING, STATION, TRANSFER
 from time import time
-  
 
 TIMER_INTERVAL = 100
 CLOCK_INCREMENT = 100
@@ -103,9 +102,10 @@ class MainFrame(wx.Frame):
         # Every resources are accessible
 #         self.Nodes, self.Edges = Dynamics.Network1()
         self.Nodes, self.Edges = Dynamics.Network2()
-        self.Customers = Dynamics.gen_Customer(6.2, 5000, 0.3, self.Nodes)
+        
+        self.Customers = Dynamics.gen_Customer(Dynamics.CUSTOMER_ARRIVAL_INTERVAL, Dynamics.NUM_CUSTOMER, 0.3, self.Nodes)
         self.NumOfTotalCustomer = len(self.Customers)
-        self.PRTs = Dynamics.gen_PRT(50, self.Nodes)
+        self.PRTs = Dynamics.gen_PRT(Dynamics.NUM_PRT, self.Nodes)
         
         Algorithms.init_algorithms(self.Nodes)
         

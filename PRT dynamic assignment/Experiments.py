@@ -23,6 +23,8 @@ SettingState_time = 0.0
 TransitingState_time = 0.0
 ParkingState_time = 0.0
 
+Total_boarding_waiting_time = 0.0
+
 data_accu_st = 0.0
 data_accu_et = 0.0
 
@@ -45,6 +47,9 @@ def on_notify_customer_arrival(customer):
         Dynamics.SettingState_time = 0.0
         Dynamics.TransitingState_time = 0.0
         Dynamics.ParkingState_time = 0.0
+        
+        Dynamics.Total_boarding_waiting_time = 0.0
+        
         global data_accu_st
         data_accu_st = customer.arriving_time
 
@@ -66,6 +71,10 @@ def on_notify_customer_arrival(customer):
         SettingState_time = Dynamics.SettingState_time 
         TransitingState_time = Dynamics.TransitingState_time
         ParkingState_time = Dynamics.ParkingState_time
+        
+        global Total_boarding_waiting_time
+        Total_boarding_waiting_time = Dynamics.Total_boarding_waiting_time 
+        
         global data_accu_et
         data_accu_et = customer.arriving_time
         print '-------------------------------------------------------------------------------'
@@ -120,13 +129,13 @@ def profile_solve():
     s = pstats.Stats('log/profile')
     s.strip_dirs().sort_stats('cumulative', 'time').print_stats()
 
-def run_excelWriteVersion(dispatchers, meanTimeArrivals, imbalanceLevel, numOfPRTs):
+def run_excelWriteVersion(dispatchers, meanTimeArrivals, numOfPRTs):
     from tempfile import TemporaryFile
     from xlwt import Workbook
     book = Workbook()
     sheet1 = book.add_sheet('Sheet 1')
     row1 = sheet1.row(0)
-    compuTime, TTDist, ATDist, TETDist, AETDist, TWTime, AWTime, MWTime, TFTime, AFTime, Idle, Approaching, Setting, Transiting, Parking, DN, mTA, NOP = range(18)
+    compuTime, TTDist, ATDist, TETDist, AETDist, TWTime, AWTime, MWTime, TFTime, AFTime, Idle, Approaching, Setting, Transiting, Parking, TBT, ABT, DN, mTA, NOP = range(20)
     colNames = [
                 'CTime',
                 'T.TravedDist',
@@ -143,6 +152,8 @@ def run_excelWriteVersion(dispatchers, meanTimeArrivals, imbalanceLevel, numOfPR
                 'S.Time',
                 'T.Time',
                 'P.Time',
+                'T.B.Time',
+                'A.B.Time',
                 'dispatcher',
                 'meanTimeArrivals',
                 'numOfPRTs',
@@ -160,7 +171,7 @@ def run_excelWriteVersion(dispatchers, meanTimeArrivals, imbalanceLevel, numOfPR
                 row.write(NOP, nPRTs)
                 
                 Nodes, Edges = Dynamics.Network2()
-                Customers = Dynamics.gen_Customer(MTA, 100, imbalanceLevel, Nodes)
+                Customers = Dynamics.gen_Customer(MTA, 2000, 0.5, Nodes)
                 global NumOfTotalCustomer
                 NumOfTotalCustomer = len(Customers)
                 PRTs = Dynamics.gen_PRT(nPRTs, Nodes)
@@ -175,7 +186,7 @@ def run_excelWriteVersion(dispatchers, meanTimeArrivals, imbalanceLevel, numOfPR
                 et = time() - st
                 
                 global NumOfCustomerArrivals, Total_empty_travel_distance, NumOfPickedUpCustomer, Total_travel_distance, Total_customers_flow_time, NumOfServicedCustomer, Total_customers_waiting_time, MaxCustomerWaitingTime
-                global IdleState_time, ApproachingState_time, SettingState_time, TransitingState_time, ParkingState_time, data_accu_st, data_accu_et
+                global IdleState_time, ApproachingState_time, SettingState_time, TransitingState_time, ParkingState_time, Total_boarding_waiting_time, data_accu_st, data_accu_et
                 
                 row.write(compuTime, round(et, 2))
                 
@@ -193,22 +204,19 @@ def run_excelWriteVersion(dispatchers, meanTimeArrivals, imbalanceLevel, numOfPR
                 row.write(Setting, round(SettingState_time, 2))
                 row.write(Transiting, round(TransitingState_time, 2))
                 row.write(Parking, round(ParkingState_time, 2))
+                row.write(TBT, round(Total_boarding_waiting_time, 2))
+                row.write(ABT, round((Total_boarding_waiting_time / NumOfServicedCustomer), 2))
                 
                 ex += 1
                 
-    book.save('dynamicsResults.xls')
+    book.save('dynamicsResults10.xls')
     book.save(TemporaryFile())
 
 if __name__ == '__main__':
     dispatcher = Algorithms.get_all_dispatchers().values()
-    meanTimeArrival = (7.0,)
-    imbalanceLevel = 0.5
-    numOfPRTs = [30,]
-     
-    run_excelWriteVersion(dispatcher, meanTimeArrival, imbalanceLevel, numOfPRTs)
+#     meanTimeArrival = (3.5, )
+#     meanTimeArrival = (4.1, )
+    meanTimeArrival = (5.0, )
+    numOfPRTs = [40, ]
     
-#     ex = 2000
-#     for meanTimeArrival in (6.0, 7.0):
-#         for dispatcher in (Algorithms.NN0, Algorithms.NN1, Algorithms.NN2, Algorithms.NN3, Algorithms.NN4, Algorithms.NN5):
-#             run_textWriteVersion(ex, dispatcher, meanTimeArrival, 0.5, 40)
-#             ex += 1
+    run_excelWriteVersion(dispatcher[2:3], meanTimeArrival, numOfPRTs)

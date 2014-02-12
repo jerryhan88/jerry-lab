@@ -7,12 +7,17 @@ import Algorithms
 
 #---------------------------------------------------------------------
 # parameter setting
+
+NUM_PRT = 50
+NUM_CUSTOMER = 5000
+CUSTOMER_ARRIVAL_INTERVAL = 4.2 
+
 PRT_SPEED = 12  # unit (m/s)
 S2J_SPEED = 6
 J2D_SPEED = 9
-numOfBerth = 2
-# SETTING_TIME = (45.0, 60.0) # unit (sec)
-SETTING_TIME = (4.0, 6.0) # unit (sec)
+numOfBerth = 4
+SETTING_TIME = (45.0, 60.0) # unit (sec)
+# SETTING_TIME = (4.0, 6.0) # unit (sec)
 
 #---------------------------------------------------------------------
 # node type and states of PRT
@@ -48,6 +53,8 @@ ApproachingState_time = 0.0
 SettingState_time = 0.0
 TransitingState_time = 0.0
 ParkingState_time = 0.0
+
+Total_boarding_waiting_time = 0.0
 
 NumOfCustomerArrivals = 0
 
@@ -640,6 +647,7 @@ class Customer():
         
         self.assigned_PRT = None
         self.isSetupWaiting = False
+        self.boardingWaitingStartTime = 0.0
     
     def __repr__(self):
         return '(C%d) %s->%s' % (self.id, self.sn.id, self.dn.id)
@@ -697,11 +705,16 @@ class PRT():
         if len(targetS.settingPRTs) >= numOfBerth:
             self.isSetupWaiting = True
             target_c.isSetupWaiting = True
+            target_c.boardingWaitingStartTime = cur_time
             targetS.setupWaitingPRTs.append(self)
             return False
         else:
             self.isSetupWaiting = False
             target_c.isSetupWaiting = False
+            if target_c.boardingWaitingStartTime:
+                target_c.boardingWaitingTime = cur_time - target_c.boardingWaitingStartTime
+            else:
+                target_c.boardingWaitingTime = 0
             return True
     
     def modify_passed_assignedPRT_event(self, cur_time, prev_PRT, target_c):
@@ -970,12 +983,13 @@ class PRT():
             return None
         
         # Measure update
-        global TransitingState_time, NumOfServicedCustomer, Total_travel_distance, Total_customers_flow_time
+        global TransitingState_time, NumOfServicedCustomer, Total_travel_distance, Total_customers_flow_time, Total_boarding_waiting_time
         TransitingState_time += cur_time - self.stateChangingPoint
         NumOfServicedCustomer += 1
         travel_distance = sum(e.distance for e in self.path_e)
         Total_travel_distance += travel_distance
         Total_customers_flow_time += cur_time - target_c.arriving_time
+        Total_boarding_waiting_time += target_c.boardingWaitingTime
         
         # State update
         self.set_stateChange(ST_IDLE, cur_time)
@@ -1113,6 +1127,8 @@ def init_dynamics(_Nodes, _PRTs, _Customers, _dispatcher):
     ParkingState_time = 0.0
     global NumOfCustomerArrivals
     NumOfCustomerArrivals = 0
+    global Total_boarding_waiting_time
+    Total_boarding_waiting_time = 0.0
 
     global Nodes, PRTs, Customers, dispatcher
     Nodes, PRTs, Customers, dispatcher = _Nodes, _PRTs, _Customers, _dispatcher
