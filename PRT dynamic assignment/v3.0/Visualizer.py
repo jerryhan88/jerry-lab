@@ -45,6 +45,7 @@ class ChartPanel(DragZoomPanel):
         self.lastTime = Dynamics.Customers[-1].arriving_time + 600.0
         self.NumOfTotalCustomer = len(Dynamics.Customers)
         
+        
     def OnDrawDevice(self, gc):
         pass
     

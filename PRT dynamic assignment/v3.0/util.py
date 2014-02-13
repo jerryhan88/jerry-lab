@@ -2,24 +2,6 @@ from __future__ import division
 
 import wx
 
-def set_posD_OnCurve(btwSJ, sn, dn, ):
-    # SD: distance between a station and a driving link
-    SD = 10
-    # R: circles radius
-    #     this one decide a degree of curve links 
-    R = 24
-    # L: length of a strait link
-    L = 20
-    # CLL: curved links length
-    CLL = btwSJ - L
-    
-    assert R >= SD
-    assert R >= CLL / 2
-        
-    curve_pos = []
-    return curve_pos
-    
-
 DEFAULT_FONT_SIZE = 8  # NOTE strange! Effect of size is not continous.
 
 class DragZoomPanel(wx.Panel):
@@ -36,7 +18,7 @@ class DragZoomPanel(wx.Panel):
     NOTE in the current version of wxPython 2.8.12.1, GraphicsContext conflicts with
          SetDoubleBuffered(True). Hence, memory buffer is used to prevent flickering.
     '''
-    def __init__(self, parent, wid, scale_ref=1, init_scale=1, init_translate=(0, 0), scale_inc=2 ** (1 / 2), *args, **kwargs):
+    def __init__(self, parent, wid, scale_ref=1, init_scale=1, init_translate=(0,0), scale_inc=2**(1/2), *args, **kwargs):
         wx.Panel.__init__(self, parent, wid, *args, **kwargs)
         self.scale, self.scale_ref, self.scale_inc = init_scale, scale_ref, scale_inc
         (self.translate_x, self.translate_y), self.translate_mode = init_translate, False
