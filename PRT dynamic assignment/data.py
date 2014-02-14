@@ -94,22 +94,22 @@ def Network1():
     
     JDJ_pos_info1 = [
                     ('0W', '0E', 'CW'),
-                    ('1W', '1E', 'CCW'),
-                    ('2W', '2E', 'CW'),
-                    ('7E', '7W', 'CW'),
-                    ('8E', '8W', 'CCW'),
-                    ('9E', '9W', 'CW'),
-                    ('14E', '14W', 'CCW'),
-                    ('15E', '15W', 'CW'),
-                    ('16E', '16W', 'CCW'),
-                    ('3S', '3N', 'CCW'),
-                    ('4N', '4S', 'CCW'),
-                    ('5S', '5N', 'CCW'),
-                    ('6N', '6S', 'CCW'),
-                    ('10S', '10N', 'CW'),
-                    ('11N', '11S', 'CW'),
-                    ('12S', '12N', 'CW'),
-                    ('13N', '13S', 'CW'),
+#                     ('1W', '1E', 'CCW'),
+#                     ('2W', '2E', 'CW'),
+#                     ('7E', '7W', 'CW'),
+#                     ('8E', '8W', 'CCW'),
+#                     ('9E', '9W', 'CW'),
+#                     ('14E', '14W', 'CCW'),
+#                     ('15E', '15W', 'CW'),
+#                     ('16E', '16W', 'CCW'),
+#                     ('3S', '3N', 'CCW'),
+#                     ('4N', '4S', 'CCW'),
+#                     ('5S', '5N', 'CCW'),
+#                     ('6N', '6S', 'CCW'),
+#                     ('10S', '10N', 'CW'),
+#                     ('11N', '11S', 'CW'),
+#                     ('12S', '12N', 'CW'),
+#                     ('13N', '13S', 'CW'),
                     ]
     
     def findN(nID):
@@ -121,8 +121,9 @@ def Network1():
             
     from util import set_posD_OnCurve
     
-    for px, py in set_posD_OnCurve(btwSJ, JDJ_pos_info1[0][0],):
-        JDJ_Nodes.append((px, py))
+    for sn_id, dn_id, direction in JDJ_pos_info1:
+        for px, py in set_posD_OnCurve(btwSJ, findN(sn_id), findN(dn_id), direction):
+            JDJ_Nodes.append((px, py))
         
     return Nodes  # + JDJ_Nodes
 

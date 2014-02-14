@@ -2,7 +2,7 @@ from __future__ import division
 
 import wx
 
-def set_posD_OnCurve(btwSJ, sn, dn, ):
+def set_posD_OnCurve(btwSJ, sn, dn, direction):
     # SD: distance between a station and a driving link
     SD = 10
     # R: circles radius
@@ -17,6 +17,8 @@ def set_posD_OnCurve(btwSJ, sn, dn, ):
     assert R >= CLL / 2
         
     curve_pos = []
+    
+    assert False
     return curve_pos
     
 
