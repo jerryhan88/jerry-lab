@@ -1,8 +1,8 @@
 from __future__ import division
-from math import sqrt
 from igraph import Graph
 import dlib
 from itertools import izip
+from random import choice
 
 check_path = lambda x: None
 
@@ -27,7 +27,7 @@ def on_notify_assignmentment_point(args=None):
     print '-----------------------------------------------------------------------(Re)assignment!!' 
 
 def get_all_dispatchers():
-    return {'NNBA-I': NNBA_I, 'NNBA-IA': NNBA_IA, 'NNBA-IT': NNBA_IT, 'NNBA-IAP': NNBA_IAP, 'NNBA-IAT': NNBA_IAT, 'NNBA-IATP': NNBA_IATP}
+    return {'FCFS': FCFS, 'NNBA-I': NNBA_I, 'NNBA-IA': NNBA_IA, 'NNBA-IT': NNBA_IT, 'NNBA-IAP': NNBA_IAP, 'NNBA-IAT': NNBA_IAT, 'NNBA-IATP': NNBA_IATP}
 
 def reassignment(event_time, target_PRTs, target_customers, Nodes):
     _target_customers = target_customers[:]
@@ -56,6 +56,25 @@ def reassignment(event_time, target_PRTs, target_customers, Nodes):
     for chosen_prt, target_c in RA:
         chosen_prt.re_assign_customer(event_time, target_c)
 
+def FCFS(event_time, PRTs, waiting_customers, Nodes):
+    from Dynamics import ST_IDLE, PRT_SPEED
+    on_notify_assignmentment_point(None)
+    print waiting_customers
+    candi_customers = [customer for customer in waiting_customers if not customer.assigned_PRT and not customer.isSetupWaiting] 
+    if candi_customers:
+        target_c = candi_customers[0]
+        PRT_C_EAT = []
+        # Estimated Arrival Time
+        for prt in PRTs:
+            if prt.state != ST_IDLE or prt.isSetupWaiting:
+                continue
+            else:
+                _, path_e = find_SP(prt.arrived_n.no, target_c.sn.no)
+                empty_travel_time = sum(e.distance / min(PRT_SPEED, e.maxSpeed) for e in path_e)
+                PRT_C_EAT.append((prt, empty_travel_time))
+        target_PRT = sorted(PRT_C_EAT, key=lambda PRT_C_EAT: PRT_C_EAT[1])[0][0]
+        target_PRT.re_assign_customer(event_time, target_c) 
+    
 def NNBA_I(event_time, PRTs, waiting_customers, Nodes):
     from Dynamics import ST_IDLE
     # Target PRT: I

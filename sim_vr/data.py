@@ -7,9 +7,15 @@ def ex1():
     seed(2)
     #---------------------------------------------------------------------
     # parameter setting
+    '''
     NUM_PRT = 50
     NUM_CUSTOMER = 5000
     CUSTOMER_ARRIVAL_INTERVAL = 4.2
+    '''
+    # parameter setting
+    NUM_PRT = 50
+    NUM_CUSTOMER = 10  # 5000
+    CUSTOMER_ARRIVAL_INTERVAL = 100.2
     
     PRT_SPEED = 12  # unit (m/s)
     S2J_SPEED = 6
@@ -28,11 +34,12 @@ def ex1():
 #     dispatcher = Algorithms.NNBA_IA
 #     dispatcher = Algorithms.NNBA_IAT
 #     dispatcher = Algorithms.NNBA_IT
-    dispatcher = Algorithms.NNBA_IAP
+#     dispatcher = Algorithms.NNBA_IAP
 #     dispatcher = Algorithms.NNBA_IATP
+    dispatcher = Algorithms.FCFS
     
-    Dynamics.run(SETTING_TIME, PRT_SPEED, Network, PRTs, Customers, dispatcher)
-#     Dynamics.run(SETTING_TIME, PRT_SPEED, Network, PRTs, Customers, useVisualizer=True)
+#     Dynamics.run(SETTING_TIME, PRT_SPEED, Network, PRTs, Customers, dispatcher)
+    Dynamics.run(SETTING_TIME, PRT_SPEED, Network, PRTs, Customers, useVisualizer=True)
 
 #---------------------------------------------------------------------
 # Generate things such as Network, PRT, Customer

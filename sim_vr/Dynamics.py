@@ -21,15 +21,12 @@ WaitingCustomerChanges = []
 WaitingTimeChanges = []
 
 Total_travel_distance, Total_empty_travel_distance = (0.0,) * 2
-distances = []
 NumOfCustomerArrivals, NumOfPickedUpCustomer, NumOfServicedCustomer = (0,) * 3
-Total_customers_flow_time, Total_customers_waiting_time, MaxCustomerWaitingTime = (0.0,) * 3
-customersWaitingtimes = []
-NumOfWaitingCustomer, ChaningPointOfNWC, Total_boarding_waiting_time = 0, 0.0, 0.0
+Total_customers_flow_time, Total_customers_waiting_time = (0.0,) * 2
+distances, customersWaitingTimes, boardingWaitingTimes = [], [], []
+NumOfWaitingCustomer, ChaningPointOfNWC = 0, 0.0
 
 stateTimes = {'I' : 0.0, 'A' : 0.0, 'S' : 0.0, 'T' : 0.0, 'P' : 0.0}
-
-Total_boarding_waiting_time = 0.0
 
 NumOfCustomerArrivals = 0
 
@@ -121,7 +118,7 @@ class PRT():
     def measures_update(self, cur_time, onEvent, target_c=None):
         global NumOfPickedUpCustomer, NumOfServicedCustomer
         global Total_empty_travel_distance, Total_travel_distance, distances
-        global Total_boarding_waiting_time
+        global distances, customersWaitingTimes, boardingWaitingTimes
         global Total_customers_flow_time
         global stateTimes
         
@@ -129,7 +126,9 @@ class PRT():
         		
         if onEvent == 'I2S':
             NumOfPickedUpCustomer += 1
+            distances.append(('E', 0.0))
             update_customerWaitingTimeMeasure(cur_time, -1)
+            customersWaitingTimes.append(cur_time - target_c.arriving_time)
         elif onEvent == 'A2S':
             NumOfPickedUpCustomer += 1
             travel_distance = sum(e.distance for e in self.path_e)
@@ -137,13 +136,14 @@ class PRT():
             distances.append(('E', travel_distance)) 
             Total_travel_distance += travel_distance
             update_customerWaitingTimeMeasure(cur_time, -1)
+            customersWaitingTimes.append(cur_time - target_c.arriving_time)
         elif onEvent == 'T2I':
             NumOfServicedCustomer += 1
             travel_distance = sum(e.distance for e in self.path_e)
             Total_travel_distance += travel_distance
             distances.append(('S', travel_distance))
             Total_customers_flow_time += cur_time - target_c.arriving_time
-            Total_boarding_waiting_time += target_c.boardingWaitingTime
+            boardingWaitingTimes.append(target_c.boardingWaitingTime)
         elif onEvent == 'P2I':
             travel_distance = sum(e.distance for e in self.path_e)
             Total_empty_travel_distance += travel_distance
@@ -257,7 +257,7 @@ class PRT():
         prev_PRT = target_c.assigned_PRT
         
         # Measure update
-        self.measures_update(cur_time, 'I2S')
+        self.measures_update(cur_time, 'I2S', target_c)
             
         # State update
         self.set_stateChange(ST_SETTING, cur_time)
@@ -310,7 +310,7 @@ class PRT():
             return None
         
         # Measure update
-        self.measures_update(cur_time, 'A2S')
+        self.measures_update(cur_time, 'A2S', target_c)
         
         # State update
         self.set_stateChange(ST_SETTING, cur_time)
@@ -513,17 +513,17 @@ class PRT():
 
 def init_dynamics(_Nodes, _PRTs, _Customers, _dispatcher):
     global NumOfCustomerArrivals, NumOfPickedUpCustomer, NumOfServicedCustomer
-    global Total_travel_distance, Total_empty_travel_distance, distances
-    global NumOfWaitingCustomer, ChaningPointOfNWC, Total_boarding_waiting_time
-    global Total_customers_flow_time, Total_customers_waiting_time, customersWaitingtimes, MaxCustomerWaitingTime  
+    global Total_travel_distance, Total_empty_travel_distance
+    global NumOfWaitingCustomer, ChaningPointOfNWC
+    global Total_customers_flow_time, Total_customers_waiting_time
+    global distances, customersWaitingTimes  
     global stateTimes
     
     Total_travel_distance, Total_empty_travel_distance = (0.0,) * 2
-    distances = []
     NumOfCustomerArrivals, NumOfPickedUpCustomer, NumOfServicedCustomer = (0,) * 3
-    Total_customers_flow_time, Total_customers_waiting_time, MaxCustomerWaitingTime = (0.0,) * 3
-    customersWaitingtimes = []
-    NumOfWaitingCustomer, ChaningPointOfNWC, Total_boarding_waiting_time = 0, 0.0, 0.0
+    Total_customers_flow_time, Total_customers_waiting_time = (0.0,) * 2
+    distances, customersWaitingTimes = [], []
+    NumOfWaitingCustomer, ChaningPointOfNWC, = 0, 0.0
     
     for k in stateTimes.iterkeys():
         stateTimes[k] = 0.0
@@ -542,15 +542,13 @@ def logger(s):
     print s
 
 def update_customerWaitingTimeMeasure(cur_time, numOfCustomerChange):
-    global Total_customers_waiting_time, customersWaitingtimes, MaxCustomerWaitingTime
+    global Total_customers_waiting_time, customersWaitingTimes
     global NumOfWaitingCustomer, ChaningPointOfNWC
     global WaitingCustomerChanges, WaitingTimeChanges
 
     # Update measure
     customers_waiting_time = NumOfWaitingCustomer * (cur_time - ChaningPointOfNWC)
     Total_customers_waiting_time += customers_waiting_time
-    customersWaitingtimes.append(customers_waiting_time)
-    MaxCustomerWaitingTime = max(customersWaitingtimes)
 
     # Memorize things for the next calculation
     if NumOfWaitingCustomer == 0 :

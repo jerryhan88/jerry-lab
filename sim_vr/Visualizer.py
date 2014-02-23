@@ -259,7 +259,7 @@ class MeasurePanel(wx.ListCtrl):
         self.InsertStringItem(WTAverage, 'Average')
         self.SetStringItem(WTAverage, 1, '%.1f' % 0.0)
         self.InsertStringItem(WTMaximum, 'Maximum')
-        self.SetStringItem(WTMaximum, 1, '%.1f' % Dynamics.MaxCustomerWaitingTime)
+#         self.SetStringItem(WTMaximum, 1, '%.1f' % Dynamics.MaxCustomerWaitingTime)
          
         self.InsertStringItem(FlowTime, 'Flow Time')
         self.SetStringItem(FlowTime, 1, '   ')
@@ -289,15 +289,15 @@ class MeasurePanel(wx.ListCtrl):
         self.SetStringItem(StateDuration, 1, '   ')
         self.SetItemBackgroundColour(StateDuration, bg_clr)
         self.InsertStringItem(Idle, 'Idle')
-        self.SetStringItem(Idle, 1, '%.1f' % Dynamics.IdleState_time)
+        self.SetStringItem(Idle, 1, '%.1f' % Dynamics.stateTimes['I'])
         self.InsertStringItem(Approaching, 'Approaching')
-        self.SetStringItem(Approaching, 1, '%.1f' % Dynamics.ApproachingState_time)
+        self.SetStringItem(Approaching, 1, '%.1f' % Dynamics.stateTimes['A'])
         self.InsertStringItem(Setting, 'Setting')
-        self.SetStringItem(Setting, 1, '%.1f' % Dynamics.ApproachingState_time)
+        self.SetStringItem(Setting, 1, '%.1f' % Dynamics.stateTimes['S'])
         self.InsertStringItem(Transiting, 'Transiting')
-        self.SetStringItem(Transiting, 1, '%.1f' % Dynamics.TransitingState_time)
+        self.SetStringItem(Transiting, 1, '%.1f' % Dynamics.stateTimes['T'])
         self.InsertStringItem(Parking, 'Parking')
-        self.SetStringItem(Parking, 1, '%.1f' % Dynamics.ParkingState_time)
+        self.SetStringItem(Parking, 1, '%.1f' % Dynamics.stateTimes['P'])
                 
     def update_stat(self, cur_time):
         self.SetStringItem(CustomerArrivals, 1, '%d' % Dynamics.NumOfCustomerArrivals)
@@ -308,7 +308,7 @@ class MeasurePanel(wx.ListCtrl):
         self.SetStringItem(WTTotal, 1, '%.1f' % Dynamics.Total_customers_waiting_time)
         if cur_time != 0:
             self.SetStringItem(WTAverage, 1, '%.1f' % (Dynamics.Total_customers_waiting_time / cur_time))
-        self.SetStringItem(WTMaximum, 1, '%.1f' % Dynamics.MaxCustomerWaitingTime)
+#         self.SetStringItem(WTMaximum, 1, '%.1f' % Dynamics.MaxCustomerWaitingTime)
         
         self.SetStringItem(FTTotal, 1, '%.1f' % Dynamics.Total_customers_flow_time)
         self.SetStringItem(TDTotal, 1, '%.1f' % Dynamics.Total_travel_distance)
@@ -321,11 +321,11 @@ class MeasurePanel(wx.ListCtrl):
             self.SetStringItem(ETDAverage, 1, '%.1f' % (Dynamics.Total_empty_travel_distance / Dynamics.NumOfPickedUpCustomer))
         
         total_tive_flow = cur_time * len(Dynamics.PRTs)
-        self.SetStringItem(Idle, 1, '%.1f(%.1f%s)' % (Dynamics.IdleState_time, Dynamics.IdleState_time / total_tive_flow * 100, '%'))
-        self.SetStringItem(Approaching, 1, '%.1f(%.1f%s)' % (Dynamics.ApproachingState_time, Dynamics.ApproachingState_time / total_tive_flow * 100, '%'))
-        self.SetStringItem(Setting, 1, '%.1f(%.1f%s)' % (Dynamics.SettingState_time, Dynamics.SettingState_time / total_tive_flow * 100, '%'))
-        self.SetStringItem(Transiting, 1, '%.1f(%.1f%s)' % (Dynamics.TransitingState_time, Dynamics.TransitingState_time / total_tive_flow * 100, '%'))
-        self.SetStringItem(Parking, 1, '%.1f(%.1f%s)' % (Dynamics.ParkingState_time, Dynamics.ParkingState_time / total_tive_flow * 100, '%'))
+        self.SetStringItem(Idle, 1, '%.1f(%.1f%s)' % (Dynamics.stateTimes['I'], Dynamics.stateTimes['I'] / total_tive_flow * 100, '%'))
+        self.SetStringItem(Approaching, 1, '%.1f(%.1f%s)' % (Dynamics.stateTimes['A'], Dynamics.stateTimes['A'] / total_tive_flow * 100, '%'))
+        self.SetStringItem(Setting, 1, '%.1f(%.1f%s)' % (Dynamics.stateTimes['S'], Dynamics.stateTimes['S'] / total_tive_flow * 100, '%'))
+        self.SetStringItem(Transiting, 1, '%.1f(%.1f%s)' % (Dynamics.stateTimes['T'], Dynamics.stateTimes['T'] / total_tive_flow * 100, '%'))
+        self.SetStringItem(Parking, 1, '%.1f(%.1f%s)' % (Dynamics.stateTimes['P'], Dynamics.stateTimes['P'] / total_tive_flow * 100, '%'))
         
         self.Refresh()
             
