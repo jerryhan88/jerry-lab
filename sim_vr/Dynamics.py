@@ -131,7 +131,6 @@ class PRT():
             NumOfPickedUpCustomer += 1
             update_customerWaitingTimeMeasure(cur_time, -1)
         elif onEvent == 'A2S':
-            ApproachingState_time += cur_time - self.stateChangingPoint
             NumOfPickedUpCustomer += 1
             travel_distance = sum(e.distance for e in self.path_e)
             Total_empty_travel_distance += travel_distance
@@ -536,6 +535,9 @@ def init_dynamics(_Nodes, _PRTs, _Customers, _dispatcher):
         x = [customer.arriving_time, On_CustomerArrival, customer]
         heappush(event_queue, x)
 
+def end_dynamics():
+    event_queue = []
+
 def logger(s):
     print s
 
@@ -546,8 +548,6 @@ def update_customerWaitingTimeMeasure(cur_time, numOfCustomerChange):
 
     # Update measure
     customers_waiting_time = NumOfWaitingCustomer * (cur_time - ChaningPointOfNWC)
-#     if customers_waiting_time > MaxCustomerWaitingTime:
-#         MaxCustomerWaitingTime = customers_waiting_time
     Total_customers_waiting_time += customers_waiting_time
     customersWaitingtimes.append(customers_waiting_time)
     MaxCustomerWaitingTime = max(customersWaitingtimes)

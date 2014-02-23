@@ -6,53 +6,25 @@ from time import time, ctime
 logger_pass = lambda x: None
 
 NumOfTotalCustomer = 0
-NumOfCustomerArrivals = 0
 
-Total_empty_travel_distance = 0.0
-NumOfPickedUpCustomer = 0
-
-Total_travel_distance = 0.0
-Total_customers_flow_time = 0.0
-NumOfServicedCustomer = 0
-
-Total_customers_waiting_time = 0.0
-MaxCustomerWaitingTime = 0.0
-
+Total_travel_distance, Total_empty_travel_distance = (0.0,) * 2
+NumOfCustomerArrivals, NumOfPickedUpCustomer, NumOfServicedCustomer = (0,) * 3
+Total_customers_flow_time, Total_customers_waiting_time, MaxCustomerWaitingTime = (0.0,) * 3
+distances, customersWaitingtimes = [], []
 stateTimes = {'I' : 0.0, 'A' : 0.0, 'S' : 0.0, 'T' : 0.0, 'P' : 0.0}
-
-IdleState_time = 0.0
-ApproachingState_time = 0.0
-SettingState_time = 0.0
-TransitingState_time = 0.0
-ParkingState_time = 0.0
-
 Total_boarding_waiting_time = 0.0
-
-data_accu_st, data_accu_et= (0.0, ) * 2 
+data_accu_st, data_accu_et = (0.0,) * 2 
 
 def on_notify_customer_arrival(customer):
     if Dynamics.NumOfCustomerArrivals == int(NumOfTotalCustomer / 10):
-        Dynamics.Total_empty_travel_distance = 0.0
-        Dynamics.NumOfPickedUpCustomer = 0
-          
-        Dynamics.Total_travel_distance = 0.0
-        Dynamics.Total_customers_flow_time = 0.0
-        Dynamics.NumOfServicedCustomer = 0
-          
-        Dynamics.Total_customers_waiting_time = 0.0
-        Dynamics.NumOfWaitingCustomer = 0
-        Dynamics.ChaningPointOfNWC = 0.0
+        Dynamics.Total_travel_distance, Dynamics.Total_empty_travel_distance = (0.0,) * 2
+        Dynamics.NumOfWaitingCustomer, Dynamics.NumOfPickedUpCustomer, Dynamics.NumOfServicedCustomer = (0,) * 3
+        Dynamics.Total_customers_flow_time, Dynamics.Total_customers_waiting_time = (0.0,) * 2
         Dynamics.MaxCustomerWaitingTime = 0.0
-          
-          
+        Dynamics.distances, Dynamics.customersWaitingtimes = [], []
+        
         for k in Dynamics.stateTimes.iterkeys():
             Dynamics.stateTimes[k] = 0.0
-        
-#         Dynamics.IdleState_time = 0.0
-#         Dynamics.ApproachingState_time = 0.0
-#         Dynamics.SettingState_time = 0.0
-#         Dynamics.TransitingState_time = 0.0
-#         Dynamics.ParkingState_time = 0.0
         
         Dynamics.Total_boarding_waiting_time = 0.0
         
@@ -60,32 +32,51 @@ def on_notify_customer_arrival(customer):
         data_accu_st = customer.arriving_time
 
     if Dynamics.NumOfCustomerArrivals == NumOfTotalCustomer:
-        global NumOfCustomerArrivals, Total_empty_travel_distance, NumOfPickedUpCustomer
-        NumOfCustomerArrivals = Dynamics.NumOfCustomerArrivals - int(NumOfTotalCustomer / 10)
+        global Total_travel_distance, Total_empty_travel_distance
+        global distances
+        global NumOfCustomerArrivals, NumOfPickedUpCustomer, NumOfServicedCustomer
+        global Total_customers_flow_time, Total_customers_waiting_time, MaxCustomerWaitingTime
+        global stateTimes
+        global Total_boarding_waiting_time
+        
+        Total_travel_distance = Dynamics.Total_travel_distance
         Total_empty_travel_distance = Dynamics.Total_empty_travel_distance
+        
+        NumOfCustomerArrivals = Dynamics.NumOfCustomerArrivals - int(NumOfTotalCustomer / 10)
         NumOfPickedUpCustomer = Dynamics.NumOfPickedUpCustomer
-        global Total_travel_distance, Total_customers_flow_time, NumOfServicedCustomer 
-        Total_travel_distance = Dynamics.Total_travel_distance 
-        Total_customers_flow_time = Dynamics.Total_customers_flow_time 
         NumOfServicedCustomer = Dynamics.NumOfServicedCustomer
-        global Total_customers_waiting_time, MaxCustomerWaitingTime 
+        
+        Total_customers_flow_time = Dynamics.Total_customers_flow_time 
         Total_customers_waiting_time = Dynamics.Total_customers_waiting_time
         MaxCustomerWaitingTime = Dynamics.MaxCustomerWaitingTime 
-#         global IdleState_time, ApproachingState_time, SettingState_time, TransitingState_time, ParkingState_time
-        global stateTimes
         
-        IdleState_time = Dynamics.IdleState_time 
-        ApproachingState_time = Dynamics.ApproachingState_time
-        SettingState_time = Dynamics.SettingState_time 
-        TransitingState_time = Dynamics.TransitingState_time
-        ParkingState_time = Dynamics.ParkingState_time
+        for k in Dynamics.stateTimes.iterkeys():
+            stateTimes[k] = Dynamics.stateTimes[k]
         
-        global Total_boarding_waiting_time
         Total_boarding_waiting_time = Dynamics.Total_boarding_waiting_time 
         
         global data_accu_et
         data_accu_et = customer.arriving_time
+        Dynamics.end_dynamics()
         print '-------------------------------------------------------------------------------'
+        
+        print 'Total_travel_distance', Total_travel_distance
+        print 'Total_empty_travel_distance', Total_empty_travel_distance
+        
+        print 'NumOfCustomerArrivals', NumOfCustomerArrivals
+        print 'NumOfPickedUpCustomer', NumOfPickedUpCustomer
+        print 'NumOfServicedCustomer', NumOfServicedCustomer
+        
+        print 'Total_customers_flow_time', Total_customers_flow_time 
+        print 'Total_customers_waiting_time', Total_customers_waiting_time
+        print 'MaxCustomerWaitingTime', MaxCustomerWaitingTime 
+        
+        for k in stateTimes.iterkeys():
+            print '%s state', stateTimes[k]
+        
+        print 'Total_boarding_waiting_time', Total_boarding_waiting_time
+        
+        assert False
      
     print customer
 
@@ -138,8 +129,8 @@ def run_excelWriteVersion(dispatchers, meanTimeArrivals, numOfPRTs):
     #---------------------------------------------------------------------
     # parameter setting
     NUM_PRT = 50
-    NUM_CUSTOMER = 10#5000
-    CUSTOMER_ARRIVAL_INTERVAL = 4.2
+    NUM_CUSTOMER = 10  # 5000
+    CUSTOMER_ARRIVAL_INTERVAL = 100.2
     
     PRT_SPEED = 12  # unit (m/s)
     S2J_SPEED = 6
@@ -178,11 +169,13 @@ def run_excelWriteVersion(dispatchers, meanTimeArrivals, numOfPRTs):
                 row.write(MWTime, round(MaxCustomerWaitingTime, 2))
                 row.write(TFTime, round(Total_customers_flow_time, 2))
                 row.write(AFTime, round((Total_customers_flow_time / NumOfServicedCustomer), 2))
-                row.write(Idle, round(IdleState_time, 2))
-                row.write(Approaching, round(ApproachingState_time, 2))
-                row.write(Setting, round(SettingState_time, 2))
-                row.write(Transiting, round(TransitingState_time, 2))
-                row.write(Parking, round(ParkingState_time, 2))
+                
+                row.write(Idle, round(stateTimes['I'], 2))
+                row.write(Approaching, round(stateTimes['A'], 2))
+                row.write(Setting, round(stateTimes['S'], 2))
+                row.write(Transiting, round(stateTimes['T'], 2))
+                row.write(Parking, round(stateTimes['P'], 2))
+                
                 row.write(TBT, round(Total_boarding_waiting_time, 2))
                 row.write(ABT, round((Total_boarding_waiting_time / NumOfServicedCustomer), 2))
                 
@@ -195,7 +188,7 @@ if __name__ == '__main__':
     dispatcher = Algorithms.get_all_dispatchers().values()
 #     meanTimeArrival = (3.5, )
 #     meanTimeArrival = (4.1, )
-    meanTimeArrival = (5.0, )
+    meanTimeArrival = (5.0,)
     numOfPRTs = [40, ]
     
     run_excelWriteVersion(dispatcher[2:3], meanTimeArrival, numOfPRTs)
