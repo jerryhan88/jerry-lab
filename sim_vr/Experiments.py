@@ -84,7 +84,7 @@ def run_experiment(dispatchers, meanTimeArrivals):
     #---------------------------------------------------------------------
     # parameter setting
     NUM_PRT = 50
-    NUM_CUSTOMER = 2000  # 5000
+    NUM_CUSTOMER = 50  # 5000
     
     PRT_SPEED = 12  # unit (m/s)
     S2J_SPEED = 6
@@ -151,7 +151,7 @@ def run_experiment(dispatchers, meanTimeArrivals):
             Dynamics.run(SETTING_TIME, PRT_SPEED, Network, PRTs, Customers, dispatcher)
             et = time() - st
             
-            e_distance = [d for d in distances if d[0] == 'E'].sort()
+            e_distance = sorted([d[1] for d in distances if d[0] == 'E'])
             customersWaitingTimes.sort()
             boardingWaitingTimes.sort()
             
@@ -162,7 +162,7 @@ def run_experiment(dispatchers, meanTimeArrivals):
             BAverage = sum(boardingWaitingTimes) / len(boardingWaitingTimes)
             BDeviation_2 = [(w - BAverage) ** 2 for w in boardingWaitingTimes]
             
-            TXT_FILE = 'experimentResult_txt/MTA(%f) dispatcher(%s)' % (MTA, dispatcher.__name__)
+            TXT_FILE = 'experimentResult_txt/MTA(%.1f) dispatcher(%s)' % (MTA, dispatcher.__name__)
             with open(TXT_FILE, 'w') as f:
                 f.write('Parameter------------------------------------------------------------------------------------------------\n')
                 f.write('S2J_SPEED:%d\n' % S2J_SPEED)
@@ -177,24 +177,24 @@ def run_experiment(dispatchers, meanTimeArrivals):
                 
                 f.write('E.T.Distance_Total:%.1f\n' % sum(e_distance))
                 f.write('E.T.Distance_Average:%.1f\n' % ETAverage)
-                f.write('E.T.Distance_S.D:%.1f\n' % sum(ETDeviation_2) / len(ETDeviation_2))
+                f.write('E.T.Distance_S.D:%.1f\n' % (sum(ETDeviation_2) / len(ETDeviation_2)))
                 f.write('E.T.Distance_Median:%.1f\n' % e_distance[len(e_distance) // 2])
                 f.write('E.T.Distance_Max:%.1f\n' % max(e_distance))
                 
                 f.write('C.W.Time_Total:%.1f\n' % sum(customersWaitingTimes))
                 f.write('C.W.Time_Average):%.1f\n' % CWAverage)
-                f.write('C.W.Time_S.D):%.1f\n' % sum(CWDeviation_2) / len(CWDeviation_2))
+                f.write('C.W.Time_S.D):%.1f\n' % (sum(CWDeviation_2) / len(CWDeviation_2)))
                 f.write('C.W.Time_Median:%.1f\n' % customersWaitingTimes[len(customersWaitingTimes) // 2])
                 f.write('C.W.Time_Max:%.1f\n' % max(customersWaitingTimes))
                 
                 f.write('B.Time_Total:%.1f\n' % sum(boardingWaitingTimes))
                 f.write('B.Time_Average:%.1f\n' % BAverage)
-                f.write('B.Time_S.D:%.1f\n' % sum(BDeviation_2) / len(BDeviation_2))
+                f.write('B.Time_S.D:%.1f\n' % (sum(BDeviation_2) / len(BDeviation_2)))
                 f.write('B.Time_Median:%.1f\n' % boardingWaitingTimes[len(boardingWaitingTimes) // 2])
                 f.write('B.Time_Max:%.1f\n' % max(boardingWaitingTimes))
                 
                 f.write('T.F.Time:%.1f\n' % Total_customers_flow_time)
-                f.write('A.F.Time:%.1f\n' % Total_customers_flow_time / NumOfServicedCustomer)
+                f.write('A.F.Time:%.1f\n' % (Total_customers_flow_time / NumOfServicedCustomer))
                 
                 time_flow = data_accu_et - data_accu_st
                 total_time_flow = time_flow * len(Dynamics.PRTs)
@@ -238,7 +238,7 @@ def run_experiment(dispatchers, meanTimeArrivals):
                     
             ex += 1
                 
-    book.save('dynamicsResults_4.xls')
+    book.save('dynamicsResults_6.xls')
     book.save(TemporaryFile())
 
 def profile_solve():
@@ -251,5 +251,5 @@ def profile_solve():
 
 if __name__ == '__main__':
     dispatcher = Algorithms.get_all_dispatchers().values()
-    meanTimeArrival = [4.0 + x *0.1 for x in range(10)]
+    meanTimeArrival = [6.0 + x * 0.1 for x in range(10)]
     run_experiment(dispatcher, meanTimeArrival)
