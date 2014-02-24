@@ -84,8 +84,7 @@ def run_experiment(dispatchers, meanTimeArrivals):
     #---------------------------------------------------------------------
     # parameter setting
     NUM_PRT = 50
-    NUM_CUSTOMER = 10  # 5000
-    CUSTOMER_ARRIVAL_INTERVAL = 100.2
+    NUM_CUSTOMER = 2000  # 5000
     
     PRT_SPEED = 12  # unit (m/s)
     S2J_SPEED = 6
@@ -145,7 +144,7 @@ def run_experiment(dispatchers, meanTimeArrivals):
             global data_accu_st, data_accu_et
             
             Network = data.Network1(S2J_SPEED, J2D_SPEED)
-            Customers, PRTs = data.gen_instances(Network, CUSTOMER_ARRIVAL_INTERVAL, NUM_CUSTOMER, NUM_PRT, PRT_SPEED)
+            Customers, PRTs = data.gen_instances(Network, MTA, NUM_CUSTOMER, NUM_PRT, PRT_SPEED)
             NumOfTotalCustomer = len(Customers)
             
             st = time()
@@ -163,7 +162,7 @@ def run_experiment(dispatchers, meanTimeArrivals):
             BAverage = sum(boardingWaitingTimes) / len(boardingWaitingTimes)
             BDeviation_2 = [(w - BAverage) ** 2 for w in boardingWaitingTimes]
             
-            TXT_FILE = 'experimentResult_txt/nPRT(%d) MTA(%f) dispatcher(%s)' % (nPRT, MTA, dispatcher.__name__)
+            TXT_FILE = 'experimentResult_txt/MTA(%f) dispatcher(%s)' % (MTA, dispatcher.__name__)
             with open(TXT_FILE, 'w') as f:
                 f.write('Parameter------------------------------------------------------------------------------------------------\n')
                 f.write('S2J_SPEED:%d\n' % S2J_SPEED)
