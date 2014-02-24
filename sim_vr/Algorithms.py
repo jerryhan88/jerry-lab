@@ -59,7 +59,6 @@ def reassignment(event_time, target_PRTs, target_customers, Nodes):
 def FCFS(event_time, PRTs, waiting_customers, Nodes):
     from Dynamics import ST_IDLE, PRT_SPEED
     on_notify_assignmentment_point(None)
-    print waiting_customers
     candi_customers = [customer for customer in waiting_customers if not customer.assigned_PRT and not customer.isSetupWaiting] 
     if candi_customers:
         target_c = candi_customers[0]
@@ -72,8 +71,9 @@ def FCFS(event_time, PRTs, waiting_customers, Nodes):
                 _, path_e = find_SP(prt.arrived_n.no, target_c.sn.no)
                 empty_travel_time = sum(e.distance / min(PRT_SPEED, e.maxSpeed) for e in path_e)
                 PRT_C_EAT.append((prt, empty_travel_time))
-        target_PRT = sorted(PRT_C_EAT, key=lambda PRT_C_EAT: PRT_C_EAT[1])[0][0]
-        target_PRT.re_assign_customer(event_time, target_c) 
+        if PRT_C_EAT:  
+            target_PRT = sorted(PRT_C_EAT, key=lambda PRT_C_EAT: PRT_C_EAT[1])[0][0]
+            target_PRT.re_assign_customer(event_time, target_c) 
     
 def NNBA_I(event_time, PRTs, waiting_customers, Nodes):
     from Dynamics import ST_IDLE

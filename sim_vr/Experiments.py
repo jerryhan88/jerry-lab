@@ -84,7 +84,7 @@ def run_experiment(dispatchers, meanTimeArrivals):
     #---------------------------------------------------------------------
     # parameter setting
     NUM_PRT = 50
-    NUM_CUSTOMER = 50  # 5000
+    NUM_CUSTOMER = 2000  # 5000
     
     PRT_SPEED = 12  # unit (m/s)
     S2J_SPEED = 6
@@ -252,4 +252,4 @@ def profile_solve():
 if __name__ == '__main__':
     dispatcher = Algorithms.get_all_dispatchers().values()
     meanTimeArrival = [6.0 + x * 0.1 for x in range(10)]
-    run_experiment(dispatcher, meanTimeArrival)
+    run_experiment(dispatcher[2:3], meanTimeArrival)
