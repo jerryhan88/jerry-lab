@@ -90,7 +90,7 @@ def run_experiment(dispatchers, meanTimeArrivals):
     PRT_SPEED = 12  # unit (m/s)
     S2J_SPEED = 6
     J2D_SPEED = 9
-    SETTING_TIME = (45.0, 60.0)  # unit (sec)
+    SETTING_TIME = (10.0, 60.0)  # unit (sec)
     
     book = Workbook()
     sheet1 = book.add_sheet('Sheet 1')
@@ -213,7 +213,7 @@ def run_experiment(dispatchers, meanTimeArrivals):
             row.write(nOTC, NUM_CUSTOMER) 
             row.write(mTA, MTA)
             row.write(D, dispatcher.__name__) 
-            row.write(CTime,et) 
+            row.write(CTime, et) 
             row.write(ETDT, sum(e_distance))
             row.write(ETDA, ETAverage)
             row.write(ETDSD, sum(ETDeviation_2) / len(ETDeviation_2))
@@ -239,7 +239,7 @@ def run_experiment(dispatchers, meanTimeArrivals):
                     
             ex += 1
                 
-    book.save('dynamicsResults.xls')
+    book.save('dynamicsResults_4.xls')
     book.save(TemporaryFile())
 
 def profile_solve():
@@ -252,8 +252,5 @@ def profile_solve():
 
 if __name__ == '__main__':
     dispatcher = Algorithms.get_all_dispatchers().values()
-#     meanTimeArrival = (3.5, )
-#     meanTimeArrival = (4.1, )
-    meanTimeArrival = (5.0,)
-    
-    run_experiment(dispatcher[2:3], meanTimeArrival)
+    meanTimeArrival = [4.0 + x *0.1 for x in range(10)]
+    run_experiment(dispatcher, meanTimeArrival)
