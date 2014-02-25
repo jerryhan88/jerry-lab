@@ -238,7 +238,7 @@ def run_experiment(dispatchers, meanTimeArrivals):
                     
             ex += 1
                 
-    book.save('dynamicsResults_6.xls')
+    book.save('dynamicsResults_4.xls')
     book.save(TemporaryFile())
 
 def profile_solve():
@@ -251,5 +251,5 @@ def profile_solve():
 
 if __name__ == '__main__':
     dispatcher = Algorithms.get_all_dispatchers().values()
-    meanTimeArrival = [6.0 + x * 0.1 for x in range(10)]
-    run_experiment(dispatcher[2:3], meanTimeArrival)
+    meanTimeArrival = [4.0 + x * 0.1 for x in range(10)]
+    run_experiment(dispatcher, meanTimeArrival)
