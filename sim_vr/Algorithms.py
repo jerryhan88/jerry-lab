@@ -56,10 +56,43 @@ def reassignment(event_time, target_PRTs, target_customers, Nodes):
     for chosen_prt, target_c in RA:
         chosen_prt.re_assign_customer(event_time, target_c)
 
-def FCFS(event_time, PRTs, waiting_customers, Nodes):
+def FOFS(event_time, PRTs, waiting_customers, Nodes):
     from Dynamics import ST_IDLE, PRT_SPEED
     on_notify_assignmentment_point(None)
-    candi_customers = [customer for customer in waiting_customers if not customer.assigned_PRT and not customer.isSetupWaiting] 
+    candi_customers = [customer for customer in waiting_customers if not customer.assigned_PRT and not customer.isSetupWaiting]
+    if candi_customers:
+        target_c = None
+        
+def find_nearestPRT(PRTs):
+    from Dynamics import ST_IDLE, PRT_SPEED
+    PRT_C_EAT = []
+    # Estimated Arrival Time
+    for prt in PRTs:
+        if prt.state != ST_IDLE or prt.isSetupWaiting:
+            continue
+        else:
+            _, path_e = find_SP(prt.arrived_n.no, target_c.sn.no)
+            empty_travel_time = sum(e.distance / min(PRT_SPEED, e.maxSpeed) for e in path_e)
+            PRT_C_EAT.append((prt, empty_travel_time))
+    if PRT_C_EAT:  
+        target_PRT = sorted(PRT_C_EAT, key=lambda PRT_C_EAT: PRT_C_EAT[1])[0][0]
+        target_PRT.re_assign_customer(event_time, target_c)
+
+def FCFS(event_time, PRTs, waiting_customers, Nodes):
+    on_notify_assignmentment_point(None)
+    candi_customers = [customer for customer in waiting_customers if not customer.assigned_PRT and not customer.isSetupWaiting]
+    if len(candi_customers) == 1:
+        # customer init. dispatching
+        target_c = candi_customers[0]
+        target_PRT = find_nearestPRT()
+        
+    elif len(candi_customers) > 1:
+        # PRT init. dispatching
+        target_c = candi_customers[0]
+        
+    else:
+        assert len(candi_customers) == 0 
+        # no reassignment
     if candi_customers:
         target_c = candi_customers[0]
         PRT_C_EAT = []
