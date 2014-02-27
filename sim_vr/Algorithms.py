@@ -27,7 +27,7 @@ def on_notify_assignmentment_point(args=None):
     print '-----------------------------------------------------------------------(Re)assignment!!' 
 
 def get_all_dispatchers():
-    return {'FCFS': FCFS, 'NNBA-I': NNBA_I, 'NNBA-IA': NNBA_IA, 'NNBA-IT': NNBA_IT, 'NNBA-IAP': NNBA_IAP, 'NNBA-IAT': NNBA_IAT, 'NNBA-IATP': NNBA_IATP}
+    return {'FOFS': FOFS, 'FCFS': FCFS, 'NNBA-I': NNBA_I, 'NNBA-IA': NNBA_IA, 'NNBA-IT': NNBA_IT, 'NNBA-IAP': NNBA_IAP, 'NNBA-IAT': NNBA_IAT, 'NNBA-IATP': NNBA_IATP}
 
 def reassignment(event_time, target_PRTs, target_customers, Nodes):
     _target_customers = target_customers[:]
@@ -56,57 +56,69 @@ def reassignment(event_time, target_PRTs, target_customers, Nodes):
     for chosen_prt, target_c in RA:
         chosen_prt.re_assign_customer(event_time, target_c)
 
+def find_nearestPRT(candi_PRT, target_c):
+    from Dynamics import ST_IDLE, PRT_SPEED
+    PRT_C_EAT = []
+    # Estimated Arrival Time
+    for prt in candi_PRT:
+        _, path_e = find_SP(prt.arrived_n.no, target_c.sn.no)
+        empty_travel_time = sum(e.distance / min(PRT_SPEED, e.maxSpeed) for e in path_e)
+        PRT_C_EAT.append((prt, empty_travel_time))
+    return sorted(PRT_C_EAT, key=lambda PRT_C_EAT: PRT_C_EAT[1])[0][0]
+
 def FOFS(event_time, PRTs, waiting_customers, Nodes):
     from Dynamics import ST_IDLE, PRT_SPEED
     on_notify_assignmentment_point(None)
     candi_customers = [customer for customer in waiting_customers if not customer.assigned_PRT and not customer.isSetupWaiting]
-    if candi_customers:
-        target_c = None
-        
-def find_nearestPRT(PRTs):
-    from Dynamics import ST_IDLE, PRT_SPEED
-    PRT_C_EAT = []
-    # Estimated Arrival Time
-    for prt in PRTs:
-        if prt.state != ST_IDLE or prt.isSetupWaiting:
-            continue
+    candi_PRT = [prt for prt in PRTs if prt.state == ST_IDLE and not prt.isSetupWaiting]
+    if candi_PRT: 
+        if candi_customers:
+            if len(candi_customers) == 1:
+                # customer init. dispatching
+                target_c = candi_customers[0]
+                target_PRT = find_nearestPRT(candi_PRT, target_c)
+            else:
+                assert len(candi_customers) > 1
+                # PRT init. dispatching
+                assert len(candi_PRT) == 1
+                target_PRT = candi_PRT[0]
+                target_c = None
+                global Longest_dis
+                FO_time = Longest_dis  # large number 
+                for c in candi_customers:
+                    _, path_e = find_SP(prt.arrived_n.no, c.sn.no)
+                    empty_travelTime = sum(e.distance / min(PRT_SPEED, e.maxSpeed) for e in path_e)
+                    _, path_e = find_SP(c.sn.no, c.dn.no)
+                    service_travelTime = sum(e.distance / min(PRT_SPEED, e.maxSpeed) for e in path_e)
+                    if empty_travelTime + service_travelTime < FO_time:
+                        FO_time = empty_travelTime + service_travelTime
+                        target_c = c 
+                assert target_c
+            target_PRT.re_assign_customer(event_time, target_c)
         else:
-            _, path_e = find_SP(prt.arrived_n.no, target_c.sn.no)
-            empty_travel_time = sum(e.distance / min(PRT_SPEED, e.maxSpeed) for e in path_e)
-            PRT_C_EAT.append((prt, empty_travel_time))
-    if PRT_C_EAT:  
-        target_PRT = sorted(PRT_C_EAT, key=lambda PRT_C_EAT: PRT_C_EAT[1])[0][0]
-        target_PRT.re_assign_customer(event_time, target_c)
+            assert len(candi_customers) == 0 
+            # no reassignment    
 
 def FCFS(event_time, PRTs, waiting_customers, Nodes):
+    from Dynamics import ST_IDLE
     on_notify_assignmentment_point(None)
     candi_customers = [customer for customer in waiting_customers if not customer.assigned_PRT and not customer.isSetupWaiting]
-    if len(candi_customers) == 1:
-        # customer init. dispatching
-        target_c = candi_customers[0]
-        target_PRT = find_nearestPRT()
-        
-    elif len(candi_customers) > 1:
-        # PRT init. dispatching
-        target_c = candi_customers[0]
-        
-    else:
-        assert len(candi_customers) == 0 
-        # no reassignment
-    if candi_customers:
-        target_c = candi_customers[0]
-        PRT_C_EAT = []
-        # Estimated Arrival Time
-        for prt in PRTs:
-            if prt.state != ST_IDLE or prt.isSetupWaiting:
-                continue
-            else:
-                _, path_e = find_SP(prt.arrived_n.no, target_c.sn.no)
-                empty_travel_time = sum(e.distance / min(PRT_SPEED, e.maxSpeed) for e in path_e)
-                PRT_C_EAT.append((prt, empty_travel_time))
-        if PRT_C_EAT:  
-            target_PRT = sorted(PRT_C_EAT, key=lambda PRT_C_EAT: PRT_C_EAT[1])[0][0]
-            target_PRT.re_assign_customer(event_time, target_c) 
+    candi_PRT = [prt for prt in PRTs if prt.state == ST_IDLE and not prt.isSetupWaiting]
+    if candi_PRT:
+        if candi_customers:
+            target_c = candi_customers[0]
+            if len(candi_customers) == 1:
+                # customer init. dispatching
+                target_PRT = find_nearestPRT(candi_PRT, target_c)
+            else :
+                assert len(candi_customers) > 1
+                # PRT init. dispatching
+                assert len(candi_PRT) == 1
+                target_PRT = candi_PRT[0]
+            target_PRT.re_assign_customer(event_time, target_c)
+        else:
+            assert len(candi_customers) == 0 
+            # no reassignment
     
 def NNBA_I(event_time, PRTs, waiting_customers, Nodes):
     from Dynamics import ST_IDLE
