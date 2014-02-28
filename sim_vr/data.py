@@ -12,10 +12,15 @@ def ex1():
     NUM_CUSTOMER = 5000
     CUSTOMER_ARRIVAL_INTERVAL = 4.2
     '''
+#     # parameter setting
+#     NUM_PRT = 50
+#     NUM_CUSTOMER = 10  # 5000
+#     CUSTOMER_ARRIVAL_INTERVAL = 100.2
+    
     # parameter setting
     NUM_PRT = 50
-    NUM_CUSTOMER = 10  # 5000
-    CUSTOMER_ARRIVAL_INTERVAL = 100.2
+    NUM_CUSTOMER = 2000
+    ArrivalRate = 0.3
     
     PRT_SPEED = 12  # unit (m/s)
     S2J_SPEED = 6
@@ -26,7 +31,7 @@ def ex1():
     # Network
     #  Nodes, Edges = Network 
     
-    Customers, PRTs = gen_instances(Network, CUSTOMER_ARRIVAL_INTERVAL, NUM_CUSTOMER, NUM_PRT, PRT_SPEED)
+    Customers, PRTs = gen_instances(Network, ArrivalRate, NUM_CUSTOMER, NUM_PRT, PRT_SPEED)
     
     import Algorithms, Dynamics
     
@@ -44,17 +49,19 @@ def ex1():
 #---------------------------------------------------------------------
 # Generate things such as Network, PRT, Customer
 
-def gen_instances(Network, CUSTOMER_ARRIVAL_INTERVAL, NUM_CUSTOMER, NUM_PRT, PRT_SPEED):
-    Customers = gen_Customer(CUSTOMER_ARRIVAL_INTERVAL, NUM_CUSTOMER, Network[0])
+def gen_instances(Network, ArrivalRate, NUM_CUSTOMER, NUM_PRT, PRT_SPEED):
+    Customers = gen_Customer(ArrivalRate, NUM_CUSTOMER, Network[0])
     PRTs = gen_PRT(NUM_PRT, PRT_SPEED, Network[0])
     
     return Customers, PRTs
 
-def gen_Customer(average_arrival, num_customers, Nodes):
+# def gen_Customer(arrivalRate, num_customers, Nodes):
+def gen_Customer(meanArrivalTime, num_customers, Nodes):
     from Dynamics import Customer, TRANSFER, STATION
     
     accu_pd = []
-    pd = [expovariate(1.0 / average_arrival) for _ in range(num_customers)]
+#     pd = [expovariate(arrivalRate) for _ in range(num_customers)]
+    pd = [expovariate(1.0 / meanArrivalTime) for _ in range(num_customers)]
     for i, t in enumerate(pd):
         if i == 0:
             accu_pd.append(t)
@@ -683,5 +690,3 @@ if __name__ == '__main__':
 #     win = MainFrame()
 #     win.Show(True)
 #     app.MainLoop()
-    
-        

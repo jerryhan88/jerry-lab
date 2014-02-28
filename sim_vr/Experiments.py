@@ -74,8 +74,8 @@ def on_notify_customer_arrival(customer):
 def run_experiment(dispatchers, meanTimeArrivals):
     from tempfile import TemporaryFile
     from xlwt import Workbook
-    seedNum = 2
-    seed(seedNum)
+#     seedNum = 2
+#     seed(seedNum)
     
     Dynamics.logger = logger_pass 
     Algorithms.on_notify_assignmentment_point = logger_pass  
@@ -243,13 +243,41 @@ def run_experiment(dispatchers, meanTimeArrivals):
 
 def profile_solve():
     import cProfile, pstats
-    args = (60.0, 500, 0.8, 80)
-    dispatcher = Algorithms.NN5
-    cProfile.runctx('run(0, 0, dispatcher, *args)', globals(), locals(), 'log/profile')
+    PRT_SPEED = 12  # unit (m/s)
+    S2J_SPEED = 6
+    J2D_SPEED = 9
+    SETTING_TIME = (10.0, 60.0)  # unit (sec)
+    Network = data.Network1(S2J_SPEED, J2D_SPEED)
+    Customers, PRTs = data.gen_instances(Network, 0.3, 200, 50, PRT_SPEED)
+    dispatcher = Algorithms.NNBA_IATP
+    args = (SETTING_TIME, PRT_SPEED, Network, PRTs, Customers, dispatcher)
+    
+    cProfile.runctx('Dynamics.run(*args)', globals(), locals(), 'log/profile')
     s = pstats.Stats('log/profile')
     s.strip_dirs().sort_stats('cumulative', 'time').print_stats()
 
+def test_variousCustomer():
+    seed(2)
+    PRT_SPEED = 12  # unit (m/s)
+    S2J_SPEED = 6
+    J2D_SPEED = 9
+    SETTING_TIME = (10.0, 60.0)  # unit (sec)
+    for x in range(3):
+        for y in range(4):
+            Network = data.Network1(S2J_SPEED, J2D_SPEED)
+            Customers, PRTs = data.gen_instances(Network, 0.2, 2000, 50, PRT_SPEED)
+            customerArrivals_txt = open('Info. Arrivals of customers_%d_%d.txt' % (x,y), 'w')
+            for c in Customers:
+                t, sn, dn = c.arriving_time, c.sn.id, c.dn.id 
+                customerArrivals_txt.write('%f,%s-%s\n' % (t, sn, dn))
+            customerArrivals_txt.close()
+
 if __name__ == '__main__':
+#     test_variousCustomer()
+#     profile_solve()
+    
     dispatcher = Algorithms.get_all_dispatchers().values()
-    meanTimeArrival = [4.0 + x * 0.1 for x in range(10)]
+#     arrivalRate = [0.2 + x * 0.005 for x in range(10)]
+#     
+    meanTimeArrival = [6.0 + x * 0.1 for x in range(10)]
     run_experiment(dispatcher, meanTimeArrival)
