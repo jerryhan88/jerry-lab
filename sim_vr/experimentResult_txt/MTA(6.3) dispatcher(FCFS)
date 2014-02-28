@@ -7,7 +7,7 @@ numOfTotalCustomers:2000
 meanTimeArrivals:6.300000
 dispatcher:FCFS
 Measure------------------------------------------------------------------------------------------------
-CTime:5.6
+CTime:5.0
 E.T.Distance_Total:2726210.8
 E.T.Distance_Average:1773.7
 E.T.Distance_S.D:1046026.9

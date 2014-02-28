@@ -7,26 +7,26 @@ numOfTotalCustomers:2000
 meanTimeArrivals:5.800000
 dispatcher:FCFS
 Measure------------------------------------------------------------------------------------------------
-CTime:5.1
-E.T.Distance_Total:2568381.2
-E.T.Distance_Average:1650.6
-E.T.Distance_S.D:1030154.7
-E.T.Distance_Median:1620.0
+CTime:4.6
+E.T.Distance_Total:2569617.8
+E.T.Distance_Average:1718.8
+E.T.Distance_S.D:1027459.8
+E.T.Distance_Median:1703.9
 E.T.Distance_Max:4107.4
-C.W.Time_Total:1221090.6
-C.W.Time_Average):784.8
-C.W.Time_S.D):218635.7
-C.W.Time_Median:727.5
-C.W.Time_Max:1764.0
-B.Time_Total:4.5
+C.W.Time_Total:1940920.1
+C.W.Time_Average):1298.3
+C.W.Time_S.D):378342.9
+C.W.Time_Median:1338.8
+C.W.Time_Max:2364.5
+B.Time_Total:0.0
 B.Time_Average:0.0
 B.Time_S.D:0.0
 B.Time_Median:0.0
-B.Time_Max:4.5
-T.F.Time:1479694.0
-A.F.Time:955.3
-I.S.Time: 2907.9(0.5%)
-A.S.Time: 235379.2(43.0%)
-S.S.Time: 53495.4(9.8%)
-T.S.Time: 254252.7(46.5%)
+B.Time_Max:0.0
+T.F.Time:2188745.3
+A.F.Time:1464.0
+I.S.Time: 0.0(0.0%)
+A.S.Time: 235119.6(43.7%)
+S.S.Time: 51665.4(9.6%)
+T.S.Time: 252118.6(46.9%)
 P.S.Time: 0.0(0.0%)
