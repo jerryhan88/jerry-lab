@@ -1,0 +1,32 @@
+Parameter------------------------------------------------------------------------------------------------
+S2J_SPEED:6
+J2D_SPEED:9
+PRT_SPEED:12
+numOfPRTs:50
+numOfTotalCustomers:2000
+meanTimeArrivals:6.500000
+dispatcher:NNBA_IATP
+Measure------------------------------------------------------------------------------------------------
+CTime:1497.1
+E.T.Distance_Total:486854.4
+E.T.Distance_Average:245.1
+E.T.Distance_S.D:193971.6
+E.T.Distance_Median:0.0
+E.T.Distance_Max:3864.8
+C.W.Time_Total:99814.3
+C.W.Time_Average):55.4
+C.W.Time_S.D):6646.6
+C.W.Time_Median:33.0
+C.W.Time_Max:827.4
+B.Time_Total:0.0
+B.Time_Average:0.0
+B.Time_S.D:0.0
+B.Time_Median:0.0
+B.Time_Max:0.0
+T.F.Time:463308.8
+A.F.Time:257.0
+I.S.Time: 181078.8(30.5%)
+A.S.Time: 47678.2(8.0%)
+S.S.Time: 63961.7(10.8%)
+T.S.Time: 298709.2(50.4%)
+P.S.Time: 1334.3(0.2%)

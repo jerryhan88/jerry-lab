@@ -11,10 +11,10 @@ CLOCK_INCR_DIFF = sqrt(2)
 
 STAT_UPDATE_INTERVAL = 1.0  # sec
 
-STATION_DIAMETER = 8
-JUNCTION_DIAMETER = 5
-CUSTOMER_RADIUS = 30 / 3
-PRT_SIZE = 30 / 5
+STATION_DIAMETER = 800
+JUNCTION_DIAMETER = 500
+CUSTOMER_RADIUS = 3000 / 3
+PRT_SIZE = 3000 / 5
 
 PRT_SPEED = 0
 
@@ -23,12 +23,12 @@ event_queue = []
 
 LOG_TO_OUTPUT = True
 
-
 TITLE = 'PRT Simulator'
 
 class MainFrame(wx.Frame):
     def __init__(self, Network, PRTs, Customers):
-        wx.Frame.__init__(self, None, -1, TITLE, size=(1024, 768), pos=(20, 20))
+#         wx.Frame.__init__(self, None, -1, TITLE, size=(1024, 768), pos=(20, 20))
+        wx.Frame.__init__(self, None, -1, TITLE, size=(1600, 900), pos=(20, 20))
         self.Nodes, self.Edges = Network
         self.PRTs, self.Customers = PRTs, Customers
         self.NumOfTotalCustomer = len(self.Customers)
@@ -76,7 +76,8 @@ class MainFrame(wx.Frame):
 
         self.Show(True)
         
-        self.dispatcher = self.select_dispatcher()
+#         self.dispatcher = self.select_dispatcher()
+        self.dispatcher = Algorithms.FCFS
         
         if self.dispatcher == None:
             return
@@ -86,7 +87,7 @@ class MainFrame(wx.Frame):
         self.SetTitle(TITLE + ' - ' + self.dispatcher.__name__)
         self.vp.SetFocus()
         
-        self.CWTC = CustomerWaitingTime_chart(self)
+#        self.CWTC = CustomerWaitingTime_chart(self)
         
         ##############################
         
@@ -94,8 +95,10 @@ class MainFrame(wx.Frame):
 
         self.Bind(wx.EVT_CLOSE, self.OnClose)
         
+        self.timer.Start(TIMER_INTERVAL)
+        
     def OnClose(self, event):
-        self.CWTC.Destroy()
+#         self.CWTC.Destroy()
         self.Destroy()
     
     def select_dispatcher(self):
@@ -169,7 +172,7 @@ class MainFrame(wx.Frame):
         for c in Dynamics.waiting_customers:
             self.waiting_customers_in_node[c.sn.id].append(c.id) 
         self.vp.RefreshGC()
-        self.CWTC.cp.RefreshGC()
+#         self.CWTC.cp.RefreshGC()
         
         if self.next_stat_update_time < time():
             self.next_stat_update_time = time() + STAT_UPDATE_INTERVAL
@@ -381,6 +384,10 @@ class ViewPanel(DragZoomPanel):
         self.Bind(wx.EVT_SIZE, self.OnSize)
         from Dynamics import STATION, JUNCTION, DOT
         global STATION, JUNCTION, DOT
+        self.translate_x += 50
+        self.translate_y += 50
+        self.scale = 0.008
+        self.SU = 100
     
     def OnMouseWheel(self, e):
         if e.ControlDown():
@@ -399,18 +406,17 @@ class ViewPanel(DragZoomPanel):
     
     def OnDraw(self, gc):
         old_tr = gc.GetTransform()
-        
         for n in self.Parent.Parent.Parent.Parent.Nodes:
             gc.Translate(n.px, n.py)
             if n.nodeType == TRANSFER or n.nodeType == STATION:
                 gc.SetBrush(wx.Brush(wx.Colour(255, 255, 255)))
                 gc.SetPen(wx.Pen(wx.Colour(0, 0, 0), 1))
                 gc.DrawEllipse(-STATION_DIAMETER / 2, -STATION_DIAMETER / 2, STATION_DIAMETER, STATION_DIAMETER)
-                gc.SetFont(wx.Font(10, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+                gc.SetFont(wx.Font(10 * self.SU, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
 #                 if n.settingPRTs:
                 PRTs_str = 'S #%d {' % len(n.settingPRTs) + ':'.join(('PRT%d(C%d)' % (prt.id, prt.transporting_customer.id)) for prt in n.settingPRTs) + '}'
-                gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-                gc.DrawText(PRTs_str, STATION_DIAMETER / 2 - 2, 12)
+                gc.SetFont(wx.Font(8 * self.SU, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+                gc.DrawText(PRTs_str, STATION_DIAMETER / 2 - 2 * self.SU, 12 * self.SU)
                 
                 PRTs_str = 'SW #%d {' % len(n.setupWaitingPRTs) + ':'.join(('PRT%d' % (prt.id)) for prt in n.setupWaitingPRTs) + '}'
                 
@@ -424,12 +430,12 @@ class ViewPanel(DragZoomPanel):
                         notLeavePRTs.append(prt)
                         
                 PRTs_str = 'XE #%d {' % len(notEnterPRTs) + ':'.join(('PRT%d(C%d)' % (prt.id, prt.transporting_customer.id)) for prt in notEnterPRTs) + '}'
-                gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-                gc.DrawText(PRTs_str, STATION_DIAMETER / 2 - 8, 22)
+                gc.SetFont(wx.Font(8 * self.SU, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+                gc.DrawText(PRTs_str, STATION_DIAMETER / 2 - 8 * self.SU, 22 * self.SU)
                 
                 PRTs_str = 'XL #%d {' % len(notLeavePRTs) + ':'.join(('PRT%d' % (prt.id)) for prt in notLeavePRTs) + '}'
-                gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-                gc.DrawText(PRTs_str, STATION_DIAMETER / 2 - 8, 32)
+                gc.SetFont(wx.Font(8 * self.SU, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+                gc.DrawText(PRTs_str, STATION_DIAMETER / 2 - 8 * self.SU, 32 * self.SU)
                 
                 if len(n.id) > 1:
                     gc.DrawText('%s' % n.id, -14, 5)
@@ -449,14 +455,14 @@ class ViewPanel(DragZoomPanel):
         for n_id, waiting_c_in_node in self.Parent.Parent.Parent.Parent.waiting_customers_in_node.iteritems():
             if waiting_c_in_node:
                 waiting_c_str = 'C #%d [' % len(waiting_c_in_node) + ':'.join(('C%d' % c_id) for c_id in waiting_c_in_node) + ']'
-                gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+                gc.SetFont(wx.Font(8 * self.SU, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
                 gc.DrawText(waiting_c_str, Dynamics.findNode(n_id).px + STATION_DIAMETER / 2, Dynamics.findNode(n_id).py - STATION_DIAMETER / 2)
         
         for n_id, idlePRT_in_node in self.Parent.Parent.Parent.Parent.idlePRT_in_node.iteritems():
             if idlePRT_in_node:
                 PRTs_str = 'I #%d (' % len(idlePRT_in_node) + ':'.join(('PRT%d' % prt_id) for prt_id in idlePRT_in_node) + ')'
-                gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-                gc.DrawText(PRTs_str, Dynamics.findNode(n_id).px + STATION_DIAMETER / 2, Dynamics.findNode(n_id).py + STATION_DIAMETER / 2 - 3)
+                gc.SetFont(wx.Font(8 * self.SU, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+                gc.DrawText(PRTs_str, Dynamics.findNode(n_id).px + STATION_DIAMETER / 2, Dynamics.findNode(n_id).py + STATION_DIAMETER / 2 - 3 * self.SU)
         
         for e in self.Parent.Parent.Parent.Parent.Edges:
             prev_n, next_n = e._from, e._to
@@ -473,46 +479,46 @@ class ViewPanel(DragZoomPanel):
                 sy = prev_n.py + uy * STATION_DIAMETER / 2
                 ex = next_n.px - ux * JUNCTION_DIAMETER / 2
                 ey = next_n.py - uy * JUNCTION_DIAMETER / 2
-                gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-                gc.DrawLines([(ex, ey), (ex - int((ux * 5)) + int(px * 2), ey - int(uy * 5) + int(py * 2))])
-                gc.DrawLines([(ex, ey), (ex - int(ux * 5) - int(px * 2), ey - int(uy * 5) - int(py * 2))])  
+                gc.SetFont(wx.Font(8 * self.SU, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+                gc.DrawLines([(ex, ey), (ex - int((ux * 5 * self.SU)) + int(px * 2 * self.SU), ey - int(uy * 5 * self.SU) + int(py * 2 * self.SU))])
+                gc.DrawLines([(ex, ey), (ex - int(ux * 5 * self.SU) - int(px * 2 * self.SU), ey - int(uy * 5 * self.SU) - int(py * 2 * self.SU))])  
             elif prev_n.nodeType == JUNCTION and (next_n.nodeType == TRANSFER or next_n.nodeType == STATION):
                 sx = prev_n.px + ux * JUNCTION_DIAMETER / 2
                 sy = prev_n.py + uy * JUNCTION_DIAMETER / 2
                 ex = next_n.px - ux * STATION_DIAMETER / 2
                 ey = next_n.py - uy * STATION_DIAMETER / 2
-                gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-                gc.DrawLines([(ex, ey), (ex - int((ux * 4)) + int(px * 2), ey - int(uy * 4) + int(py * 2))])
-                gc.DrawLines([(ex, ey), (ex - int(ux * 4) - int(px * 2), ey - int(uy * 4) - int(py * 2))])
+                gc.SetFont(wx.Font(8 * self.SU, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+                gc.DrawLines([(ex, ey), (ex - int((ux * 4 * self.SU)) + int(px * 2 * self.SU), ey - int(uy * 4 * self.SU) + int(py * 2 * self.SU))])
+                gc.DrawLines([(ex, ey), (ex - int(ux * 4 * self.SU) - int(px * 2 * self.SU), ey - int(uy * 4 * self.SU) - int(py * 2 * self.SU))])
             elif prev_n.nodeType == JUNCTION and next_n.nodeType == JUNCTION:
                 sx = prev_n.px + ux * JUNCTION_DIAMETER / 2
                 sy = prev_n.py + uy * JUNCTION_DIAMETER / 2
                 ex = next_n.px - ux * JUNCTION_DIAMETER / 2
                 ey = next_n.py - uy * JUNCTION_DIAMETER / 2
-                gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-                gc.DrawLines([(ex, ey), (ex - int((ux * 4)) + int(px * 2), ey - int(uy * 4) + int(py * 2))])
-                gc.DrawLines([(ex, ey), (ex - int(ux * 4) - int(px * 2), ey - int(uy * 4) - int(py * 2))])
+                gc.SetFont(wx.Font(8 * self.SU, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+                gc.DrawLines([(ex, ey), (ex - int((ux * 4 * self.SU)) + int(px * 2 * self.SU), ey - int(uy * 4 * self.SU) + int(py * 2 * self.SU))])
+                gc.DrawLines([(ex, ey), (ex - int(ux * 4 * self.SU) - int(px * 2 * self.SU), ey - int(uy * 4 * self.SU) - int(py * 2 * self.SU))])
             elif prev_n.nodeType == DOT and next_n.nodeType == JUNCTION:
                 sx = prev_n.px
                 sy = prev_n.py
                 ex = next_n.px - ux * JUNCTION_DIAMETER / 2
                 ey = next_n.py - uy * JUNCTION_DIAMETER / 2
-                gc.SetFont(wx.Font(5, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-                gc.DrawLines([(ex, ey), (ex - int((ux * 4)) + int(px * 2), ey - int(uy * 4) + int(py * 2))])
-                gc.DrawLines([(ex, ey), (ex - int(ux * 4) - int(px * 2), ey - int(uy * 4) - int(py * 2))])
+                gc.SetFont(wx.Font(5 * self.SU, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+                gc.DrawLines([(ex, ey), (ex - int((ux * 4 * self.SU)) + int(px * 2 * self.SU), ey - int(uy * 4 * self.SU) + int(py * 2 * self.SU))])
+                gc.DrawLines([(ex, ey), (ex - int(ux * 4 * self.SU) - int(px * 2 * self.SU), ey - int(uy * 4 * self.SU) - int(py * 2 * self.SU))])
             elif prev_n.nodeType == JUNCTION and next_n.nodeType == DOT :
                 sx = prev_n.px + ux * JUNCTION_DIAMETER / 2
                 sy = prev_n.py + uy * JUNCTION_DIAMETER / 2
                 ex = next_n.px
                 ey = next_n.py
-                gc.SetFont(wx.Font(5, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+                gc.SetFont(wx.Font(5 * self.SU, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
             elif prev_n.nodeType == DOT and next_n.nodeType == DOT :
                 sx = prev_n.px
                 sy = prev_n.py
                 ex = next_n.px
                 ey = next_n.py
 #                 gc.DrawLines([(sx, sy), (ex, ey)])
-                gc.SetFont(wx.Font(5, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+                gc.SetFont(wx.Font(5 * self.SU, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
 #                 continue
             else:
                 assert False 
@@ -543,16 +549,16 @@ class ViewPanel(DragZoomPanel):
                 gc.SetBrush(wx.Brush(wx.Colour(255, 242, 0)))
 
             if v.state != ST_IDLE:
-                gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+                gc.SetFont(wx.Font(8 * self.SU, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
                 gc.DrawEllipse(-PRT_SIZE / 2, -PRT_SIZE / 2, PRT_SIZE, PRT_SIZE)
                 
                 if v.assigned_customer:
-                    gc.DrawText('PRT%d-C%d' % (v.id, v.assigned_customer.id), -PRT_SIZE / 2, -PRT_SIZE / 2 - 12)
+                    gc.DrawText('PRT%d-C%d' % (v.id, v.assigned_customer.id), -PRT_SIZE / 2, -PRT_SIZE / 2 - 12 * self.SU)
                 elif v.transporting_customer:
-                    gc.DrawText('PRT%d(C%d)' % (v.id, v.transporting_customer.id), -PRT_SIZE / 2, -PRT_SIZE / 2 - 12)
+                    gc.DrawText('PRT%d(C%d)' % (v.id, v.transporting_customer.id), -PRT_SIZE / 2, -PRT_SIZE / 2 - 12 * self.SU)
                 else:
                     assert not v.assigned_customer and not v.transporting_customer 
-                    gc.DrawText('PRT%d' % v.id, -PRT_SIZE / 2, -PRT_SIZE / 2 - 12)
+                    gc.DrawText('PRT%d' % v.id, -PRT_SIZE / 2, -PRT_SIZE / 2 - 12 * self.SU)
             
             gc.SetTransform(old_tr)
         

@@ -65,7 +65,7 @@ class Node():
     
 class Edge():
     _id = 0
-    def __init__(self, _from, _to, maxSpeed=12):
+    def __init__(self, _from, _to, maxSpeed=1200):
         self.id = Edge._id
         Edge._id += 1
         self._from, self._to = _from, _to

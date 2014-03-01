@@ -1,0 +1,32 @@
+Parameter------------------------------------------------------------------------------------------------
+S2J_SPEED:6
+J2D_SPEED:9
+PRT_SPEED:12
+numOfPRTs:50
+numOfTotalCustomers:2000
+meanTimeArrivals:6.600000
+dispatcher:FCFS
+Measure------------------------------------------------------------------------------------------------
+CTime:4.5
+E.T.Distance_Total:2620116.6
+E.T.Distance_Average:1592.8
+E.T.Distance_S.D:1052172.0
+E.T.Distance_Median:1541.1
+E.T.Distance_Max:4107.4
+C.W.Time_Total:996154.5
+C.W.Time_Average):605.6
+C.W.Time_S.D):91869.7
+C.W.Time_Median:641.3
+C.W.Time_Max:1140.3
+B.Time_Total:0.0
+B.Time_Average:0.0
+B.Time_S.D:0.0
+B.Time_Median:0.0
+B.Time_Max:0.0
+T.F.Time:1302081.2
+A.F.Time:786.8
+I.S.Time: 5392.0(0.9%)
+A.S.Time: 240374.6(41.6%)
+S.S.Time: 57244.3(9.9%)
+T.S.Time: 273768.8(47.4%)
+P.S.Time: 0.0(0.0%)
