@@ -144,7 +144,7 @@ class Frame(wx.Frame):
                 break
             ps.path.append(target_n)
         ps.path.reverse()
-        return  ps.path
+        return ps.path
         
     def drawing(self, _):
         dc = wx.PaintDC(self.base_p)
