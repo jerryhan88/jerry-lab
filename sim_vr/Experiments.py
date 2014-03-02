@@ -170,8 +170,14 @@ def run_experiment(dispatchers, meanTimeArrivals):
                 CT.append(ct)
                 WT.append(wt)
                 AWT.append(sum(WT) / ct)
+                
             fig = plt.figure()
             plt.plot(CT, WT, 'b-', CT, AWT, 'r--')
+            fig.suptitle('Customer waiting')
+            ax = fig.add_subplot(111)
+            fig.subplots_adjust(top=0.85)
+            ax.set_xlabel('Time (sec)')
+            ax.set_ylabel('Customer (person)')
             FileName = 'experimentResult/waitingTimeGraph/arrivalRate(%.3f) dispatcher(%s).png' % (arrivalRate, dispatcher.__name__)
             plt.savefig(FileName)
             plt.close(fig)
@@ -347,9 +353,15 @@ def test_variousCustomer():
 if __name__ == '__main__':
 #     test_variousCustomer()
 #     profile_solve()
-    
-    dispatcher = Algorithms.get_all_dispatchers().values()[2:4]
+    dispatcher = [
+                    Algorithms.FOFS,
+                    Algorithms.FCFS,
+                    Algorithms.NNBA_I,
+                    Algorithms.NNBA_IT,
+                    Algorithms.NNBA_IA,
+                    Algorithms.NNBA_IAP,
+                    Algorithms.NNBA_IAT,
+                    Algorithms.NNBA_IATP,
+                    ]
     arrivalRates = [0.2 + x * 0.005 for x in range(2)]
-#     
-#     meanTimeArrival = [6.0 + x * 0.1 for x in range(10)]
     run_experiment(dispatcher, arrivalRates)
