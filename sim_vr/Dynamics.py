@@ -17,18 +17,18 @@ event_queue = []
 
 #---------------------------------------------------------------------
 # For calculating measure
-WaitingCustomerChanges = []
-WaitingTimeChanges = []
-
 Total_travel_distance, Total_empty_travel_distance = (0.0,) * 2
 NumOfCustomerArrivals, NumOfPickedUpCustomer, NumOfServicedCustomer = (0,) * 3
 Total_customers_flow_time, Total_customers_waiting_time = (0.0,) * 2
 distances, customersWaitingTimes, boardingWaitingTimes = [], [], []
+WaitingCustomerChanges, WaitingTimeChanges = [], []
 NumOfWaitingCustomer, ChaningPointOfNWC = 0, 0.0
 
 stateTimes = {'I' : 0.0, 'A' : 0.0, 'S' : 0.0, 'T' : 0.0, 'P' : 0.0}
 
 NumOfCustomerArrivals = 0
+
+
 
 # check arrival of customer
 on_notify_customer_arrival = lambda x: None

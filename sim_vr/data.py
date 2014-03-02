@@ -22,7 +22,7 @@ def ex1():
     NUM_CUSTOMER = 2000
     ArrivalRate = 0.3
     
-    PRT_SPEED = 1200  # unit (m/s)
+    PRT_SPEED = 1200  # unit (cm/s)
     S2J_SPEED = 600
     J2D_SPEED = 900
     SETTING_TIME = (45.0, 60.0)  # unit (sec)
@@ -55,13 +55,13 @@ def gen_instances(Network, ArrivalRate, NUM_CUSTOMER, NUM_PRT, PRT_SPEED):
     
     return Customers, PRTs
 
-# def gen_Customer(arrivalRate, num_customers, Nodes):
-def gen_Customer(meanArrivalTime, num_customers, Nodes):
+def gen_Customer(arrivalRate, num_customers, Nodes):
+# def gen_Customer(meanArrivalTime, num_customers, Nodes):
     from Dynamics import Customer, TRANSFER, STATION
     
     accu_pd = []
-#     pd = [expovariate(arrivalRate) for _ in range(num_customers)]
-    pd = [expovariate(1.0 / meanArrivalTime) for _ in range(num_customers)]
+    pd = [expovariate(arrivalRate) for _ in range(num_customers)]
+#     pd = [expovariate(1.0 / meanArrivalTime) for _ in range(num_customers)]
     for i, t in enumerate(pd):
         if i == 0:
             accu_pd.append(t)

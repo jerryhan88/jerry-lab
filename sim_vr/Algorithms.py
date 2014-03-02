@@ -27,7 +27,7 @@ def on_notify_assignmentment_point(args=None):
     print '-----------------------------------------------------------------------(Re)assignment!!' 
 
 def get_all_dispatchers():
-    return {'FOFS': FOFS, 'FCFS': FCFS, 'NNBA-I': NNBA_I, 'NNBA-IA': NNBA_IA, 'NNBA-IT': NNBA_IT, 'NNBA-IAP': NNBA_IAP, 'NNBA-IAT': NNBA_IAT, 'NNBA-IATP': NNBA_IATP}
+    return {'FOFS': FOFS, 'FCFS': FCFS, 'NNBA_I': NNBA_I, 'NNBA_IA': NNBA_IA, 'NNBA_IT': NNBA_IT, 'NNBA_IAP': NNBA_IAP, 'NNBA_IAT': NNBA_IAT, 'NNBA_IATP': NNBA_IATP}
 
 def reassignment(event_time, target_PRTs, target_customers, Nodes):
     _target_customers = target_customers[:]
