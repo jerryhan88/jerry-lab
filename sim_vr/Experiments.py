@@ -378,7 +378,7 @@ if __name__ == '__main__':
                     Algorithms.NNBA_IATP,
                     ]
     
-    arrivalRates = [0.05 + x * 0.1 for x in range(5)]
+    arrivalRates = [0.05 + x * 0.1 for x in range(7)]
     run_experiment(dispatcher[:3], arrivalRates, 3)
 #     run_experiment(dispatcher[3:4], arrivalRates, 4)
 #     run_experiment(dispatcher[4:5], arrivalRates, 5)
