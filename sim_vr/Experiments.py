@@ -101,7 +101,7 @@ def run_experiment(dispatchers, meanTimeArrivals, exOrder):
     '''
     # parameter setting
     NUM_PRT = 50
-    NUM_CUSTOMER = 5000
+    NUM_CUSTOMER = 3000
     
     PRT_SPEED = 1200  # unit (cm/s)
     S2J_SPEED = 600
@@ -379,9 +379,9 @@ if __name__ == '__main__':
                     ]
     
     arrivalRates = [0.15 + x * 0.08 for x in range(8)]
-    run_experiment(dispatcher[:3], arrivalRates, 3)
+#     run_experiment(dispatcher[:3], arrivalRates, 3)
 #     run_experiment(dispatcher[3:4], arrivalRates, 4)
 #     run_experiment(dispatcher[4:5], arrivalRates, 5)
 #     run_experiment(dispatcher[5:6], arrivalRates, 6)
 #     run_experiment(dispatcher[6:7], arrivalRates, 7)
-#     run_experiment(dispatcher[7:8], arrivalRates, 8)
+    run_experiment(dispatcher[7:8], arrivalRates, 8)
