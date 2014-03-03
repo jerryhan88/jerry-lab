@@ -75,7 +75,7 @@ def on_notify_customer_arrival(customer):
         for k in stateTimes.iterkeys():
             print '%s state' % k, stateTimes[k]
 
-def run_experiment(dispatchers, meanTimeArrivals):
+def run_experiment(dispatchers, meanTimeArrivals, exOrder):
 #     seedNum = 2
 #     seed(seedNum)
     
@@ -96,7 +96,7 @@ def run_experiment(dispatchers, meanTimeArrivals):
     '''
     # parameter setting
     NUM_PRT = 50
-    NUM_CUSTOMER = 50
+    NUM_CUSTOMER = 5000
     
     PRT_SPEED = 1200  # unit (cm/s)
     S2J_SPEED = 600
@@ -261,7 +261,7 @@ def run_experiment(dispatchers, meanTimeArrivals):
             row.write(Transiting, stateTimes['T'])
             row.write(Parking, stateTimes['P'])
             ex += 1
-    book.save('experimentResult/dynamicsResults.xls')
+    book.save('experimentResult/dynamicsResults_order(%d).xls' % (exOrder))
     book.save(TemporaryFile())
     
     for D in _dispatchers.keys():
@@ -363,5 +363,11 @@ if __name__ == '__main__':
                     Algorithms.NNBA_IAT,
                     Algorithms.NNBA_IATP,
                     ]
-    arrivalRates = [0.2 + x * 0.005 for x in range(2)]
-    run_experiment(dispatcher, arrivalRates)
+    
+    arrivalRates = [0.2 + x * 0.05 for x in range(5)]
+    run_experiment(dispatcher[:3], arrivalRates, 3)
+    run_experiment(dispatcher[3:4], arrivalRates, 4)
+    run_experiment(dispatcher[4:5], arrivalRates, 5)
+    run_experiment(dispatcher[5:6], arrivalRates, 6)
+    run_experiment(dispatcher[6:7], arrivalRates, 7)
+    run_experiment(dispatcher[7:8], arrivalRates, 8)
