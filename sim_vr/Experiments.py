@@ -364,10 +364,10 @@ if __name__ == '__main__':
                     Algorithms.NNBA_IATP,
                     ]
     
-    arrivalRates = [0.2 + x * 0.05 for x in range(5)]
-    run_experiment(dispatcher[:3], arrivalRates, 3)
-    run_experiment(dispatcher[3:4], arrivalRates, 4)
-    run_experiment(dispatcher[4:5], arrivalRates, 5)
-    run_experiment(dispatcher[5:6], arrivalRates, 6)
-    run_experiment(dispatcher[6:7], arrivalRates, 7)
-    run_experiment(dispatcher[7:8], arrivalRates, 8)
+    arrivalRates = [0.05 + x * 0.1 for x in range(5)]
+#     run_experiment(dispatcher[:3], arrivalRates, 3)
+#     run_experiment(dispatcher[3:4], arrivalRates, 4)
+#     run_experiment(dispatcher[4:5], arrivalRates, 5)
+#     run_experiment(dispatcher[5:6], arrivalRates, 6)
+#     run_experiment(dispatcher[6:7], arrivalRates, 7)
+#     run_experiment(dispatcher[7:8], arrivalRates, 8)
