@@ -18,13 +18,18 @@ Total_customers_flow_time, Total_customers_waiting_time = (0.0,) * 2
 distances, customersWaitingTimes, boardingWaitingTimes = [], [], []
 stateTimes = {'I' : 0.0, 'A' : 0.0, 'S' : 0.0, 'T' : 0.0, 'P' : 0.0}
 data_accu_st, data_accu_et = (0.0,) * 2 
+# measuresCollectionPoint
+measuresCP = 0.0
 
 def on_notify_customer_arrival(customer):
     print customer
     if Dynamics.NumOfCustomerArrivals == int(NumOfTotalCustomer / 10):
+        global measuresCP
+        measuresCP = customer.arriving_time
+        
         Dynamics.Total_travel_distance, Dynamics.Total_empty_travel_distance = (0.0,) * 2
         Dynamics.NumOfWaitingCustomer, Dynamics.NumOfPickedUpCustomer, Dynamics.NumOfServicedCustomer = (0,) * 3
-        Dynamics.Total_customers_flow_time, Dynamics.Total_customers_waiting_time = (0.0,) * 2
+#         Dynamics.Total_customers_flow_time, Dynamics.Total_customers_waiting_time = (0.0,) * 2
         Dynamics.distances, Dynamics.customersWaitingTimes, Dynamics.boardingWaitingTimes = [], [], []
         
         for k in Dynamics.stateTimes.iterkeys():
@@ -165,22 +170,31 @@ def run_experiment(dispatchers, meanTimeArrivals, exOrder):
             et = time() - st
             
             # Present system performance by Graph
-            CT, WT, AWT = [], [], []
+            cCT, cWC = [], []
+            for ct, wc in Dynamics.WaitingCustomerChanges:
+                cCT.append(ct)
+                cWC.append(wc)
+            aCT, aWC = [], []
             for ct, wt in Dynamics.WaitingTimeChanges:
-                CT.append(ct)
-                WT.append(wt)
-                AWT.append(sum(WT) / ct)
-                
+                aCT.append(ct)
+                aWC.append(wt / ct)
+            
+            
             fig = plt.figure()
-            plt.plot(CT, WT, 'b-', CT, AWT, 'r--')
+            plt.plot(cCT, cWC, 'b-', aCT, aWC, 'r--')
             fig.suptitle('Customer waiting')
             ax = fig.add_subplot(111)
             fig.subplots_adjust(top=0.85)
             ax.set_xlabel('Time (sec)')
             ax.set_ylabel('Customer (person)')
+            global measuresCP
+            plt.annotate('MCP', xy=(measuresCP, 1), xytext=(measuresCP * 2, 1.5),
+                         arrowprops=dict(facecolor='red', shrink=0.05),
+                         )
             FileName = 'experimentResult/waitingTimeGraph/arrivalRate(%.3f) dispatcher(%s).png' % (arrivalRate, dispatcher.__name__)
             plt.savefig(FileName)
             plt.close(fig)
+            measuresCP = 0.0
             
             aED = np.array([d[1] for d in distances if d[0] == 'E'], float)
             aCWT = np.array(customersWaitingTimes, float)
@@ -365,7 +379,7 @@ if __name__ == '__main__':
                     ]
     
     arrivalRates = [0.05 + x * 0.1 for x in range(5)]
-#     run_experiment(dispatcher[:3], arrivalRates, 3)
+    run_experiment(dispatcher[:3], arrivalRates, 3)
 #     run_experiment(dispatcher[3:4], arrivalRates, 4)
 #     run_experiment(dispatcher[4:5], arrivalRates, 5)
 #     run_experiment(dispatcher[5:6], arrivalRates, 6)
