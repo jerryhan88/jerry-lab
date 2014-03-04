@@ -260,39 +260,11 @@ def run_experiment(dispatchers, meanTimeArrivals, exOrder):
                       ('CustomerWaiting Max', 'Time (s)'),
                       ('BoardingWaiting Max', 'Time (s)'),
                       ]
+    
+    from readExcel_drawGraph import saveMeasuresGraph
+    
     for i, (title, ylabel) in enumerate(titleAndYlabel):
         saveMeasuresGraph(i + 1, title, ylabel, _dispatchers)
-
-def saveMeasuresGraph(order, title, ylabel, _dispatchers):
-    # ls = [(RGB color, ), marker]
-    ls = [((255 / 255, 0 / 255, 0 / 255), 'v'),
-          ((0 / 255, 255 / 255, 0 / 255), '<'),
-          ((0 / 255, 0 / 255, 255 / 255), '^'),
-          ((255 / 255, 128 / 255, 255 / 255), '>'),
-          ((0 / 255, 255 / 255, 255 / 255), 'p'),
-          ((255 / 255, 0 / 256, 255 / 255), 'o'),
-          ((255 / 255, 128 / 255, 64 / 255), 'x'),
-          ((128 / 255, 0 / 255, 64 / 255), 's'),
-          ]
-        
-    fig = plt.figure()
-    fig.suptitle(title)
-    ax = fig.add_subplot(111)
-    fig.subplots_adjust(top=0.85)
-    ax.set_xlabel(r'arrivalRate ($\lambda$)')
-    ax.set_ylabel(ylabel)
-    num_plots = len(_dispatchers)
-    labels = []
-    for i, D in enumerate(_dispatchers.keys()):
-        plt.plot(_dispatchers[D][0], _dispatchers[D][order], c=ls[i][0], marker=ls[i][1])
-        labels.append(r'%s' % (D))
-    plt.legend(labels, ncol=4, loc='upper center',
-           bbox_to_anchor=[0.5, 1.1],
-           columnspacing=1.0, labelspacing=0.0,
-           handletextpad=0.0, handlelength=1.5,
-           fancybox=True, shadow=True)
-    plt.savefig('experimentResult/summaryGraph/%s.png' % (title))
-    plt.close(fig)
 
 def profile_solve():
     import cProfile, pstats
@@ -339,9 +311,9 @@ if __name__ == '__main__':
                     Algorithms.NNBA_IATP,
                     ]
     arrivalRates = list(np.arange(0.01, 0.25, 0.03))
-    run_experiment(dispatcher[:3], arrivalRates, 3)
+#     run_experiment(dispatcher[:3], arrivalRates, 3)
 #     run_experiment(dispatcher[3:4], arrivalRates, 4)
 #     run_experiment(dispatcher[4:5], arrivalRates, 5)
 #     run_experiment(dispatcher[5:6], arrivalRates, 6)
 #     run_experiment(dispatcher[6:7], arrivalRates, 7)
-#     run_experiment(dispatcher[7:8], arrivalRates, 8)
+    run_experiment(dispatcher[7:8], arrivalRates, 8)
