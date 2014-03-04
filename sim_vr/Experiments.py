@@ -12,48 +12,28 @@ logger_pass = lambda x: None
 
 NumOfTotalCustomer = 0
 
-Total_travel_distance, Total_empty_travel_distance = (0.0,) * 2
-NumOfCustomerArrivals, NumOfPickedUpCustomer, NumOfServicedCustomer = (0,) * 3
-Total_customers_flow_time, Total_customers_waiting_time = (0.0,) * 2
+# measuresCollectionPoint
+measuresCSP, measuresCEP = (0.0,) * 2
+
 distances, customersWaitingTimes, boardingWaitingTimes = [], [], []
 stateTimes = {'I' : 0.0, 'A' : 0.0, 'S' : 0.0, 'T' : 0.0, 'P' : 0.0}
-data_accu_st, data_accu_et = (0.0,) * 2 
-# measuresCollectionPoint
-measuresCP = 0.0
 
 def on_notify_customer_arrival(customer):
     print customer
     if Dynamics.NumOfCustomerArrivals == int(NumOfTotalCustomer / 10):
-        global measuresCP
-        measuresCP = customer.arriving_time
+        global measuresCSP
+        measuresCSP = customer.arriving_time
         
-        Dynamics.Total_travel_distance, Dynamics.Total_empty_travel_distance = (0.0,) * 2
-        Dynamics.NumOfWaitingCustomer, Dynamics.NumOfPickedUpCustomer, Dynamics.NumOfServicedCustomer = (0,) * 3
-#         Dynamics.Total_customers_flow_time, Dynamics.Total_customers_waiting_time = (0.0,) * 2
         Dynamics.distances, Dynamics.customersWaitingTimes, Dynamics.boardingWaitingTimes = [], [], []
         
         for k in Dynamics.stateTimes.iterkeys():
             Dynamics.stateTimes[k] = 0.0
         
-        global data_accu_st
-        data_accu_st = customer.arriving_time
-
     if Dynamics.NumOfCustomerArrivals == NumOfTotalCustomer:
-        global Total_travel_distance, Total_empty_travel_distance
-        global NumOfCustomerArrivals, NumOfPickedUpCustomer, NumOfServicedCustomer
-        global Total_customers_flow_time, Total_customers_waiting_time
         global distances, customersWaitingTimes, boardingWaitingTimes
         global stateTimes
-        
-        Total_travel_distance = Dynamics.Total_travel_distance
-        Total_empty_travel_distance = Dynamics.Total_empty_travel_distance
-        
-        NumOfCustomerArrivals = Dynamics.NumOfCustomerArrivals - int(NumOfTotalCustomer / 10)
-        NumOfPickedUpCustomer = Dynamics.NumOfPickedUpCustomer
-        NumOfServicedCustomer = Dynamics.NumOfServicedCustomer
-        
-        Total_customers_flow_time = Dynamics.Total_customers_flow_time 
-        Total_customers_waiting_time = Dynamics.Total_customers_waiting_time
+        global measuresCEP
+        measuresCEP = customer.arriving_time
         
         distances = Dynamics.distances[:]
         customersWaitingTimes = Dynamics.customersWaitingTimes[:]
@@ -62,21 +42,9 @@ def on_notify_customer_arrival(customer):
         for k in Dynamics.stateTimes.iterkeys():
             stateTimes[k] = Dynamics.stateTimes[k]
         
-        global data_accu_et
-        data_accu_et = customer.arriving_time
         Dynamics.end_dynamics()
         
         print '-------------------------------------------------------------------------------'
-        print 'Total_travel_distance', Total_travel_distance
-        print 'Total_empty_travel_distance', Total_empty_travel_distance
-        
-        print 'NumOfCustomerArrivals', NumOfCustomerArrivals
-        print 'NumOfPickedUpCustomer', NumOfPickedUpCustomer
-        print 'NumOfServicedCustomer', NumOfServicedCustomer
-        
-        print 'Total_customers_flow_time', Total_customers_flow_time 
-        print 'Total_customers_waiting_time', Total_customers_waiting_time
-        
         for k in stateTimes.iterkeys():
             print '%s state' % k, stateTimes[k]
 
@@ -108,7 +76,7 @@ def run_experiment(dispatchers, meanTimeArrivals, exOrder):
     J2D_SPEED = 900
     SETTING_TIME = (10.0, 60.0)  # unit (sec)
     
-    S2J, J2D, PS, nOP, nOTC, AR, D, CTime, ETDT, ETDA, ETDSD, ETDMed, ETDMax, CWTT, CWTA, CWTSD, CWTMed, CWTMax, BTT, BTA, BTSD, BTMed, BTMax, TFT, AFT, Idle, Approaching, Setting, Transiting, Parking = range(30)
+    S2J, J2D, PS, nOP, nOTC, AR, D, CTime, ETDT, ETDA, ETDSD, ETDMed, ETDMax, CWTT, CWTA, CWTSD, CWTMed, CWTMax, BTT, BTA, BTSD, BTMed, BTMax, Idle, Approaching, Setting, Transiting, Parking = range(28)
     colNames = [
                 'S2J_SPEED',
                 'J2D_SPEED',
@@ -133,8 +101,6 @@ def run_experiment(dispatchers, meanTimeArrivals, exOrder):
                 'B.Time_S.D',
                 'B.Time_Median',
                 'B.Time_Max',
-                'T.F.Time',
-                'A.F.Time',
                 'I.S.Time',
                 'A.S.Time',
                 'S.S.Time',
@@ -153,12 +119,8 @@ def run_experiment(dispatchers, meanTimeArrivals, exOrder):
         ex = 1
         for arrivalRate in arrivalRates:
             global NumOfTotalCustomer
-            global Total_travel_distance, Total_empty_travel_distance
-            global NumOfCustomerArrivals, NumOfPickedUpCustomer, NumOfServicedCustomer
-            global Total_customers_flow_time, Total_customers_waiting_time
             global distances, customersWaitingTimes, boardingWaitingTimes
             global stateTimes
-            global data_accu_st, data_accu_et
             Dynamics.WaitingCustomerChanges, Dynamics.WaitingTimeChanges = [], []
             
             Network = data.Network1(PRT_SPEED, S2J_SPEED, J2D_SPEED)
@@ -187,21 +149,25 @@ def run_experiment(dispatchers, meanTimeArrivals, exOrder):
             fig.subplots_adjust(top=0.85)
             ax.set_xlabel('Time (sec)')
             ax.set_ylabel('Customer (person)')
-            global measuresCP
-            plt.annotate('MCP', xy=(measuresCP, 1), xytext=(measuresCP * 2, 1.5),
+            global measuresCSP, measuresCEP
+            plt.annotate('MCSP', xy=(measuresCSP, 1), xytext=(measuresCSP * 2, 1.5),
                          arrowprops=dict(facecolor='red', shrink=0.05),
                          )
-            FileName = 'experimentResult/waitingTimeGraph/arrivalRate(%.3f) dispatcher(%s).png' % (arrivalRate, dispatcher.__name__)
+            plt.annotate('MCEP', xy=(measuresCEP, 1), xytext=(measuresCEP, 1.5),
+                         arrowprops=dict(facecolor='red', shrink=0.05),
+                         )
+            FileName = 'experimentResult/waitingTimeGraph/dispatcher(%s) arrivalRate(%.3f).png' % (dispatcher.__name__, arrivalRate)
             plt.savefig(FileName)
             plt.close(fig)
-            measuresCP = 0.0
+            measuresCSP = 0.0
+            measuresESP = 0.0
             
             aED = np.array([d[1] for d in distances if d[0] == 'E'], float)
             aCWT = np.array(customersWaitingTimes, float)
             aBWT = np.array(boardingWaitingTimes, float)
             _dispatchers[dispatcher.__name__].append((arrivalRate, (aED, aCWT, aBWT)))
             
-            TXT_FILE = 'experimentResult/textFiles/arrivalRate(%.3f) dispatcher(%s)' % (arrivalRate, dispatcher.__name__)
+            TXT_FILE = 'experimentResult/textFiles/dispatcher(%s) arrivalRate(%.3f)' % (dispatcher.__name__, arrivalRate)
             with open(TXT_FILE, 'w') as f:
                 f.write('Parameter------------------------------------------------------------------------------------------------\n')
                 f.write('S2J_SPEED:%d\n' % S2J_SPEED)
@@ -232,10 +198,7 @@ def run_experiment(dispatchers, meanTimeArrivals, exOrder):
                 f.write('B.Time_Median:%.1f\n' % np.median(aBWT))
                 f.write('B.Time_Max:%.1f\n' % aBWT.max())
                 
-                f.write('T.F.Time:%.1f\n' % Total_customers_flow_time)
-                f.write('A.F.Time:%.1f\n' % (Total_customers_flow_time / NumOfServicedCustomer))
-                
-                time_flow = data_accu_et - data_accu_st
+                time_flow = measuresCEP - measuresCSP
                 total_time_flow = time_flow * len(Dynamics.PRTs)
                 f.write('I.S.Time: %.1f(%.1f%s)\n' % (stateTimes['I'], stateTimes['I'] / total_time_flow * 100, '%'))
                 f.write('A.S.Time: %.1f(%.1f%s)\n' % (stateTimes['A'], stateTimes['A'] / total_time_flow * 100, '%'))
@@ -267,8 +230,6 @@ def run_experiment(dispatchers, meanTimeArrivals, exOrder):
             row.write(BTSD, aBWT.std())
             row.write(BTMed, np.median(aBWT))
             row.write(BTMax, aBWT.max())
-            row.write(TFT, Total_customers_flow_time)
-            row.write(AFT, Total_customers_flow_time / NumOfServicedCustomer)
             row.write(Idle, stateTimes['I'])
             row.write(Approaching, stateTimes['A'])
             row.write(Setting, stateTimes['S'])
@@ -377,11 +338,10 @@ if __name__ == '__main__':
                     Algorithms.NNBA_IAT,
                     Algorithms.NNBA_IATP,
                     ]
-    
-    arrivalRates = [0.15 + x * 0.08 for x in range(8)]
-#     run_experiment(dispatcher[:3], arrivalRates, 3)
+    arrivalRates = list(np.arange(0.01, 0.25, 0.03))
+    run_experiment(dispatcher[:3], arrivalRates, 3)
 #     run_experiment(dispatcher[3:4], arrivalRates, 4)
 #     run_experiment(dispatcher[4:5], arrivalRates, 5)
 #     run_experiment(dispatcher[5:6], arrivalRates, 6)
 #     run_experiment(dispatcher[6:7], arrivalRates, 7)
-    run_experiment(dispatcher[7:8], arrivalRates, 8)
+#     run_experiment(dispatcher[7:8], arrivalRates, 8)
