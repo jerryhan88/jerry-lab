@@ -310,14 +310,14 @@ if __name__ == '__main__':
                     Algorithms.NNBA_IAT,
                     Algorithms.NNBA_IATP,
                     ]
-#     arrivalRates = list(np.arange(0.01, 0.13, 0.002))
+    arrivalRates = list(np.arange(0.129, 0.130, 0.0001))
     
-    arrivalRates = list(np.arange(0.15, 0.20, 0.01))
+#     arrivalRates = list(np.arange(0.15, 0.20, 0.01))
     
-#     run_experiment(dispatcher[:2], arrivalRates, 2)  # FOFO, FCFS
+    run_experiment(dispatcher[:2], arrivalRates, 2)  # FOFO, FCFS
 #     run_experiment(dispatcher[2:3], arrivalRates, 3)  # NNBA_I 
 #     run_experiment(dispatcher[3:4], arrivalRates, 4)  # NNBA_IT  
 #     run_experiment(dispatcher[4:5], arrivalRates, 5)  # NNBA_IA
 #     run_experiment(dispatcher[5:6], arrivalRates, 6)  # NNBA_IAP
-    run_experiment(dispatcher[6:7], arrivalRates, 7)  # NNBA_IAT
+#     run_experiment(dispatcher[6:7], arrivalRates, 7)  # NNBA_IAT
 #     run_experiment(dispatcher[7:8], arrivalRates, 8)  # NNBA_IATP
