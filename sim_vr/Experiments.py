@@ -83,7 +83,7 @@ def run_experiment(dispatchers, meanTimeArrivals, exOrder):
                 'PRT_SPEED',
                 'numOfPRTs',
                 'numOfTotalCustomers',
-                'meanTimeArrivals',
+                'arrivalRate',
                 'dispatcher',
                 'CTime',
                 'E.T.Distance_Total',
@@ -167,7 +167,7 @@ def run_experiment(dispatchers, meanTimeArrivals, exOrder):
             aBWT = np.array(boardingWaitingTimes, float)
             _dispatchers[dispatcher.__name__].append((arrivalRate, (aED, aCWT, aBWT)))
             
-            TXT_FILE = 'experimentResult/textFiles/dispatcher(%s) arrivalRate(%.3f)' % (dispatcher.__name__, arrivalRate)
+            TXT_FILE = 'experimentResult/textFiles/dispatcher(%s) arrivalRate(%.3f).txt' % (dispatcher.__name__, arrivalRate)
             with open(TXT_FILE, 'w') as f:
                 f.write('Parameter------------------------------------------------------------------------------------------------\n')
                 f.write('S2J_SPEED:%d\n' % S2J_SPEED)
@@ -187,8 +187,8 @@ def run_experiment(dispatchers, meanTimeArrivals, exOrder):
                 f.write('E.T.Distance_Max:%.1f\n' % aED.max())
                 
                 f.write('C.W.Time_Total:%.1f\n' % aCWT.sum())
-                f.write('C.W.Time_Average):%.1f\n' % aCWT.mean())
-                f.write('C.W.Time_S.D):%.1f\n' % aCWT.std())
+                f.write('C.W.Time_Average:%.1f\n' % aCWT.mean())
+                f.write('C.W.Time_S.D:%.1f\n' % aCWT.std())
                 f.write('C.W.Time_Median:%.1f\n' % np.median(aCWT))
                 f.write('C.W.Time_Max:%.1f\n' % aCWT.max())
                  
@@ -236,7 +236,7 @@ def run_experiment(dispatchers, meanTimeArrivals, exOrder):
             row.write(Transiting, stateTimes['T'])
             row.write(Parking, stateTimes['P'])
             ex += 1
-    book.save('experimentResult/dynamicsResults_order(%d).xls' % (exOrder))
+    book.save('experimentResult/dynamicsResults_order(%d).xlsx' % (exOrder))
     book.save(TemporaryFile())
     
     for D in _dispatchers.keys():
@@ -301,7 +301,7 @@ if __name__ == '__main__':
 #     test_variousCustomer()
 #     profile_solve()
     dispatcher = [
-                    Algorithms.FOFS,
+                    Algorithms.FOFO,
                     Algorithms.FCFS,
                     Algorithms.NNBA_I,
                     Algorithms.NNBA_IT,
@@ -310,10 +310,14 @@ if __name__ == '__main__':
                     Algorithms.NNBA_IAT,
                     Algorithms.NNBA_IATP,
                     ]
-    arrivalRates = list(np.arange(0.01, 0.25, 0.03))
-#     run_experiment(dispatcher[:3], arrivalRates, 3)
-#     run_experiment(dispatcher[3:4], arrivalRates, 4)
-#     run_experiment(dispatcher[4:5], arrivalRates, 5)
-#     run_experiment(dispatcher[5:6], arrivalRates, 6)
-#     run_experiment(dispatcher[6:7], arrivalRates, 7)
-    run_experiment(dispatcher[7:8], arrivalRates, 8)
+#     arrivalRates = list(np.arange(0.01, 0.13, 0.002))
+    
+    arrivalRates = list(np.arange(0.15, 0.20, 0.01))
+    
+#     run_experiment(dispatcher[:2], arrivalRates, 2)  # FOFO, FCFS
+#     run_experiment(dispatcher[2:3], arrivalRates, 3)  # NNBA_I 
+#     run_experiment(dispatcher[3:4], arrivalRates, 4)  # NNBA_IT  
+#     run_experiment(dispatcher[4:5], arrivalRates, 5)  # NNBA_IA
+#     run_experiment(dispatcher[5:6], arrivalRates, 6)  # NNBA_IAP
+    run_experiment(dispatcher[6:7], arrivalRates, 7)  # NNBA_IAT
+#     run_experiment(dispatcher[7:8], arrivalRates, 8)  # NNBA_IATP

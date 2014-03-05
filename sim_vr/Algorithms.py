@@ -27,7 +27,7 @@ def on_notify_assignmentment_point(args=None):
     print '-----------------------------------------------------------------------(Re)assignment!!' 
 
 def get_all_dispatchers():
-    return {'FOFS': FOFS, 'FCFS': FCFS, 'NNBA_I': NNBA_I, 'NNBA_IA': NNBA_IA, 'NNBA_IT': NNBA_IT, 'NNBA_IAP': NNBA_IAP, 'NNBA_IAT': NNBA_IAT, 'NNBA_IATP': NNBA_IATP}
+    return {'FOFO': FOFO, 'FCFS': FCFS, 'NNBA_I': NNBA_I, 'NNBA_IA': NNBA_IA, 'NNBA_IT': NNBA_IT, 'NNBA_IAP': NNBA_IAP, 'NNBA_IAT': NNBA_IAT, 'NNBA_IATP': NNBA_IATP}
 
 def reassignment(event_time, target_PRTs, target_customers, Nodes):
     _target_customers = target_customers[:]
@@ -66,7 +66,7 @@ def find_nearestPRT(candi_PRT, target_c):
         PRT_C_EAT.append((prt, empty_travel_time))
     return sorted(PRT_C_EAT, key=lambda PRT_C_EAT: PRT_C_EAT[1])[0][0]
 
-def FOFS(event_time, PRTs, waiting_customers, Nodes):
+def FOFO(event_time, PRTs, waiting_customers, Nodes):
     from Dynamics import ST_IDLE, PRT_SPEED
     on_notify_assignmentment_point(None)
     candi_customers = [customer for customer in waiting_customers if not customer.assigned_PRT and not customer.isSetupWaiting]

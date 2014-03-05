@@ -4,7 +4,8 @@ import matplotlib.pyplot as plt
 from xlrd import open_workbook
 
 def run():
-    _dispatchers = {D : None for D in ['FCFS','FOFS','NNBA_IA','NNBA_IAP','NNBA_I',]}
+#     _dispatchers = {D : None for D in ['FCFS','FOFO','NNBA_IA','NNBA_IAP','NNBA_I','NNBA_IATP','NNBA_IAT','NNBA_IT',]}
+    _dispatchers = {D : None for D in ['NNBA_IA','NNBA_IAP','NNBA_I','NNBA_IATP','NNBA_IAT','NNBA_IT',]}
     book = open_workbook('experimentResult/dynamicsResults.xls')
     
     for D in _dispatchers.keys():
@@ -15,6 +16,7 @@ def run():
         
         for row_index in range(1, sh.nrows):
             r = sh.row(row_index)
+            if r[5].value > 0.18: continue
             ARs.append(r[5].value)
             AaEDs.append(r[9].value)
             MaEDs.append(r[12].value)
@@ -38,16 +40,15 @@ def run():
         saveMeasuresGraph(i + 1, title, ylabel, _dispatchers)
         
 def saveMeasuresGraph(order, title, ylabel, _dispatchers):
-    ls = [((255 / 255, 0 / 255, 0 / 255), 'v'),
-          ((0 / 255, 255 / 255, 0 / 255), '<'),
-          ((0 / 255, 0 / 255, 255 / 255), '^'),
-          ((255 / 255, 128 / 255, 255 / 255), '>'),
-          ((0 / 255, 255 / 255, 255 / 255), 'p'),
-          ((255 / 255, 0 / 256, 255 / 255), 'o'),
-          ((255 / 255, 128 / 255, 64 / 255), 'x'),
-          ((128 / 255, 0 / 255, 64 / 255), 's'),
-          ]
-        
+    l = [((255 / 255, 0 / 255, 0 / 255), '-'),
+          ((255 / 255, 0 / 255, 0 / 255), '-.'),
+          ((0 / 255, 255 / 255, 0 / 255), '-'),
+          ((0 / 255, 255 / 255, 0 / 255), '-.'),
+          ((0 / 255, 0 / 255, 255 / 255), '-'),
+          ((0 / 255, 0 / 255, 255 / 255), '-.'),
+          ((0 / 255, 0 / 255, 0 / 255), '-'),
+          ((0 / 255, 0 / 255, 0 / 255), '-.'),
+        ]
     fig = plt.figure()
     fig.suptitle(title)
     ax = fig.add_subplot(111)
@@ -57,7 +58,7 @@ def saveMeasuresGraph(order, title, ylabel, _dispatchers):
     num_plots = len(_dispatchers)
     labels = []
     for i, D in enumerate(_dispatchers.keys()):
-        plt.plot(_dispatchers[D][0], _dispatchers[D][order], c=ls[i][0], marker=ls[i][1])
+        plt.plot(_dispatchers[D][0], _dispatchers[D][order], c=l[i][0], ls=l[i][1])
         labels.append(r'%s' % (D))
     plt.legend(labels, ncol=4, loc='upper center',
            bbox_to_anchor=[0.5, 1.1],
