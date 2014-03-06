@@ -55,7 +55,6 @@ def saveMeasuresGraph(order, title, ylabel, _dispatchers):
     fig.subplots_adjust(top=0.85)
     ax.set_xlabel(r'arrivalRate ($\lambda$)')
     ax.set_ylabel(ylabel)
-    num_plots = len(_dispatchers)
     labels = []
     for i, D in enumerate(_dispatchers.keys()):
         plt.plot(_dispatchers[D][0], _dispatchers[D][order], c=l[i][0], ls=l[i][1])

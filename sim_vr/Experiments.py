@@ -140,15 +140,28 @@ def run_experiment(dispatchers, meanTimeArrivals, exOrder):
             for ct, wt in Dynamics.WaitingTimeChanges:
                 aCT.append(ct)
                 aWC.append(wt / ct)
-            
+            sCT, sWC = [], []
+            for ct, wc in Dynamics.maxNumOfCustomer_inStation:
+                sCT.append(ct)
+                sWC.append(wc)
             
             fig = plt.figure()
-            plt.plot(cCT, cWC, 'b-', aCT, aWC, 'r--')
             fig.suptitle('Customer waiting')
             ax = fig.add_subplot(111)
             fig.subplots_adjust(top=0.85)
             ax.set_xlabel('Time (sec)')
             ax.set_ylabel('Customer (person)')
+            labels = []
+            for n, ct, wc, l in [('current',cCT, cWC, 'b-'), ('average',aCT, aWC, 'r--'), ('maxInStation',sCT, sWC, 'g-.')]:
+                plt.plot(ct, wc, l)
+                labels.append(r'%s' % (n))
+            plt.legend(labels, ncol=3, loc='upper center',
+                       bbox_to_anchor=[0.5, 1.1],
+                       columnspacing=1.0, labelspacing=0.0,
+                       handletextpad=0.0, handlelength=1.5,
+                       fancybox=True, shadow=True)
+#             plt.plot(cCT, cWC, 'b-', aCT, aWC, 'r--', sCT, sWC, 'g-.')
+            
             global measuresCSP, measuresCEP
             plt.annotate('MCSP', xy=(measuresCSP, 1), xytext=(measuresCSP * 2, 1.5),
                          arrowprops=dict(facecolor='red', shrink=0.05),
@@ -180,11 +193,11 @@ def run_experiment(dispatchers, meanTimeArrivals, exOrder):
                 f.write('Measure------------------------------------------------------------------------------------------------\n')
                 f.write('CTime:%.1f\n' % et)
                 
-                f.write('E.T.Distance_Total:%.1f\n' % aED.sum())
-                f.write('E.T.Distance_Average:%.1f\n' % aED.mean())
-                f.write('E.T.Distance_S.D:%.1f\n' % aED.std())
-                f.write('E.T.Distance_Median:%.1f\n' % np.median(aED))
-                f.write('E.T.Distance_Max:%.1f\n' % aED.max())
+                f.write('E.T.Distance_Total:%.1f\n' % (aED.sum() / 100))
+                f.write('E.T.Distance_Average:%.1f\n' % (aED.mean() / 100))
+                f.write('E.T.Distance_S.D:%.1f\n' % (aED.std() / 100))
+                f.write('E.T.Distance_Median:%.1f\n' % (np.median(aED) / 100))
+                f.write('E.T.Distance_Max:%.1f\n' % (aED.max() / 100))
                 
                 f.write('C.W.Time_Total:%.1f\n' % aCWT.sum())
                 f.write('C.W.Time_Average:%.1f\n' % aCWT.mean())
@@ -215,11 +228,11 @@ def run_experiment(dispatchers, meanTimeArrivals, exOrder):
             row.write(AR, arrivalRate)
             row.write(D, dispatcher.__name__) 
             row.write(CTime, et) 
-            row.write(ETDT, aED.sum())
-            row.write(ETDA, aED.mean())
-            row.write(ETDSD, aED.std())
-            row.write(ETDMed, np.median(aED))
-            row.write(ETDMax, aED.max())
+            row.write(ETDT, (aED.sum() / 100))
+            row.write(ETDA, (aED.mean() / 100))
+            row.write(ETDSD, (aED.std() / 100))
+            row.write(ETDMed, (np.median(aED) / 100))
+            row.write(ETDMax, (aED.max() / 100))
             row.write(CWTT, aCWT.sum())
             row.write(CWTA, aCWT.mean())
             row.write(CWTSD, aCWT.std())
@@ -253,10 +266,10 @@ def run_experiment(dispatchers, meanTimeArrivals, exOrder):
             MaBWTs.append(aBWT.max())
         _dispatchers[D] = (ARs, AaEDs, AaCWTs, AaBWTs, MaEDs, MaCWTs, MaBWTs)
     
-    titleAndYlabel = [('EmptyTravel Average', 'Distance (cm)'),
+    titleAndYlabel = [('EmptyTravel Average', 'Distance (m)'),
                       ('CustomerWaiting Average', 'Time (s)'),
                       ('BoardingWaiting Average', 'Time (s)'),
-                      ('EmptyTravel Max', 'Distance (cm)'),
+                      ('EmptyTravel Max', 'Distance (m)'),
                       ('CustomerWaiting Max', 'Time (s)'),
                       ('BoardingWaiting Max', 'Time (s)'),
                       ]

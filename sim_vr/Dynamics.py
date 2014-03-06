@@ -21,14 +21,12 @@ Total_travel_distance, Total_empty_travel_distance = (0.0,) * 2
 NumOfCustomerArrivals, NumOfPickedUpCustomer, NumOfServicedCustomer = (0,) * 3
 Total_customers_flow_time, Total_customers_waiting_time = (0.0,) * 2
 distances, customersWaitingTimes, boardingWaitingTimes = [], [], []
-WaitingCustomerChanges, WaitingTimeChanges = [], []
+WaitingCustomerChanges, WaitingTimeChanges, maxNumOfCustomer_inStation = [], [], []
 NumOfWaitingCustomer, ChaningPointOfNWC = 0, 0.0
 
 stateTimes = {'I' : 0.0, 'A' : 0.0, 'S' : 0.0, 'T' : 0.0, 'P' : 0.0}
 
 NumOfCustomerArrivals = 0
-
-
 
 # check arrival of customer
 on_notify_customer_arrival = lambda x: None
@@ -48,6 +46,7 @@ class Node():
         self.px, self.py = px, py
         self.nodeType = nodeType
         self.numOfBerth = numOfBerth
+        self.numOfCustomer = 0
         self.no = None
         self.settingPRTs = []
         self.setupWaitingPRTs = []
@@ -127,7 +126,7 @@ class PRT():
         if onEvent == 'I2S':
             NumOfPickedUpCustomer += 1
             distances.append(('E', 0.0))
-            update_customerWaitingTimeMeasure(cur_time, -1)
+            update_customerWaitingTimeMeasure(cur_time, target_c, -1)
             customersWaitingTimes.append(cur_time - target_c.arriving_time)
         elif onEvent == 'A2S':
             NumOfPickedUpCustomer += 1
@@ -135,7 +134,7 @@ class PRT():
             Total_empty_travel_distance += travel_distance
             distances.append(('E', travel_distance)) 
             Total_travel_distance += travel_distance
-            update_customerWaitingTimeMeasure(cur_time, -1)
+            update_customerWaitingTimeMeasure(cur_time, target_c, -1)
             customersWaitingTimes.append(cur_time - target_c.arriving_time)
         elif onEvent == 'T2I':
             NumOfServicedCustomer += 1
@@ -516,13 +515,13 @@ def init_dynamics(_Nodes, _PRTs, _Customers, _dispatcher):
     global Total_travel_distance, Total_empty_travel_distance
     global NumOfWaitingCustomer, ChaningPointOfNWC
     global Total_customers_flow_time, Total_customers_waiting_time
-    global distances, customersWaitingTimes  
+    global distances, customersWaitingTimes, maxNumOfCustomer_inStation
     global stateTimes
     
     Total_travel_distance, Total_empty_travel_distance = (0.0,) * 2
     NumOfCustomerArrivals, NumOfPickedUpCustomer, NumOfServicedCustomer = (0,) * 3
     Total_customers_flow_time, Total_customers_waiting_time = (0.0,) * 2
-    distances, customersWaitingTimes = [], []
+    distances, customersWaitingTimes, maxNumOfCustomer_inStation = [], [], []
     NumOfWaitingCustomer, ChaningPointOfNWC, = 0, 0.0
     
     for k in stateTimes.iterkeys():
@@ -541,10 +540,10 @@ def end_dynamics():
 def logger(s):
     print s
 
-def update_customerWaitingTimeMeasure(cur_time, numOfCustomerChange):
+def update_customerWaitingTimeMeasure(cur_time, target_c, numOfCustomerChange):
     global Total_customers_waiting_time, customersWaitingTimes
     global NumOfWaitingCustomer, ChaningPointOfNWC
-    global WaitingCustomerChanges, WaitingTimeChanges
+    global WaitingCustomerChanges, WaitingTimeChanges, maxNumOfCustomer_inStation
 
     # Update measure
     customers_waiting_time = NumOfWaitingCustomer * (cur_time - ChaningPointOfNWC)
@@ -560,7 +559,10 @@ def update_customerWaitingTimeMeasure(cur_time, numOfCustomerChange):
     else:
         NumOfWaitingCustomer += numOfCustomerChange
     ChaningPointOfNWC = cur_time
-    
+
+    target_c.sn.numOfCustomer += numOfCustomerChange
+    maxNumOfCustomer_inStation.append((cur_time, max(n.numOfCustomer for n in Nodes)))
+        
     if WaitingCustomerChanges and WaitingCustomerChanges[-1][0] == cur_time:
         WaitingCustomerChanges.pop()
     WaitingCustomerChanges.append((cur_time, NumOfWaitingCustomer))
@@ -576,7 +578,7 @@ def On_CustomerArrival(cur_time, target_c):
     waiting_customers.append(customer)
     
     # Measure update
-    update_customerWaitingTimeMeasure(cur_time, 1)
+    update_customerWaitingTimeMeasure(cur_time, target_c, 1)
     global NumOfCustomerArrivals
     NumOfCustomerArrivals += 1
     
