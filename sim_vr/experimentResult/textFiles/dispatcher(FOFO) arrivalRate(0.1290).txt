@@ -7,24 +7,24 @@ numOfTotalCustomers:3000
 arrivalRate:0.129000
 dispatcher:FOFO
 Measure------------------------------------------------------------------------------------------------
-CTime:36.8
-E.T.Distance_Total:2003048.7
-E.T.Distance_Average:757.0
-E.T.Distance_S.D:918.6
-E.T.Distance_Median:350.1
-E.T.Distance_Max:4102.8
-C.W.Time_Total:295366.9
-C.W.Time_Average:111.6
-C.W.Time_S.D:181.1
-C.W.Time_Median:42.5
-C.W.Time_Max:3002.0
-B.Time_Total:204.6
-B.Time_Average:0.1
-B.Time_S.D:4.0
+CTime:46.3
+E.T.Distance_Total:1334416.8
+E.T.Distance_Average:495.0
+E.T.Distance_S.D:649.2
+E.T.Distance_Median:319.8
+E.T.Distance_Max:3793.0
+C.W.Time_Total:147254.0
+C.W.Time_Average:54.6
+C.W.Time_S.D:69.0
+C.W.Time_Median:37.5
+C.W.Time_Max:433.8
+B.Time_Total:0.0
+B.Time_Average:0.0
+B.Time_S.D:0.0
 B.Time_Median:0.0
-B.Time_Max:204.6
-I.S.Time: 222522.3(19.3%)
-A.S.Time: 215247.0(18.7%)
-S.S.Time: 93790.7(8.1%)
-T.S.Time: 501194.0(43.5%)
+B.Time_Max:0.0
+I.S.Time: 275870.5(23.7%)
+A.S.Time: 146538.5(12.6%)
+S.S.Time: 94304.0(8.1%)
+T.S.Time: 522310.9(45.0%)
 P.S.Time: 0.0(0.0%)
