@@ -1,0 +1,30 @@
+Parameter------------------------------------------------------------------------------------------------
+S2J_SPEED:600
+J2D_SPEED:900
+PRT_SPEED:1200
+numOfPRTs:50
+numOfTotalCustomers:3000
+arrivalRate:0.128500
+dispatcher:FOFO
+Measure------------------------------------------------------------------------------------------------
+CTime:167.3
+E.T.Distance_Total:3901894.4
+E.T.Distance_Average:1517.7
+E.T.Distance_S.D:1057.4
+E.T.Distance_Median:1392.1
+E.T.Distance_Max:4102.8
+C.W.Time_Total:1122350.5
+C.W.Time_Average:436.5
+C.W.Time_S.D:694.2
+C.W.Time_Median:251.4
+C.W.Time_Max:7324.8
+B.Time_Total:2038.1
+B.Time_Average:0.8
+B.Time_S.D:17.1
+B.Time_Median:0.0
+B.Time_Max:478.4
+I.S.Time: 34025.8(3.0%)
+A.S.Time: 411613.7(35.8%)
+S.S.Time: 89446.8(7.8%)
+T.S.Time: 485431.7(42.2%)
+P.S.Time: 0.0(0.0%)

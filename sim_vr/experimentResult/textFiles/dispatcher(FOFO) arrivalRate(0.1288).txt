@@ -4,27 +4,27 @@ J2D_SPEED:900
 PRT_SPEED:1200
 numOfPRTs:50
 numOfTotalCustomers:3000
-arrivalRate:0.128100
+arrivalRate:0.128800
 dispatcher:FOFO
 Measure------------------------------------------------------------------------------------------------
-CTime:43.2
-E.T.Distance_Total:1271033.4
-E.T.Distance_Average:470.4
-E.T.Distance_S.D:629.6
-E.T.Distance_Median:306.3
-E.T.Distance_Max:3666.6
-C.W.Time_Total:140213.4
-C.W.Time_Average:51.9
-C.W.Time_S.D:66.5
-C.W.Time_Median:37.5
-C.W.Time_Max:390.7
+CTime:48.2
+E.T.Distance_Total:3055973.6
+E.T.Distance_Average:1128.5
+E.T.Distance_S.D:1067.7
+E.T.Distance_Median:896.5
+E.T.Distance_Max:4102.8
+C.W.Time_Total:539840.8
+C.W.Time_Average:199.4
+C.W.Time_S.D:320.6
+C.W.Time_Median:119.7
+C.W.Time_Max:6258.1
 B.Time_Total:0.0
 B.Time_Average:0.0
 B.Time_S.D:0.0
 B.Time_Median:0.0
 B.Time_Max:0.0
-I.S.Time: 325047.6(27.3%)
-A.S.Time: 139953.7(11.7%)
-S.S.Time: 96232.5(8.1%)
-T.S.Time: 509452.6(42.7%)
+I.S.Time: 137741.1(11.6%)
+A.S.Time: 324369.3(27.3%)
+S.S.Time: 94789.8(8.0%)
+T.S.Time: 511753.6(43.1%)
 P.S.Time: 0.0(0.0%)
