@@ -5,7 +5,7 @@ from xlrd import open_workbook
 
 def run():
 #     _dispatchers = {D : None for D in ['FCFS','FOFO','NNBA_IA','NNBA_IAP','NNBA_I','NNBA_IATP','NNBA_IAT','NNBA_IT',]}
-    _dispatchers = {D : None for D in ['NNBA_IA','NNBA_IAP','NNBA_I','NNBA_IATP','NNBA_IAT','NNBA_IT',]}
+    _dispatchers = {D : None for D in ['NNBA_IA', 'NNBA_IAP', 'NNBA_I', 'NNBA_IATP', 'NNBA_IAT', 'NNBA_IT', ]}
     book = open_workbook('experimentResult/dynamicsResults.xls')
     
     for D in _dispatchers.keys():
@@ -26,20 +26,27 @@ def run():
             
             AaBWTs.append(r[19].value)
             MaBWTs.append(r[22].value)
+            
         _dispatchers[D] = (ARs, AaEDs, AaCWTs, AaBWTs, MaEDs, MaCWTs, MaBWTs)
     
-    titleAndYlabel = [('EmptyTravel Average', 'Distance (cm)'),
-                      ('CustomerWaiting Average', 'Time (s)'),
+    titleAndYlabel = [('EmptyTravel Average', 'Distance (m)'),
+                      ('CustomerWaitingTime Average', 'Time (s)'),
                       ('BoardingWaiting Average', 'Time (s)'),
-                      ('EmptyTravel Max', 'Distance (cm)'),
+                      ('CustomerWaitingNumber Average', 'NumOfWating (person)'),
+                      ('EmptyTravel Max', 'Distance (m)'),
                       ('CustomerWaiting Max', 'Time (s)'),
                       ('BoardingWaiting Max', 'Time (s)'),
+                      ('CustomerWaitingNumber Max', 'NumOfWating (person)'),
                       ]
     
     for i, (title, ylabel) in enumerate(titleAndYlabel):
         saveMeasuresGraph(i + 1, title, ylabel, _dispatchers)
         
 def saveMeasuresGraph(order, title, ylabel, _dispatchers):
+    import os
+    path = 'C:\Users\user\Desktop\experimentResult/graphFiles/summary'
+    if not os.path.exists(path): os.makedirs(path)
+    
     l = [((255 / 255, 0 / 255, 0 / 255), '-'),
           ((255 / 255, 0 / 255, 0 / 255), '-.'),
           ((0 / 255, 255 / 255, 0 / 255), '-'),
@@ -64,7 +71,7 @@ def saveMeasuresGraph(order, title, ylabel, _dispatchers):
            columnspacing=1.0, labelspacing=0.0,
            handletextpad=0.0, handlelength=1.5,
            fancybox=True, shadow=True)
-    plt.savefig('experimentResult/summaryGraph/%s.png' % (title))
+    plt.savefig('%s/%s.png' % (path, title))
     plt.close(fig)
 
 if __name__ == '__main__':

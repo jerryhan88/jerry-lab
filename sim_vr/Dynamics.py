@@ -20,7 +20,7 @@ event_queue = []
 Total_travel_distance, Total_empty_travel_distance = (0.0,) * 2
 NumOfCustomerArrivals, NumOfPickedUpCustomer, NumOfServicedCustomer = (0,) * 3
 Total_customers_flow_time, Total_customers_waiting_time = (0.0,) * 2
-distances, customersWaitingTimes, boardingWaitingTimes = [], [], []
+distances, customersWaitingTimes, boardingWaitingTimes, customerWaitingNums = [], [], [], []
 WaitingCustomerChanges, WaitingTimeChanges, maxNumOfCustomer_inStation = [], [], []
 NumOfWaitingCustomer, ChaningPointOfNWC = 0, 0.0
 
@@ -117,7 +117,7 @@ class PRT():
     def measures_update(self, cur_time, onEvent, target_c=None):
         global NumOfPickedUpCustomer, NumOfServicedCustomer
         global Total_empty_travel_distance, Total_travel_distance, distances
-        global distances, customersWaitingTimes, boardingWaitingTimes
+        global distances, customersWaitingTimes, boardingWaitingTimes, customerWaitingNums
         global Total_customers_flow_time
         global stateTimes
         
@@ -288,7 +288,7 @@ class PRT():
         target_c.assigned_PRT = self
         
         # Set things for next state
-        self.path_n, self.path_e = Algorithms.find_SP(self.arrived_n.no, self.assigned_customer.sn.no)
+        self.path_n, self.path_e = Algorithms.shortestPath[(self.arrived_n.no, self.assigned_customer.sn.no)]
         self.last_planed_time = cur_time
         global PRT_SPEED
         evt_change_point = cur_time + sum(e.distance / min(PRT_SPEED, e.maxSpeed) for e in self.path_e)
@@ -340,7 +340,7 @@ class PRT():
         self.arrived_n.settingPRTs.remove(self)
         
         # Set things for next state
-        self.path_n, self.path_e = Algorithms.find_SP(self.transporting_customer.sn.no, self.transporting_customer.dn.no)
+        self.path_n, self.path_e = Algorithms.shortestPath[(self.transporting_customer.sn.no, self.transporting_customer.dn.no)]
         self.last_planed_time = cur_time
         global PRT_SPEED
         evt_change_point = cur_time + sum(e.distance / min(PRT_SPEED, e.maxSpeed) for e in self.path_e)
@@ -499,7 +499,7 @@ class PRT():
             # There is no need to change modification of path
             evt_change_point = cur_time + remain_travel_time
         else:
-            path_n_Rerouted, path_e_Rerouted = Algorithms.find_SP(next_n.no, target_c.sn.no)
+            path_n_Rerouted, path_e_Rerouted = Algorithms.shortestPath[(next_n.no, target_c.sn.no)]
             self.path_n = self.path_n + path_n_Rerouted[1:]
             self.path_e = self.path_e + path_e_Rerouted
             evt_change_point = cur_time + remain_travel_time + sum(e.distance / min(PRT_SPEED, e.maxSpeed) for e in path_e_Rerouted)
@@ -576,10 +576,11 @@ def On_CustomerArrival(cur_time, target_c):
     customer = Customers.pop(0)
     assert customer == target_c
     waiting_customers.append(customer)
+    customerWaitingNums.append(len(waiting_customers))
     
     # Measure update
     update_customerWaitingTimeMeasure(cur_time, target_c, 1)
-    global NumOfCustomerArrivals
+    global NumOfCustomerArrivals, customerWaitingNums
     NumOfCustomerArrivals += 1
     
     dispatcher(cur_time, PRTs, waiting_customers, Nodes)

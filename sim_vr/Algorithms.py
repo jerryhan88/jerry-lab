@@ -14,7 +14,8 @@ priority_rate_earlyArrival = 0.0001
 Longest_dis = 100000000
 
 def init_algorithms(_Nodes):
-    global network, Nodes
+    global network, Nodes, shortestPath
+    shortestPath = {}
     Nodes = _Nodes
     E, W = [], []
     for i, n in enumerate(Nodes):
@@ -22,7 +23,32 @@ def init_algorithms(_Nodes):
             E.append((e._from.no, e._to.no))
             W.append(e.distance / e.maxSpeed)
     network = Graph(len(Nodes), E, True, edge_attrs={'weight': W})
-
+    
+    from Dynamics import TRANSFER, STATION
+    SnEnNodes = [n.no for n in Nodes if n.nodeType == STATION or n.nodeType == TRANSFER]
+    
+    for sn in SnEnNodes:
+        for dn in SnEnNodes:
+            path_n, path_e = [], []
+            if sn == dn:
+                path_n.append(Nodes[sn])
+                shortestPath[(sn,dn)] = (path_n, path_e)
+            else:
+                path = network.get_shortest_paths(sn, dn, 'weight')[0]
+                for i, n_index in enumerate(path):
+                    n = Nodes[n_index]
+                    path_n.append(n)
+                    if i != 0 :
+                        for e in n.edges_inward:
+                            if e._from == Nodes[path[i - 1]]:
+                                path_e.append(e)
+                                break
+                        else:
+                            assert False
+            assert sn == path_n[0].no
+            assert dn == path_n[-1].no
+            shortestPath[(sn,dn)] = (path_n, path_e)
+    
 def on_notify_assignmentment_point(args=None):
     print '-----------------------------------------------------------------------(Re)assignment!!' 
 
@@ -61,7 +87,7 @@ def find_nearestPRT(candi_PRT, target_c):
     PRT_C_EAT = []
     # Estimated Arrival Time
     for prt in candi_PRT:
-        _, path_e = find_SP(prt.arrived_n.no, target_c.sn.no)
+        _, path_e = shortestPath[(prt.arrived_n.no, target_c.sn.no)]
         empty_travel_time = sum(e.distance / min(PRT_SPEED, e.maxSpeed) for e in path_e)
         PRT_C_EAT.append((prt, empty_travel_time))
     return sorted(PRT_C_EAT, key=lambda PRT_C_EAT: PRT_C_EAT[1])[0][0]
@@ -86,9 +112,9 @@ def FOFO(event_time, PRTs, waiting_customers, Nodes):
                 global Longest_dis
                 FO_time = Longest_dis  # large number 
                 for c in candi_customers:
-                    _, path_e = find_SP(prt.arrived_n.no, c.sn.no)
+                    _, path_e = shortestPath[(prt.arrived_n.no, c.sn.no)]
                     empty_travelTime = sum(e.distance / min(PRT_SPEED, e.maxSpeed) for e in path_e)
-                    _, path_e = find_SP(c.sn.no, c.dn.no)
+                    _, path_e = shortestPath[(c.sn.no, c.dn.no)]
                     service_travelTime = sum(e.distance / min(PRT_SPEED, e.maxSpeed) for e in path_e)
                     if empty_travelTime + service_travelTime < FO_time:
                         FO_time = empty_travelTime + service_travelTime
@@ -189,34 +215,32 @@ def find_opt_matching(cur_time, target_PRTs, target_customers, Nodes):
                 # Calculate remain distance
                 remain_travel_time = 0
                 # Calculate distance to location a customer is waiting
-                _, path_e = find_SP(prt.arrived_n.no, cus.sn.no)
+                _, path_e = shortestPath[(prt.arrived_n.no, cus.sn.no)]
                 
+            elif prt.state == ST_TRANSITING:
+                # Calculate remain distance to destination of the boarding customer
+                remain_travel_time = sum(e.distance / min(PRT_SPEED, e.maxSpeed) for e in prt.path_e) - path_travel_time
+                # Calculate distance to location a customer is waiting
+                _, path_e = shortestPath[(prt.path_n[-1].no, cus.sn.no)]
+            
             elif prt.state == ST_APPROACHING:
                 # Calculate remain distance to next node
                 _, next_n, xth = find_PRT_position_on_PATH(prt.path_e, path_travel_time)
                 remain_travel_time = sum(e.distance / min(PRT_SPEED, e.maxSpeed) for e in prt.path_e[:xth]) - path_travel_time
                 # Calculate distance to location a customer is waiting
                 _, path_e = find_SP(next_n.no, cus.sn.no)
-                
-            elif prt.state == ST_TRANSITING:
-                # Calculate remain distance to destination of the boarding customer
-                remain_travel_time = sum(e.distance / min(PRT_SPEED, e.maxSpeed) for e in prt.path_e) - path_travel_time
-                # Calculate distance to location a customer is waiting
-                _, path_e = find_SP(prt.path_n[-1].no, cus.sn.no)
-                
+
             elif prt.state == ST_PARKING:
                 # Calculate remain distance to next node
                 _, next_n, xth = find_PRT_position_on_PATH(prt.path_e, path_travel_time)
-#                 assert next_n == prt.path_n[-1]
                 remain_travel_time = sum(e.distance / min(PRT_SPEED, e.maxSpeed) for e in prt.path_e[:xth]) - path_travel_time
-                 
                 # Calculate distance to location a customer is waiting
                 _, path_e = find_SP(next_n.no, cus.sn.no)
+                
             else:
                 assert False
-            _, determinded_path_e = find_SP(cus.sn.no, cus.dn.no)
-            processing_time = sum(e.distance / min(PRT_SPEED, e.maxSpeed) for e in determinded_path_e)
-            PRTbyCustomer_matrix[prt_id][i] = -(processing_time + sum(e.distance / min(PRT_SPEED, e.maxSpeed) for e in path_e) + remain_travel_time)
+                
+            PRTbyCustomer_matrix[prt_id][i] = -(sum(e.distance / min(PRT_SPEED, e.maxSpeed) for e in path_e) + remain_travel_time)
     
     # Apply Hungarian method        
     assignment_results = []
@@ -241,52 +265,6 @@ def find_PRT_position_on_PATH(path_e, path_travel_time):
             return e._from, e._to, xth
     else:
         assert False 
-
-def find_SP0(sn, en, Nodes):
-    # Initialize node state for adapting Dijkstra algorithm
-    for n in Nodes:
-        n.init_node()
-    
-    # Update minimum distance
-    sn.minTime = 0
-    sn.visited = True
-    todo = [sn]
-    while todo:
-        n = todo.pop()
-        if not n.visited:
-            for e in n.edges_inward:
-                if not e._from.visited:
-                    break
-            else:
-                n.visited = True
-        for e in n.edges_outward:
-            consi_n = e._to
-            tentative_minTime = n.minTime + e.distance / e.maxSpeed
-            if consi_n.minTime >= tentative_minTime:
-                consi_n.minTime = tentative_minTime
-                if not consi_n.visited and consi_n not in todo:
-                    todo.append(consi_n)
-                
-    # Find Path
-    path_n = []
-    path_e = []
-    consi_n = en
-    while consi_n:
-        path_n.append(consi_n)
-        for e in consi_n.edges_inward:
-            if e._from.minTime + e.distance / e.maxSpeed == consi_n.minTime:
-                consi_n = e._from
-                path_e.append(e)
-                break 
-        else:
-            consi_n = None
-    path_n.reverse()
-    path_e.reverse()
-    
-    assert sn == path_n[0]
-    assert en == path_n[-1] 
-    
-    return path_n, path_e
 
 def find_SP(sn, dn):
     path_n, path_e = [], []
