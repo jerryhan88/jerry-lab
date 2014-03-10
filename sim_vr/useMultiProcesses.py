@@ -25,26 +25,52 @@ class Worker(multiprocessing.Process):
         return
 
 class Task(object):
-    def __init__(self, _dispatchers, _meanTimeArrivals, _exOrder):
-        self.dispatchers, self.meanTimeArrivals, self.exOrder = _dispatchers, _meanTimeArrivals, _exOrder
+    def __init__(self, _NUM_PRT, _NUM_CUSTOMER, _repetition, _dispatchers, _meanTimeArrivals):
+        self.NUM_PRT, self.NUM_CUSTOMER, self.repetition = _NUM_PRT, _NUM_CUSTOMER, _repetition
+        self.dispatchers, self.meanTimeArrivals = _dispatchers, _meanTimeArrivals
+        
     
     def __call__(self):
         from Experiments import run_experiment
-        return run_experiment(self.dispatchers, self.meanTimeArrivals, self.exOrder)
+        return run_experiment(self.NUM_PRT, self.NUM_CUSTOMER, self.repetition, self.dispatchers, self.meanTimeArrivals)
     
-if __name__ == '__main__':
     
+def ex1():
+    repetition = 1
+    # parameter setting
+    NUM_PRT = 50
+    NUM_CUSTOMER = 2000
     dispatcher = [
-                Algorithms.FCFS,
-                Algorithms.FOFO,
-                Algorithms.NNBA_I,
-                Algorithms.NNBA_IT,
-                Algorithms.NNBA_IA,
-                Algorithms.NNBA_IAP,
-                Algorithms.NNBA_IAT,
-                Algorithms.NNBA_IATP,
-                ]
-    arrivalRates = list(np.arange(0.1, 0.2, 0.05))
+                    Algorithms.FCFS,
+                    Algorithms.FOFO,
+                    Algorithms.NNBA_I,
+                    Algorithms.NNBA_IT,
+                    Algorithms.NNBA_IA,
+                    Algorithms.NNBA_IAP,
+                    Algorithms.NNBA_IAT,
+                    Algorithms.NNBA_IATP,
+                    ]
+    arrivalRates = list(np.arange(0.1, 0.25, 0.005))
+    
+    jobs = [
+            (0, 2, 0, len(arrivalRates) // 2),
+            (2, 3, 0, len(arrivalRates) // 2),
+            (4, 5, 0, len(arrivalRates) // 2),
+            (5, 6, 0, len(arrivalRates) // 2),
+            (6, 7, 0, len(arrivalRates) // 2),
+            (7, 8, 0, len(arrivalRates) // 2),
+            
+            (0, 2, len(arrivalRates) // 2, len(arrivalRates)),
+            (2, 3, len(arrivalRates) // 2, len(arrivalRates)),
+            (4, 5, len(arrivalRates) // 2, len(arrivalRates)),
+            (5, 6, len(arrivalRates) // 2, len(arrivalRates)),
+            (6, 7, len(arrivalRates) // 2, len(arrivalRates)),
+            (7, 8, len(arrivalRates) // 2, len(arrivalRates)),
+            ]
+    return NUM_PRT, NUM_CUSTOMER, repetition, dispatcher, arrivalRates, jobs
+      
+if __name__ == '__main__':
+    NUM_PRT, NUM_CUSTOMER, repetition, dispatcher, arrivalRates, jobs = ex1()
     
     # Establish communication queues
     tasks = multiprocessing.JoinableQueue()
@@ -58,19 +84,9 @@ if __name__ == '__main__':
         w.start()
     
     # Enqueue jobs
-    num_jobs = 5
-    
-    jobs = [(0,2),
-            (2,3),
-            (4,5),
-            (5,6),
-            (6,7),
-            (7,8),
-            ]
-    
     num_jobs = len(jobs)
-    for i,j in jobs:
-        tasks.put(Task(dispatcher[:], arrivalRates, 1))
+    for i, j, k, x in jobs:
+        tasks.put(Task(NUM_PRT, NUM_CUSTOMER, repetition, dispatcher[i:j], arrivalRates[k:x]))
     
     # Add a poison pill for each consumer
     for i in xrange(num_workers):

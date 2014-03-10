@@ -4,9 +4,18 @@ from random import seed
 from time import time, ctime
 from math import sqrt
 from tempfile import TemporaryFile
-from xlwt import Workbook
 import numpy as np
 import matplotlib.pyplot as plt
+
+
+# init. folders
+fileSavePath = 'C:\experimentResult'
+textFilesPath = fileSavePath + '/textFiles'
+graphFilesPath = fileSavePath + '/graphFiles'
+graphWT_FilesPath = graphFilesPath + '/waitingTime'
+graphSMM_FilesPath = graphFilesPath + '/summary'
+
+
 
 logger_pass = lambda x: None
 
@@ -50,18 +59,10 @@ def on_notify_customer_arrival(customer):
         for k in stateTimes.iterkeys():
             print '%s state' % k, stateTimes[k]
 
-def run_experiment(dispatchers, arrivalRates, exOrder):
+def run_experiment(NUM_PRT, NUM_CUSTOMER, repetition, dispatchers, arrivalRates):
     import os
 #     seedNum = 2
 #     seed(seedNum)
-    
-#     fileSavePath = 'C:\Users\user\Desktop\experimentResult'
-    fileSavePath = 'C:\Users\JerryHan88\Desktop\experimentResult'
-    textFilesPath = fileSavePath + '/textFiles'
-    graphFilesPath = fileSavePath + '/graphFiles'
-    graphWT_FilesPath = graphFilesPath + '/waitingTime'
-    graphSMM_FilesPath = graphFilesPath + '/summary'
-    
     for p in [fileSavePath, textFilesPath, graphFilesPath, graphWT_FilesPath, graphSMM_FilesPath]:
         if not os.path.exists(p): os.makedirs(p)
     
@@ -69,65 +70,16 @@ def run_experiment(dispatchers, arrivalRates, exOrder):
     Algorithms.on_notify_assignmentment_point = logger_pass  
     Dynamics.on_notify_customer_arrival = on_notify_customer_arrival
     
-    # parameter setting
-    NUM_PRT = 50
-    NUM_CUSTOMER = 2000
-    
     PRT_SPEED = 1200  # unit (cm/s)
     S2J_SPEED = 600
     J2D_SPEED = 900
     SETTING_TIME = (10.0, 60.0)  # unit (sec)
     
-    S2J, J2D, PS, nOP, nOTC, AR, D, CTime, ETDT, ETDA, ETDSD, ETDMed, ETDMax, CWTT, CWTA, CWTSD, CWTMed, CWTMax, BTT, BTA, BTSD, BTMed, BTMax, CWNT, CWNA, CWNSD, CWNMed, CWNMax, Idle, Approaching, Setting, Transiting, Parking = range(33)
-    colNames = [
-                'S2J_SPEED',
-                'J2D_SPEED',
-                'PRT_SPEED',
-                'numOfPRTs',
-                'numOfTotalCustomers',
-                'arrivalRate',
-                'dispatcher',
-                'CTime',
-                'E.T.Distance_Total',
-                'E.T.Distance_Average',
-                'E.T.Distance_S.D',
-                'E.T.Distance_Median',
-                'E.T.Distance_Max',
-                
-                'C.W.Time_Total',
-                'C.W.Time_Average',
-                'C.W.Time_S.D',
-                'C.W.Time_Median',
-                'C.W.Time_Max',
-                
-                'B.Time_Total',
-                'B.Time_Average',
-                'B.Time_S.D',
-                'B.Time_Median',
-                'B.Time_Max',
-                
-                'C.W.Number_Total',
-                'C.W.Number_Average',
-                'C.W.Number_S.D',
-                'C.W.Number_Median',
-                'C.W.Number_Max',
-                
-                'I.S.Time',
-                'A.S.Time',
-                'S.S.Time',
-                'T.S.Time',
-                'P.S.Time',
-                ]
-    book = Workbook()
+    
     # _dispatchers: Dispatcher : (ArivalRate, Measures)
     #   for drawing Graph
     _dispatchers = {D : [] for D in Algorithms.get_all_dispatchers().keys()}
     for dispatcher in dispatchers:
-        sheet1 = book.add_sheet(dispatcher.__name__)
-        row1 = sheet1.row(0)
-        for i, CN in enumerate(colNames):
-            row1.write(i, CN)
-        ex = 1
         for arrivalRate in arrivalRates:
             global NumOfTotalCustomer
             global distances, customersWaitingTimes, boardingWaitingTimes, customerWaitingNums
@@ -195,7 +147,7 @@ def run_experiment(dispatchers, arrivalRates, exOrder):
             
             TXT_FILE = '%s/dispatcher(%s) arrivalRate(%.4f).txt' % (textFilesPath, dispatcher.__name__, arrivalRate)
             with open(TXT_FILE, 'w') as f:
-                f.write('Parameter------------------------------------------------------------------------------------------------\n')
+                # Parameter------------------------------------------------------------------------------------------------
                 f.write('S2J_SPEED:%d\n' % S2J_SPEED)
                 f.write('J2D_SPEED:%d\n' % J2D_SPEED)
                 f.write('PRT_SPEED:%d\n' % PRT_SPEED)
@@ -203,7 +155,7 @@ def run_experiment(dispatchers, arrivalRates, exOrder):
                 f.write('numOfTotalCustomers:%d\n' % NUM_CUSTOMER)
                 f.write('arrivalRate:%f\n' % arrivalRate)
                 f.write('dispatcher:%s\n' % dispatcher.__name__)
-                f.write('Measure------------------------------------------------------------------------------------------------\n')
+                # Measure------------------------------------------------------------------------------------------------
                 f.write('CTime:%.1f\n' % et)
                 
                 f.write('E.T.Distance_Total:%.1f\n' % (aED.sum() / 100))
@@ -232,87 +184,12 @@ def run_experiment(dispatchers, arrivalRates, exOrder):
                 
                 time_flow = measuresCEP - measuresCSP
                 total_time_flow = time_flow * len(Dynamics.PRTs)
-                f.write('I.S.Time: %.1f(%.1f%s)\n' % (stateTimes['I'], stateTimes['I'] / total_time_flow * 100, '%'))
-                f.write('A.S.Time: %.1f(%.1f%s)\n' % (stateTimes['A'], stateTimes['A'] / total_time_flow * 100, '%'))
-                f.write('S.S.Time: %.1f(%.1f%s)\n' % (stateTimes['S'], stateTimes['S'] / total_time_flow * 100, '%'))
-                f.write('T.S.Time: %.1f(%.1f%s)\n' % (stateTimes['T'], stateTimes['T'] / total_time_flow * 100, '%'))
-                f.write('P.S.Time: %.1f(%.1f%s)\n' % (stateTimes['P'], stateTimes['P'] / total_time_flow * 100, '%'))
+                f.write('I.S.Time: %.1f\n' % (stateTimes['I']))
+                f.write('A.S.Time: %.1f\n' % (stateTimes['A']))
+                f.write('S.S.Time: %.1f\n' % (stateTimes['S']))
+                f.write('T.S.Time: %.1f\n' % (stateTimes['T']))
+                f.write('P.S.Time: %.1f\n' % (stateTimes['P']))
             
-            row = sheet1.row(ex)
-            row.write(S2J, S2J_SPEED) 
-            row.write(J2D, J2D_SPEED)
-            row.write(PS, PRT_SPEED)
-            row.write(nOP, NUM_PRT)
-            row.write(nOTC, NUM_CUSTOMER) 
-            row.write(AR, arrivalRate)
-            row.write(D, dispatcher.__name__) 
-            row.write(CTime, et)
-             
-            row.write(ETDT, (aED.sum() / 100))
-            row.write(ETDA, (aED.mean() / 100))
-            row.write(ETDSD, (aED.std() / 100))
-            row.write(ETDMed, (np.median(aED) / 100))
-            row.write(ETDMax, (aED.max() / 100))
-            
-            row.write(CWTT, aCWT.sum())
-            row.write(CWTA, aCWT.mean())
-            row.write(CWTSD, aCWT.std())
-            row.write(CWTMed, np.median(aCWT))
-            row.write(CWTMax, aCWT.max())
-            
-            row.write(BTT, aBWT.sum())
-            row.write(BTA, aBWT.mean())
-            row.write(BTSD, aBWT.std())
-            row.write(BTMed, np.median(aBWT))
-            row.write(BTMax, aBWT.max())
-            
-            row.write(CWNT, aCWT.sum())
-            row.write(CWNA, aCWT.mean())
-            row.write(CWNSD, aCWT.std())
-            row.write(CWNMed, np.median(aCWT))
-            row.write(CWNMax, aCWT.max())
-            
-            row.write(Idle, stateTimes['I'])
-            row.write(Approaching, stateTimes['A'])
-            row.write(Setting, stateTimes['S'])
-            row.write(Transiting, stateTimes['T'])
-            row.write(Parking, stateTimes['P'])
-            ex += 1
-            
-    book.save('%s/dynamicsResults_order(%d).xls' % (fileSavePath, exOrder))
-    book.save(TemporaryFile())
-    
-    for D in _dispatchers.keys():
-        ARs = []
-        AaEDs, AaCWTs, AaBWTs, AaCWNs = [], [], [], []
-        MaEDs, MaCWTs, MaBWTs, MaCWNs = [], [], [], []
-        for AR, (aED, aCWT, aBWT, aCWN) in _dispatchers[D]:
-            ARs.append(AR)
-            AaEDs.append(aED.mean())
-            AaCWTs.append(aCWT.mean())
-            AaBWTs.append(aBWT.mean())
-            AaCWNs.append(aCWN.mean())
-            MaEDs.append(aED.max())
-            MaCWTs.append(aCWT.max())
-            MaBWTs.append(aBWT.max())
-            MaCWNs.append(aCWN.max())
-        _dispatchers[D] = (ARs, AaEDs, AaCWTs, AaBWTs, AaCWNs, MaEDs, MaCWTs, MaBWTs, MaCWNs)
-    
-    titleAndYlabel = [('EmptyTravel Average', 'Distance (m)'),
-                      ('CustomerWaitingTime Average', 'Time (s)'),
-                      ('BoardingWaiting Average', 'Time (s)'),
-                      ('CustomerWaitingNumber Average', 'NumOfWating (person)'),
-                      ('EmptyTravel Max', 'Distance (m)'),
-                      ('CustomerWaiting Max', 'Time (s)'),
-                      ('BoardingWaiting Max', 'Time (s)'),
-                      ('CustomerWaitingNumber Max', 'NumOfWating (person)'),
-                      ]
-    
-    from readExcel_drawGraph import saveMeasuresGraph
-    
-    for i, (title, ylabel) in enumerate(titleAndYlabel):
-        saveMeasuresGraph(i + 1, title, ylabel, _dispatchers)
-
 def profile_solve():
     import cProfile, pstats, os
     PRT_SPEED = 12  # unit (m/s)
@@ -349,6 +226,12 @@ def test_variousCustomer():
 if __name__ == '__main__':
 #     test_variousCustomer()
 #     profile_solve()
+
+    # parameter setting
+    NUM_PRT = 50
+    NUM_CUSTOMER = 2000
+    
+    repetition = 1
     dispatcher = [
                     Algorithms.FCFS,
                     Algorithms.FOFO,
@@ -360,17 +243,13 @@ if __name__ == '__main__':
                     Algorithms.NNBA_IATP,
                     ]
 #     arrivalRates = list(np.arange(0.128, 0.130, 0.0001))
+    arrivalRates = list(np.arange(0.1, 0.2, 0.005))
     
-    arrivalRates = list(np.arange(0.1, 0.2, 0.05))
-    
-#     arrivalRates = list(np.arange(0.15, 0.153, 0.001))
-#     arrivalRates = list(np.arange(0.154, 0.158, 0.001))
-#     arrivalRates = list(np.arange(0.159, 0.160, 0.001))
-    run_experiment(dispatcher[:1], arrivalRates, 1)  # FCFS
-#     run_experiment(dispatcher[1:2], arrivalRates, 2)  # FOFO 
-#     run_experiment(dispatcher[2:3], arrivalRates, 3)  # NNBA_I 
-#     run_experiment(dispatcher[3:4], arrivalRates, 4)  # NNBA_IT  
-#     run_experiment(dispatcher[4:5], arrivalRates, 5)  # NNBA_IA
-#     run_experiment(dispatcher[5:6], arrivalRates, 6)  # NNBA_IAP
-#     run_experiment(dispatcher[6:7], arrivalRates, 7)  # NNBA_IAT
-#     run_experiment(dispatcher[7:8], arrivalRates, 8)  # NNBA_IATP
+    run_experiment(NUM_PRT, NUM_CUSTOMER, repetition, dispatcher[:1], arrivalRates)  # FCFS
+    run_experiment(NUM_PRT, NUM_CUSTOMER, repetition, dispatcher[1:2], arrivalRates)  # FOFO 
+    run_experiment(NUM_PRT, NUM_CUSTOMER, repetition, dispatcher[2:3], arrivalRates)  # NNBA_I 
+    run_experiment(NUM_PRT, NUM_CUSTOMER, repetition, dispatcher[3:4], arrivalRates)  # NNBA_IT  
+    run_experiment(NUM_PRT, NUM_CUSTOMER, repetition, dispatcher[4:5], arrivalRates)  # NNBA_IA
+    run_experiment(NUM_PRT, NUM_CUSTOMER, repetition, dispatcher[5:6], arrivalRates)  # NNBA_IAP
+    run_experiment(NUM_PRT, NUM_CUSTOMER, repetition, dispatcher[6:7], arrivalRates)  # NNBA_IAT
+    run_experiment(NUM_PRT, NUM_CUSTOMER, repetition, dispatcher[7:8], arrivalRates)  # NNBA_IATP
