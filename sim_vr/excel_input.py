@@ -20,16 +20,16 @@ def read_excel(path):
     Customers, PRTs = gen_instances(Network, CUSTOMER_ARRIVAL_INTERVAL, NUM_CUSTOMER, NUM_PRT, PRT_SPEED)
     
     import Algorithms, Dynamics
-    
-    dispatcher = Algorithms.NNBA_I
+    dispatcher = Algorithms.FCFS    
+#     dispatcher = Algorithms.NNBA_I
 #     dispatcher = Algorithms.NNBA_IA
 #     dispatcher = Algorithms.NNBA_IAT
 #     dispatcher = Algorithms.NNBA_IT
 #     dispatcher = Algorithms.NNBA_IAP
 #     dispatcher = Algorithms.NNBA_IATP
     
-    Dynamics.run(SETTING_TIME, PRT_SPEED, Network, PRTs, Customers, dispatcher)
-#     Dynamics.run(SETTING_TIME, PRT_SPEED, Network, PRTs, Customers, useVisualizer=True)
+#     Dynamics.run(SETTING_TIME, PRT_SPEED, Network, PRTs, Customers, dispatcher)
+    Dynamics.run(SETTING_TIME, PRT_SPEED, Network, PRTs, Customers, useVisualizer=True)
     
 
 def Network1_excel(book, S2J_SPEED, J2D_SPEED):
@@ -39,8 +39,9 @@ def Network1_excel(book, S2J_SPEED, J2D_SPEED):
     Nodes = []
     for row_index in range(1, nt_sheet.nrows):
         r = nt_sheet.row(row_index)
-        Nodes.append(Node(str(int(r[0].value)), r[1].value, r[2].value, eval(r[3].value), int(r[4].value)))
-    
+#         Nodes.append(Node((r[0].value), r[1].value, r[2].value, eval(r[3].value), int(r[4].value)))        
+        Nodes.append(Node(str(r[0].value), r[1].value, r[2].value, eval(r[3].value), int(r[4].value)))
+                 
     def findN(nID):
         for n in Nodes:
             if n.id == nID:
@@ -50,10 +51,20 @@ def Network1_excel(book, S2J_SPEED, J2D_SPEED):
     
     Edges = []        
     for row_index in range(1, nt_sheet.nrows):
-        _from = str(int(nt_sheet.row(row_index)[0].value))
-        _to = str(int(nt_sheet.row(row_index)[5].value))
-        Edges.append(Edge(findN(_from), findN(_to)))
-        
+        extra1 = str(nt_sheet.row(row_index)[5].value).split(",")
+        extra = []
+        for i in range(len(extra1)-1):
+            extra.append(extra1[i])
+        for i in extra:
+            _from = str(nt_sheet.row(row_index)[0].value)
+            _to = str(i)
+#             print type(_from), _from, type(_to), _to
+
+            Edges.append(Edge(findN(_from), findN(_to)))
+
+#         _from = str(int(nt_sheet.row(row_index)[0].value))
+#         _to = str(int(nt_sheet.row(row_index)[5].value))
+#         Edges.append(Edge(findN(_from), findN(_to)))
     for i, n in enumerate(Nodes):
         n.no = i
         
