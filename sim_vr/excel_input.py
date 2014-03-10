@@ -28,8 +28,8 @@ def read_excel(path):
 #     dispatcher = Algorithms.NNBA_IAP
 #     dispatcher = Algorithms.NNBA_IATP
     
-#     Dynamics.run(SETTING_TIME, PRT_SPEED, Network, PRTs, Customers, dispatcher)
-    Dynamics.run(SETTING_TIME, PRT_SPEED, Network, PRTs, Customers, useVisualizer=True)
+    Dynamics.run(SETTING_TIME, PRT_SPEED, Network, PRTs, Customers, dispatcher)
+#     Dynamics.run(SETTING_TIME, PRT_SPEED, Network, PRTs, Customers, useVisualizer=True)
     
 
 def Network1_excel(book, S2J_SPEED, J2D_SPEED):

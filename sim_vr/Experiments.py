@@ -55,7 +55,8 @@ def run_experiment(dispatchers, arrivalRates, exOrder):
 #     seedNum = 2
 #     seed(seedNum)
     
-    fileSavePath = 'C:\Users\user\Desktop\experimentResult'
+#     fileSavePath = 'C:\Users\user\Desktop\experimentResult'
+    fileSavePath = 'C:\Users\JerryHan88\Desktop\experimentResult'
     textFilesPath = fileSavePath + '/textFiles'
     graphFilesPath = fileSavePath + '/graphFiles'
     graphWT_FilesPath = graphFilesPath + '/waitingTime'
