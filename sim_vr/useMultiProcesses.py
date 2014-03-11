@@ -3,7 +3,7 @@ import numpy as np
 import os, Dynamics, Algorithms
 
 # init. folders
-fileSavePath = 'C:\experimentResult'
+fileSavePath = 'C:\experimentResult2'
 textFilesPath = fileSavePath + '/textFiles'
 graphFilesPath = fileSavePath + '/graphFiles'
 graphWT_FilesPath = graphFilesPath + '/waitingTime'
@@ -96,7 +96,7 @@ def ex2():
     for p in [fileSavePath, textFilesPath, graphFilesPath, graphWT_FilesPath, graphSMM_FilesPath]:
         if not os.path.exists(p): os.makedirs(p)
     
-    assert False
+#     assert False
     
     PRT_SPEED = 1200  # unit (cm/s)
     S2J_SPEED = 600
