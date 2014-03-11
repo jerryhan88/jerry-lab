@@ -60,6 +60,11 @@ def on_notify_customer_arrival(customer):
             print '%s state' % k, stateTimes[k]
 
 def run_eachInstance(PRT_SPEED, S2J_SPEED, J2D_SPEED, SETTING_TIME, NUM_CUSTOMER, NUM_PRT, dispatcher, arrivalRate):
+    Dynamics.logger = logger_pass 
+    Algorithms.on_notify_assignmentment_point = logger_pass  
+    Dynamics.on_notify_customer_arrival = on_notify_customer_arrival
+    
+    
     global NumOfTotalCustomer
     global distances, customersWaitingTimes, boardingWaitingTimes, customerWaitingNums
     global stateTimes
@@ -173,10 +178,6 @@ def run_experiment(NUM_PRT, NUM_CUSTOMER, repetition, dispatchers, arrivalRates)
 #     seed(seedNum)
     for p in [fileSavePath, textFilesPath, graphFilesPath, graphWT_FilesPath, graphSMM_FilesPath]:
         if not os.path.exists(p): os.makedirs(p)
-    
-    Dynamics.logger = logger_pass 
-    Algorithms.on_notify_assignmentment_point = logger_pass  
-    Dynamics.on_notify_customer_arrival = on_notify_customer_arrival
     
     PRT_SPEED = 1200  # unit (cm/s)
     S2J_SPEED = 600

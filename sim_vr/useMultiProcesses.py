@@ -1,6 +1,57 @@
 import multiprocessing
-import Algorithms
 import numpy as np
+import os, Dynamics, Algorithms
+
+# init. folders
+fileSavePath = 'C:\experimentResult'
+textFilesPath = fileSavePath + '/textFiles'
+graphFilesPath = fileSavePath + '/graphFiles'
+graphWT_FilesPath = graphFilesPath + '/waitingTime'
+graphSMM_FilesPath = graphFilesPath + '/summary'
+
+logger_pass = lambda x: None
+
+
+NumOfTotalCustomer = 0
+
+# measuresCollectionPoint
+measuresCSP, measuresCEP = (0.0,) * 2
+
+distances, customersWaitingTimes, boardingWaitingTimes, customerWaitingNums = [], [], [], []
+
+stateTimes = {'I' : 0.0, 'A' : 0.0, 'S' : 0.0, 'T' : 0.0, 'P' : 0.0}
+
+def on_notify_customer_arrival(customer):
+    print customer
+    if Dynamics.NumOfCustomerArrivals == int(NumOfTotalCustomer / 5):
+        global measuresCSP
+        measuresCSP = customer.arriving_time
+        
+        Dynamics.distances, Dynamics.customersWaitingTimes, Dynamics.boardingWaitingTimes, Dynamics.customerWaitingNums = [], [], [], []
+        
+        for k in Dynamics.stateTimes.iterkeys():
+            Dynamics.stateTimes[k] = 0.0
+        
+    if Dynamics.NumOfCustomerArrivals == NumOfTotalCustomer:
+        global distances, customersWaitingTimes, boardingWaitingTimes, customerWaitingNums
+        global stateTimes
+        global measuresCEP
+        measuresCEP = customer.arriving_time
+        
+        distances = Dynamics.distances[:]
+        customersWaitingTimes = Dynamics.customersWaitingTimes[:]
+        boardingWaitingTimes = Dynamics.boardingWaitingTimes[:]
+        customerWaitingNums = Dynamics.customerWaitingNums[:] 
+        
+        for k in Dynamics.stateTimes.iterkeys():
+            stateTimes[k] = Dynamics.stateTimes[k]
+        
+        Dynamics.end_dynamics()
+        
+        print '-------------------------------------------------------------------------------'
+        for k in stateTimes.iterkeys():
+            print '%s state' % k, stateTimes[k]
+
 
 class Worker(multiprocessing.Process):
     
@@ -40,60 +91,12 @@ class Task(object):
     def __call__(self):
         from Experiments import run_eachInstance
         return run_eachInstance(self.PRT_SPEED, self.S2J_SPEED, self.J2D_SPEED, self.SETTING_TIME, self.NUM_CUSTOMER, self.NUM_PRT, self.dispatcher, self.arrivalRate)
-    
-def ex1():
-    repetition = 1
-    # parameter setting
-    NUM_PRT = 50
-    NUM_CUSTOMER = 5000
-    dispatcher = [
-                    Algorithms.FCFS,
-                    Algorithms.FOFO,
-                    Algorithms.NNBA_I,
-                    Algorithms.NNBA_IT,
-                    Algorithms.NNBA_IA,
-                    Algorithms.NNBA_IAP,
-                    Algorithms.NNBA_IAT,
-                    Algorithms.NNBA_IATP,
-                    ]
-    arrivalRates = list(np.arange(0.1, 0.25, 0.005))
-    
-    jobs = [
-            (0, 2, 0, len(arrivalRates) // 2),
-            (2, 3, 0, len(arrivalRates) // 2),
-            (4, 5, 0, len(arrivalRates) // 2),
-            (5, 6, 0, len(arrivalRates) // 2),
-            (6, 7, 0, len(arrivalRates) // 2),
-            (7, 8, 0, len(arrivalRates) // 2),
-            
-            (0, 2, len(arrivalRates) // 2, len(arrivalRates)),
-            (2, 3, len(arrivalRates) // 2, len(arrivalRates)),
-            (4, 5, len(arrivalRates) // 2, len(arrivalRates)),
-            (5, 6, len(arrivalRates) // 2, len(arrivalRates)),
-            (6, 7, len(arrivalRates) // 2, len(arrivalRates)),
-            (7, 8, len(arrivalRates) // 2, len(arrivalRates)),
-            ]
-    
-    return NUM_PRT, NUM_CUSTOMER, repetition, dispatcher, arrivalRates, jobs
 
 def ex2():
-    import os, Experiments, Dynamics, Algorithms
-    
-    # init. folders
-    fileSavePath = Experiments.fileSavePath
-    textFilesPath = Experiments.textFilesPath
-    graphFilesPath = Experiments.graphFilesPath
-    graphWT_FilesPath = Experiments.graphWT_FilesPath
-    graphSMM_FilesPath = Experiments.graphSMM_FilesPath
-    
     for p in [fileSavePath, textFilesPath, graphFilesPath, graphWT_FilesPath, graphSMM_FilesPath]:
         if not os.path.exists(p): os.makedirs(p)
     
     assert False
-    
-    Dynamics.logger = Experiments.logger_pass 
-    Algorithms.on_notify_assignmentment_point = Experiments.logger_pass  
-    Dynamics.on_notify_customer_arrival = Experiments.on_notify_customer_arrival
     
     PRT_SPEED = 1200  # unit (cm/s)
     S2J_SPEED = 600
@@ -105,7 +108,7 @@ def ex2():
     results = multiprocessing.Queue()
     
     # Start consumers
-    num_workers = multiprocessing.cpu_count() - 1
+    num_workers = multiprocessing.cpu_count()
     workers = [ Worker(tasks, results)
                   for i in xrange(num_workers) ]
     for w in workers:
@@ -166,6 +169,41 @@ def main():
         result = results.get()
         print 'Result:', result
         num_jobs -= 1
+
+def ex1():
+    repetition = 1
+    # parameter setting
+    NUM_PRT = 50
+    NUM_CUSTOMER = 5000
+    dispatcher = [
+                    Algorithms.FCFS,
+                    Algorithms.FOFO,
+                    Algorithms.NNBA_I,
+                    Algorithms.NNBA_IT,
+                    Algorithms.NNBA_IA,
+                    Algorithms.NNBA_IAP,
+                    Algorithms.NNBA_IAT,
+                    Algorithms.NNBA_IATP,
+                    ]
+    arrivalRates = list(np.arange(0.1, 0.25, 0.005))
+    
+    jobs = [
+            (0, 2, 0, len(arrivalRates) // 2),
+            (2, 3, 0, len(arrivalRates) // 2),
+            (4, 5, 0, len(arrivalRates) // 2),
+            (5, 6, 0, len(arrivalRates) // 2),
+            (6, 7, 0, len(arrivalRates) // 2),
+            (7, 8, 0, len(arrivalRates) // 2),
+            
+            (0, 2, len(arrivalRates) // 2, len(arrivalRates)),
+            (2, 3, len(arrivalRates) // 2, len(arrivalRates)),
+            (4, 5, len(arrivalRates) // 2, len(arrivalRates)),
+            (5, 6, len(arrivalRates) // 2, len(arrivalRates)),
+            (6, 7, len(arrivalRates) // 2, len(arrivalRates)),
+            (7, 8, len(arrivalRates) // 2, len(arrivalRates)),
+            ]
+    
+    return NUM_PRT, NUM_CUSTOMER, repetition, dispatcher, arrivalRates, jobs
 
 if __name__ == '__main__':
     ex2()
