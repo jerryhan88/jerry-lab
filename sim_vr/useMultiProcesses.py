@@ -39,7 +39,7 @@ def ex1():
     repetition = 1
     # parameter setting
     NUM_PRT = 50
-    NUM_CUSTOMER = 2000
+    NUM_CUSTOMER = 5000
     dispatcher = [
                     Algorithms.FCFS,
                     Algorithms.FOFO,
