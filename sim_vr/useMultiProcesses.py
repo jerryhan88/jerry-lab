@@ -119,8 +119,28 @@ def ex2():
     # parameter setting
     NUM_PRT = 50
     NUM_CUSTOMER = 5000
-    dispatchers = Algorithms.get_all_dispatchers().values()
+    dispatchers = [
+                    Algorithms.FCFS,
+                    Algorithms.FOFO,
+                    Algorithms.NNBA_I,
+                    Algorithms.NNBA_IT,
+                    Algorithms.NNBA_IA,
+                    Algorithms.NNBA_IAP,
+                    Algorithms.NNBA_IAT,
+                    Algorithms.NNBA_IATP,
+                    ]
+    dispatchers = dispatchers[:1]   # FCFS
+    dispatchers = dispatchers[1:2]  # FOFO 
+    dispatchers = dispatchers[2:3]  # NNBA_I 
+    dispatchers = dispatchers[3:4]  # NNBA_IT  
+    dispatchers = dispatchers[4:5]  # NNBA_IA
+    dispatchers = dispatchers[5:6]  # NNBA_IAP
+    dispatchers = dispatchers[6:7]  # NNBA_IAT
+    dispatchers = dispatchers[7:8]  # NNBA_IATP
+    
     arrivalRates = list(np.arange(0.1, 0.25, 0.005))
+    
+    
     for dispatcher in dispatchers:
         for arrivalRate in arrivalRates:
             tasks.put(Task(PRT_SPEED, S2J_SPEED, J2D_SPEED, SETTING_TIME, NUM_CUSTOMER, NUM_PRT, dispatcher, arrivalRate))
