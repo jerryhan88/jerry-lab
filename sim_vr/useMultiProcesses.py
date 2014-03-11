@@ -89,6 +89,8 @@ def ex2():
     for p in [fileSavePath, textFilesPath, graphFilesPath, graphWT_FilesPath, graphSMM_FilesPath]:
         if not os.path.exists(p): os.makedirs(p)
     
+    assert False
+    
     Dynamics.logger = Experiments.logger_pass 
     Algorithms.on_notify_assignmentment_point = Experiments.logger_pass  
     Dynamics.on_notify_customer_arrival = Experiments.on_notify_customer_arrival
