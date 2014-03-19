@@ -5,12 +5,13 @@ from xlrd import open_workbook
 from xlwt import Workbook
 from os import listdir, path
 from xlutils.copy import copy
+import Algorithms
 
-def readTxext_writeExcel():
-    dirPath = r'C:\experimentResult'
-    exFP = '%s/experimentResult.xls' % (dirPath)
+def readTxext_writeExcel(dirPath, order):
+#     dirPath = r'C:\experimentResult'
+    
+    exFP = '%s/experimentResult%d.xls' % (dirPath, order)
     if not path.isfile(exFP):
-        import Algorithms
         wb = Workbook()
         for dispatcher in Algorithms.get_all_dispatchers().keys():
             st = wb.add_sheet(dispatcher)
@@ -56,6 +57,7 @@ def readTxext_writeExcel():
                     ]
             for i, CN in enumerate(colNames):
                 row.write(i, CN)
+        wb.save(exFP)
     
     txtPath = '%s/textFiles' % (dirPath)
     for f in [ f for f in listdir(txtPath)]:
@@ -84,8 +86,89 @@ def readTxext_writeExcel():
                 if i != 6: v = eval(v)
                 row.write(i, v)
         wb.save(exFP)
+
+def summarizeResults():
+    exFP = r'C:\Users\JerryHan88\Desktop\SummaryExperiments.xls'
+#     rb = open_workbook(exFP)
+#     wb = copy(rb)
+    wb = Workbook()
+    
+    dispatchers = [
+#                     'FCFS',
+#                     'FOFO',
+# 'NNBA_I',
+'NNBA_IT',
+# 'NNBA_IA',
+# 'NNBA_IAP',
+# 'NNBA_IAT',
+# 'NNBA_IATP',
+                    ]
     
     
+    for dispatcher in dispatchers:
+        wbSt = wb.add_sheet(dispatcher)
+        row = wbSt.row(0)
+        colNames = [
+                'arrivalRate',
+                
+                'E.T.Distance_Average',
+                'E.T.Distance_Max',
+                
+                'C.W.Time_Average',
+                'C.W.Time_Max',
+                
+                'B.Time_Average',
+                'B.Time_Max',
+                
+                'C.W.Number_Average',
+                'C.W.Number_Max',
+                ]
+        
+        for i, CN in enumerate(colNames):
+            row.write(i, CN)
+        
+        for i, x in enumerate(range(100, 225, 5)):
+            r_index = i + 1
+            ar = x * 0.001
+            
+            print dispatcher, ar
+            
+            ETA, ETM = [], []
+            CWTA, CWTM = [], []
+            BTA, BTM = [], []
+            CWNA, CWNM = [], []
+            
+            measuresIndices = [
+                        (ETA, 9), (ETM , 12),
+                        (CWTA, 14), (CWTM, 17),
+                        (BTA, 19), (BTM , 22),
+                        (CWNA, 24), (CWNM, 27),
+                        ] 
+            
+            for x in range(1, 21):
+                p = r'C:\Users\JerryHan88\Desktop\summary' + '/experimentResult%d.xls' % (x)
+                print x, r_index
+                rb = open_workbook(p)
+                rbSt = rb.sheet_by_name(dispatcher)
+                rbRow = rbSt.row(r_index)
+                for m, i in measuresIndices:
+                    m.append(rbRow[i].value)
+            
+            wbRow = wbSt.row(r_index)
+            summaries = [ar,
+                         np.array(ETA).mean(),
+                         np.array(ETM).max(),
+                         np.array(CWTA).mean(),
+                         np.array(CWTM).max(),
+                         np.array(BTA).mean(),
+                         np.array(BTM).max(),
+                         np.array(CWNA).mean(),
+                         np.array(CWNM).max(),
+                         ]
+            for i, x in enumerate(summaries):
+                wbRow.write(i, x)
+    
+    wb.save(exFP)
 
 def readExcel_drawGraph():
 #     _dispatchers = {D : None for D in ['FCFS','FOFO','NNBA_IA','NNBA_IAP','NNBA_I','NNBA_IATP','NNBA_IAT','NNBA_IT',]}
@@ -126,41 +209,6 @@ def readExcel_drawGraph():
     for i, (title, ylabel) in enumerate(titleAndYlabel):
         saveMeasuresGraph(i + 1, title, ylabel, _dispatchers)
         
-        
-#         
-#         
-#         
-#         for D in _dispatchers.keys():
-#         ARs = []
-#         AaEDs, AaCWTs, AaBWTs, AaCWNs = [], [], [], []
-#         MaEDs, MaCWTs, MaBWTs, MaCWNs = [], [], [], []
-#         for AR, (aED, aCWT, aBWT, aCWN) in _dispatchers[D]:
-#             ARs.append(AR)
-#             AaEDs.append(aED.mean())
-#             AaCWTs.append(aCWT.mean())
-#             AaBWTs.append(aBWT.mean())
-#             AaCWNs.append(aCWN.mean())
-#             MaEDs.append(aED.max())
-#             MaCWTs.append(aCWT.max())
-#             MaBWTs.append(aBWT.max())
-#             MaCWNs.append(aCWN.max())
-#         _dispatchers[D] = (ARs, AaEDs, AaCWTs, AaBWTs, AaCWNs, MaEDs, MaCWTs, MaBWTs, MaCWNs)
-#     
-#     titleAndYlabel = [('EmptyTravel Average', 'Distance (m)'),
-#                       ('CustomerWaitingTime Average', 'Time (s)'),
-#                       ('BoardingWaiting Average', 'Time (s)'),
-#                       ('CustomerWaitingNumber Average', 'NumOfWating (person)'),
-#                       ('EmptyTravel Max', 'Distance (m)'),
-#                       ('CustomerWaiting Max', 'Time (s)'),
-#                       ('BoardingWaiting Max', 'Time (s)'),
-#                       ('CustomerWaitingNumber Max', 'NumOfWating (person)'),
-#                       ]
-#     
-#     from readExcel_drawGraph import saveMeasuresGraph
-#     
-#     for i, (title, ylabel) in enumerate(titleAndYlabel):
-#         saveMeasuresGraph(i + 1, title, ylabel, _dispatchers)
-        
 def saveMeasuresGraph(order, title, ylabel, _dispatchers):
     import os
     path = 'C:\Users\user\Desktop\experimentResult/graphFiles/summary'
@@ -193,6 +241,12 @@ def saveMeasuresGraph(order, title, ylabel, _dispatchers):
     plt.savefig('%s/%s.png' % (path, title))
     plt.close(fig)
 
+
 if __name__ == '__main__':
-    readTxext_writeExcel()
+    summarizeResults()
+    
+#     dirPath = r'C:\Users\JerryHan88\Desktop\summaryExper\Done'
+#     for x in range(1, 21):
+#         p = dirPath + '/repetition%d' % (x)
+#         readTxext_writeExcel(p, x)
 #     run()

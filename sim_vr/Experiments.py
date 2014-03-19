@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 
 # init. folders
-fileSavePath = 'C:\experimentResult1'
+fileSavePath = 'C:\experimentResult16'
 textFilesPath = fileSavePath + '/textFiles'
 graphFilesPath = fileSavePath + '/graphFiles'
 graphWT_FilesPath = graphFilesPath + '/waitingTime'

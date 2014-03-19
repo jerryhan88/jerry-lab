@@ -3,7 +3,7 @@ import numpy as np
 import os, Dynamics, Algorithms
 
 # init. folders
-fileSavePath = 'C:\experimentResult1'
+fileSavePath = 'C:\experimentResult16'
 textFilesPath = fileSavePath + '/textFiles'
 graphFilesPath = fileSavePath + '/graphFiles'
 graphWT_FilesPath = graphFilesPath + '/waitingTime'
@@ -76,14 +76,6 @@ class Worker(multiprocessing.Process):
         return
 
 class Task(object):
-#     def __init__(self, _NUM_PRT, _NUM_CUSTOMER, _repetition, _dispatchers, _meanTimeArrivals):
-#         self.NUM_PRT, self.NUM_CUSTOMER, self.repetition = _NUM_PRT, _NUM_CUSTOMER, _repetition
-#         self.dispatchers, self.meanTimeArrivals = _dispatchers, _meanTimeArrivals
-#     
-#     def __call__(self):
-#         from Experiments import run_experiment
-#         return run_experiment(self.NUM_PRT, self.NUM_CUSTOMER, self.repetition, self.dispatchers, self.meanTimeArrivals)
-
     def __init__(self, _PRT_SPEED, _S2J_SPEED, _J2D_SPEED, _SETTING_TIME, _NUM_CUSTOMER, _NUM_PRT, _dispatcher, _arrivalRate):
         self.PRT_SPEED, self.S2J_SPEED, self.J2D_SPEED, self.SETTING_TIME = _PRT_SPEED, _S2J_SPEED, _J2D_SPEED, _SETTING_TIME  
         self.NUM_CUSTOMER, self.NUM_PRT, self.dispatcher, self.arrivalRate = _NUM_CUSTOMER, _NUM_PRT, _dispatcher, _arrivalRate
@@ -108,7 +100,7 @@ def ex2():
     results = multiprocessing.Queue()
     
     # Start consumers
-    num_workers = multiprocessing.cpu_count()
+    num_workers = multiprocessing.cpu_count()-3
     workers = [ Worker(tasks, results)
                   for i in xrange(num_workers) ]
     for w in workers:
@@ -120,25 +112,17 @@ def ex2():
     NUM_PRT = 50
     NUM_CUSTOMER = 5000
     dispatchers = [
-                    Algorithms.FCFS,
-                    Algorithms.FOFO,
-                    Algorithms.NNBA_I,
+#                     Algorithms.FCFS,
+#                     Algorithms.FOFO,
+#                     Algorithms.NNBA_I,
                     Algorithms.NNBA_IT,
-                    Algorithms.NNBA_IA,
-                    Algorithms.NNBA_IAP,
-                    Algorithms.NNBA_IAT,
-                    Algorithms.NNBA_IATP,
+#                     Algorithms.NNBA_IA,
+#                     Algorithms.NNBA_IAP,
+#                     Algorithms.NNBA_IAT,
+#                     Algorithms.NNBA_IATP,
                     ]
-#     dispatchers = dispatchers[:1]   # FCFS
-#     dispatchers = dispatchers[1:2]  # FOFO 
-#     dispatchers = dispatchers[2:3]  # NNBA_I 
-#     dispatchers = dispatchers[3:4]  # NNBA_IT  
-#     dispatchers = dispatchers[4:5]  # NNBA_IA
-#     dispatchers = dispatchers[5:6]  # NNBA_IAP
-#     dispatchers = dispatchers[6:7]  # NNBA_IAT
-#     dispatchers = dispatchers[7:8]  # NNBA_IATP
     
-    arrivalRates = list(np.arange(0.1, 0.225, 0.005))
+    arrivalRates = list(np.arange(0.190, 0.195, 0.005))
     
     
     for dispatcher in dispatchers:
@@ -166,7 +150,7 @@ def main():
     results = multiprocessing.Queue()
     
     # Start consumers
-    num_workers = multiprocessing.cpu_count() - 1
+    num_workers = multiprocessing.cpu_count() - 3
     workers = [ Worker(tasks, results)
                   for i in xrange(num_workers) ]
     for w in workers:
@@ -189,41 +173,6 @@ def main():
         result = results.get()
         print 'Result:', result
         num_jobs -= 1
-
-def ex1():
-    repetition = 1
-    # parameter setting
-    NUM_PRT = 50
-    NUM_CUSTOMER = 5000
-    dispatcher = [
-                    Algorithms.FCFS,
-                    Algorithms.FOFO,
-                    Algorithms.NNBA_I,
-                    Algorithms.NNBA_IT,
-                    Algorithms.NNBA_IA,
-                    Algorithms.NNBA_IAP,
-                    Algorithms.NNBA_IAT,
-                    Algorithms.NNBA_IATP,
-                    ]
-    arrivalRates = list(np.arange(0.1, 0.25, 0.005))
-    
-    jobs = [
-            (0, 2, 0, len(arrivalRates) // 2),
-            (2, 3, 0, len(arrivalRates) // 2),
-            (4, 5, 0, len(arrivalRates) // 2),
-            (5, 6, 0, len(arrivalRates) // 2),
-            (6, 7, 0, len(arrivalRates) // 2),
-            (7, 8, 0, len(arrivalRates) // 2),
-            
-            (0, 2, len(arrivalRates) // 2, len(arrivalRates)),
-            (2, 3, len(arrivalRates) // 2, len(arrivalRates)),
-            (4, 5, len(arrivalRates) // 2, len(arrivalRates)),
-            (5, 6, len(arrivalRates) // 2, len(arrivalRates)),
-            (6, 7, len(arrivalRates) // 2, len(arrivalRates)),
-            (7, 8, len(arrivalRates) // 2, len(arrivalRates)),
-            ]
-    
-    return NUM_PRT, NUM_CUSTOMER, repetition, dispatcher, arrivalRates, jobs
 
 if __name__ == '__main__':
     ex2()
