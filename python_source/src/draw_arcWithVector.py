@@ -6,12 +6,13 @@ import numpy as np
 
 addVec = lambda v1, v2: tuple(v1[i] + v2[i] for i in range(len(v1)))
 subVec = lambda v1, v2: tuple(v1[i] - v2[i] for i in range(len(v1)))
+# scalMul = lambda v1, k: tuple(k * v1[i] for i in range(len(v1))) 
 innPro = lambda v1, v2: sum(p * q for p, q in zip(v1, v2))
 norm = lambda v1: sqrt(sum(i ** 2 for i in v1))
 calc_vec = lambda p1, p2: tuple(p2[i] - p1[i] for i in range(len(p1)))
 calc_unitVec = lambda v1: tuple(v1[i] / norm(v1)for i in range(len(v1)))
 calc_angle = lambda v1, v2: acos(innPro(v1, v2) / (norm(v1) * norm(v2)))
-calc_point = lambda p1, v1, l: tuple(p1[i] + norm(v1) * l for i in range(len(v1)))
+calc_point = lambda p1, v1, l: tuple(p1[i] + l * v1[i] / norm(v1)  for i in range(len(v1)))
 
 class Node:
     def __init__(self, px, py):
@@ -28,6 +29,9 @@ def rotateP(c, p, ang):
                            ])
     m = np.add((np.dot(rotationM, np.subtract(P, C))), C).reshape(-1,)
     return np.array(m).flatten().tolist()
+    
+def calc_curvP(C, theta, w, l1, l2, r):
+    pass
     
 class MyPanel(wx.Panel):
     def __init__(self, parent):
@@ -54,18 +58,31 @@ class MyPanel(wx.Panel):
                       Node(c1 + 50, c2),
                      ]
         
-        for i in range(1, 25):
+        for i in range(1, 20):
             self.nodes.append(
                               Node(*rotateP((self.nodes[0].px, self.nodes[0].py),
                                             (self.nodes[1].px, self.nodes[1].py),
                                             i * 0.25
                                             )),
                               )
+        theta = 0.5
+        w = 20
+        l1 = 30 
+        l2 = 40
+        r = 30
+        vRamd = calc_angle((1, 0), (0, 1))
+        hRamd = calc_angle((1, 0), (-1, 0))
+        print vRamd, hRamd 
+        c1, c2 = 400, 200
+        C = Node(c1, c2)
+        P1 = Node(*calc_point((C.px , C.py), (cos(hRamd + theta), sin(hRamd + theta)), l1))
+        P1_ = Node(*calc_point((C.px , C.py), (cos(theta), sin(theta)), l1))
+        print P1.px, P1.py
+        print P1_.px, P1_.py    
+        self.nodes.append(C)
+        self.nodes.append(P1)
+        self.nodes.append(P1_)
                       
-#         print calc_angle((1, 0), (-1, 0))
-#         assert False
-         
-         
     def OnTimer(self, evt):
         self.n.px += 1
         self.RefreshGC()
@@ -90,8 +107,6 @@ class MyPanel(wx.Panel):
     def OnLeftUp(self, evt):
         self.translate_mode = False
         self.ReleaseMouse()
-    
-
             
     def OnPaint(self, evt):
         dc = wx.BufferedPaintDC(self, self._buffer)
@@ -149,7 +164,7 @@ class MyPanel(wx.Panel):
 
 class MainFrame(wx.Frame):
     def __init__(self):
-        wx.Frame.__init__(self, None, -1, 'test', size=(300, 300))
+        wx.Frame.__init__(self, None, -1, 'test', size=(600, 400))
         MyPanel(self)
         self.Show(True)
         
