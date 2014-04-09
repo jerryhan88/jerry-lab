@@ -14,11 +14,8 @@ calc_unitVec = lambda v1: tuple(v1[i] / norm(v1)for i in range(len(v1)))
 calc_angle = lambda v1, v2: acos(innPro(v1, v2) / (norm(v1) * norm(v2)))
 calc_point = lambda p1, v1, l: tuple(p1[i] + l * v1[i] / norm(v1)  for i in range(len(v1)))
 
-class Node:
-    def __init__(self, px, py):
-        self.id = id
-        self.px = px
-        self.py = py
+vRadi = calc_angle((1, 0), (0, 1))
+hRadi = calc_angle((1, 0), (-1, 0))
 
 def rotateP(c, p, ang):
     P = np.matrix(p).reshape(len(p), 1)
@@ -29,10 +26,54 @@ def rotateP(c, p, ang):
                            ])
     m = np.add((np.dot(rotationM, np.subtract(P, C))), C).reshape(-1,)
     return np.array(m).flatten().tolist()
+
+def calc_dcPos(C, theta, alpha, l, r, n1, n2):
+    points = []
+    P2, P2_ = calc_point(C, (cos(hRadi + theta), sin(hRadi + theta)), l), calc_point(C, (cos(theta), sin(theta)), l)
+    O2, O2_ = calc_point(P2, (cos(vRadi + theta), sin(vRadi + theta)), r), calc_point(P2_, (cos(vRadi + theta), sin(vRadi + theta)), r)
+    O1, O1_ = calc_point(O2, (-cos(theta + (alpha + vRadi)), -sin(theta + (alpha + vRadi))), 2 * r), calc_point(O2_, (cos(theta + ((hRadi - alpha) + vRadi)), sin(theta + ((hRadi - alpha) + vRadi))), 2 * r)
+    P1, P1_ = calc_point(O1, (cos(theta + vRadi), sin(theta + vRadi)), r), calc_point(O1_, (cos(theta + vRadi), sin(theta + vRadi)), r)
+    vO2O1, vO2_O1_ = calc_vec(O2, O1), calc_vec(O2_, O1_)
+    vO1O2, vO1_O2_ = calc_vec(O1, O2), calc_vec(O1_, O2_) 
+    CP, CP_ = calc_point(O1, vO1O2, r), calc_point(O1_, vO1_O2_, r)
+    uA2, uA2_ = calc_angle(calc_vec(O2, P2), vO2O1) / (n2 + 1), calc_angle(calc_vec(O2_, P2_), vO2_O1_) / (n2 + 1) 
+    uA1, uA1_ = calc_angle(calc_vec(O1, P1), vO1O2) / (n1 + 1), calc_angle(calc_vec(O1_, P1_), vO1_O2_) / (n1 + 1)  
     
-def calc_curvP(C, theta, w, l1, l2, r):
-    pass
+    points.append(P2)
+    for i in range(n2): points.append(rotateP(O2, P2, (i + 1) * -uA2))
+    points.append(CP)
+    for i in list(reversed(range(n1))): points.append(rotateP(O1, P1, (i + 1) * -uA1))
+    points.append(P1)
+     
+    points.append(P1_)
+    for i in range(n1): points.append(rotateP(O1_, P1_, (i + 1) * uA1_))
+    points.append(CP_)          
+    for i in list(reversed(range(n2))): points.append(rotateP(O2_, P2_, (i + 1) * uA2_))
+    points.append(P2_)
+    return points
+
+def calc_cPos(sP, eP, O, r, n):
+    points = []
+    aV, bV = calc_vec(O, sP), calc_vec(O, eP)
+    theta = calc_angle(aV, bV)
+    x, p = r / sin(theta / 2), r / tan(theta / 2) 
+    P1, P2 = calc_point(O, aV, p), calc_point(O, bV, p)
+    C = calc_point(O, addVec(aV, bV), x)
+    uA = calc_angle(calc_vec(C, P1), calc_vec(C, P2)) / (n + 1)
     
+    points.append(P1)
+    for i in range(n):
+        points.append(rotateP(C, P1, (i + 1) * uA))
+    points.append(P2)
+    
+    return points      
+
+class Node:
+    def __init__(self, px, py):
+        self.id = id
+        self.px = px
+        self.py = py
+  
 class MyPanel(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
@@ -65,95 +106,30 @@ class MyPanel(wx.Panel):
                                             (-i) * 0.25
                                             )),
                               )
-        theta = 0.5
-        l = 100
-        r = 30
-        alpha = 1.2
-        vRadi = calc_angle((1, 0), (0, 1))
-        hRadi = calc_angle((1, 0), (-1, 0))
-        print vRadi, hRadi 
-        c1, c2 = 400, 200
-        C = Node(c1, c2)
-        P2 = Node(*calc_point((C.px , C.py), (cos(hRadi + theta), sin(hRadi + theta)), l))
-        P2_ = Node(*calc_point((C.px , C.py), (cos(theta), sin(theta)), l))
-        O2 = Node(*calc_point((P2.px , P2.py), (cos(vRadi + theta), sin(vRadi + theta)), r))
-        O2_ = Node(*calc_point((P2_.px , P2_.py), (cos(vRadi + theta), sin(vRadi + theta)), r))
-        O1 = Node(*calc_point((O2.px , O2.py), (-cos(theta + (alpha + vRadi)), -sin(theta + (alpha + vRadi))), 2 * r))
-        O1_ = Node(*calc_point((O2_.px , O2_.py), (cos(theta + ((hRadi - alpha) + vRadi)), sin(theta + ((hRadi - alpha) + vRadi))), 2 * r))
-        P1 = Node(*calc_point((O1.px , O1.py), (cos(theta + vRadi), sin(theta + vRadi)), r))
-        P1_ = Node(*calc_point((O1_.px , O1_.py), (cos(theta + vRadi), sin(theta + vRadi)), r))
-        self.nodes.append(C)
-        self.nodes.append(P2)
-        self.nodes.append(P2_)
-        self.nodes.append(O2)
-        self.nodes.append(O2_)
-        self.nodes.append(O1)
-        self.nodes.append(O1_)
-        self.nodes.append(P1)
-        self.nodes.append(P1_)
         
-        for i in range(1, 5):
-            self.nodes.append(
-                              Node(*rotateP((O2.px, O2.py),
-                                            (P2.px, P2.py),
-                                            i * -0.25
-                                            )),
-                              )
+        C, theta, alpha, l, r = (400, 200), 0.5, 1.2, 100, 30 
+        
+        for px, py in calc_dcPos(C, theta, alpha, l, r, 10, 10):
+            self.nodes.append(Node(px, py))
             
-        for i in range(1, 5):
-            self.nodes.append(
-                              Node(*rotateP((O2_.px, O2_.py),
-                                            (P2_.px, P2_.py),
-                                            i * 0.25
-                                            )),
-                              )
+        sP, eP, O, r, n = (300, 20), (300, 110), (450, 80), 20, 15
+        for px, py in calc_cPos(sP, eP, O, r, n):
+            self.nodes.append(Node(px, py))
             
-        for i in range(1, 5):
-            self.nodes.append(
-                              Node(*rotateP((O1.px, O1.py),
-                                            (P1.px, P1.py),
-                                            i * -0.25
-                                            )),
-                              )
-        for i in range(1, 5):
-            self.nodes.append(
-                              Node(*rotateP((O1_.px, O1_.py),
-                                            (P1_.px, P1_.py),
-                                            i * 0.25
-                                            )),
-                              )
-
-        aP = Node(300, 20)
-        bP = Node(300, 110)
-        O = Node(450, 80)
-        r = 20
+        P1, P2 = (190, 220), (220, 310)
+        V1 = calc_vec(P1, P2)
+        M1 = tuple(sum(arg) / 2 for arg in zip(P1, P2))
+        k = 50
+        print cos(theta + vRadi), sin(theta + vRadi)
+        theta = calc_angle((1, 0), V1)
+        C = calc_point(M1, (cos(theta + vRadi), sin(theta + vRadi)), k) 
+        for px, py in [P1, P2, C]:
+            self.nodes.append(Node(px, py))
         
-        aV = calc_vec((O.px, O.py), (aP.px, aP.py))
-        bV = calc_vec((O.px, O.py), (bP.px, bP.py))
-        theta = calc_angle(aV, bV)
-        x = r / sin(theta / 2)
-        p = r / tan(theta / 2)
-        P1 = Node(*calc_point((O.px , O.py), aV, p))
-        P2 = Node(*calc_point((O.px , O.py), bV, p))
+        sP, eP, O, r, n = P1, P2, C, 20, 2
+        for px, py in calc_cPos(sP, eP, O, r, n):
+            self.nodes.append(Node(px, py))
         
-#         print calc_point((O.px , O.py), aV, p)
-#         assert False
-        
-        C = Node(*calc_point((O.px , O.py), addVec(aV, bV), x))
-        
-        self.nodes.append(aP)
-        self.nodes.append(bP)
-        self.nodes.append(O)
-        self.nodes.append(P1)
-        self.nodes.append(P2)
-        self.nodes.append(C)
-        for i in range(1, 10):
-            self.nodes.append(
-                              Node(*rotateP((C.px, C.py),
-                                            (P1.px, P1.py),
-                                            i * -0.25
-                                            )),
-                              )
     def OnTimer(self, evt):
         self.n.px += 1
         self.RefreshGC()
