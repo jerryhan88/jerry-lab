@@ -68,6 +68,18 @@ def calc_cPos(sP, eP, O, r, n):
     
     return points      
 
+def calc_arcWithTwoPoint(P1, P2, r, k, n):
+    points = []            
+    V1 = calc_vec(P1, P2)
+    M1 = tuple(sum(arg) / 2 for arg in zip(P1, P2))
+    theta = calc_angle((1, 0), V1)
+    C = calc_point(M1, (cos(theta + vRadi), sin(theta + vRadi)), k)
+    
+    for px, py in calc_cPos(P1, P2, C, r, n):
+        points.append((px, py))
+    
+    return points
+        
 class Node:
     def __init__(self, px, py):
         self.id = id
@@ -115,19 +127,9 @@ class MyPanel(wx.Panel):
         sP, eP, O, r, n = (300, 20), (300, 110), (450, 80), 20, 15
         for px, py in calc_cPos(sP, eP, O, r, n):
             self.nodes.append(Node(px, py))
-            
-        P1, P2 = (190, 220), (220, 310)
-        V1 = calc_vec(P1, P2)
-        M1 = tuple(sum(arg) / 2 for arg in zip(P1, P2))
-        k = 50
-        print cos(theta + vRadi), sin(theta + vRadi)
-        theta = calc_angle((1, 0), V1)
-        C = calc_point(M1, (cos(theta + vRadi), sin(theta + vRadi)), k) 
-        for px, py in [P1, P2, C]:
-            self.nodes.append(Node(px, py))
         
-        sP, eP, O, r, n = P1, P2, C, 20, 2
-        for px, py in calc_cPos(sP, eP, O, r, n):
+        P1, P2, k, r, n = (190, 220), (220, 310), 50, 20, 2
+        for px, py in calc_arcWithTwoPoint(P1, P2, k, r, n):
             self.nodes.append(Node(px, py))
         
     def OnTimer(self, evt):
