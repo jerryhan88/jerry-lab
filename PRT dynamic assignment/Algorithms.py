@@ -111,7 +111,8 @@ def NNBA_IATP(event_time, PRTs, waiting_customers, Nodes):
     reassignment(event_time, target_PRTs, target_customers, Nodes)
 
 def find_opt_matching(cur_time, target_PRTs, target_customers, Nodes):
-    from Dynamics import PRT_SPEED, ST_IDLE, ST_APPROACHING, ST_TRANSITING, ST_PARKING
+    from Dynamics import ST_IDLE, ST_APPROACHING, ST_TRANSITING, ST_PARKING, PRT_SPEED
+    
     # Create_PRTbyCustomer_matrix
     row_size, col_size = len(target_PRTs), len(target_customers)
     max_M_size = max(row_size, col_size)
@@ -150,7 +151,7 @@ def find_opt_matching(cur_time, target_PRTs, target_customers, Nodes):
             else:
                 assert False
             _, determinded_path_e = find_SP(cus.sn.no, cus.dn.no)
-            processing_time = sum(e.distance / min(PRT_SPEED, e.maxSpeed) for e in determinded_path_e )
+            processing_time = sum(e.distance / min(PRT_SPEED, e.maxSpeed) for e in determinded_path_e)
             PRTbyCustomer_matrix[prt_id][i] = -(processing_time + sum(e.distance / min(PRT_SPEED, e.maxSpeed) for e in path_e) + remain_travel_time)
     
     # Apply Hungarian method        

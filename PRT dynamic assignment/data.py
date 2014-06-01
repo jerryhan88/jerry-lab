@@ -1,7 +1,10 @@
-from math import sqrt
-from random import randrange, seed, expovariate, random, choice, sample
+from __future__ import division
+from math import sqrt, pi, cos, sin
+from random import randrange, seed, expovariate, sample
+from itertools import chain
  
 def ex1():
+    seed(2)
     #---------------------------------------------------------------------
     # parameter setting
     NUM_PRT = 50
@@ -11,18 +14,33 @@ def ex1():
     PRT_SPEED = 12  # unit (m/s)
     S2J_SPEED = 6
     J2D_SPEED = 9
-#     numOfBerth = 4
     SETTING_TIME = (45.0, 60.0)  # unit (sec)
     
-    Nodes = Network1()
+    Network, Customers, PRTs = gen_instances(S2J_SPEED, J2D_SPEED, CUSTOMER_ARRIVAL_INTERVAL, NUM_CUSTOMER, NUM_PRT, PRT_SPEED)
     
-    Customers = gen_Customer(CUSTOMER_ARRIVAL_INTERVAL, NUM_CUSTOMER, Nodes)
-    PRTs = gen_PRT(NUM_PRT, Nodes)
+    import Algorithms, Dynamics
     
-    return Nodes, Customers, PRTs, (PRT_SPEED, S2J_SPEED, J2D_SPEED, SETTING_TIME)
+    dispatcher = Algorithms.NNBA_I
+#     dispatcher = Algorithms.NNBA_IA
+#     dispatcher = Algorithms.NNBA_IAT
+#     dispatcher = Algorithms.NNBA_IT
+#     dispatcher = Algorithms.NNBA_IAP
+#     dispatcher = Algorithms.NNBA_IATP
+    
+#     Dynamics.run(SETTING_TIME, PRT_SPEED, Network, PRTs, Customers, dispatcher)
+    Dynamics.run(SETTING_TIME, PRT_SPEED, Network, PRTs, Customers, useVisualizer=True)
 
 #---------------------------------------------------------------------
 # Generate things such as Network, PRT, Customer
+
+def gen_instances(S2J_SPEED, J2D_SPEED, CUSTOMER_ARRIVAL_INTERVAL, NUM_CUSTOMER, NUM_PRT, PRT_SPEED):
+    Network = Network1(S2J_SPEED, J2D_SPEED)
+    # Network
+    #  Nodes, Edges = Network 
+    Customers = gen_Customer(CUSTOMER_ARRIVAL_INTERVAL, NUM_CUSTOMER, Network[0])
+    PRTs = gen_PRT(NUM_PRT, PRT_SPEED, Network[0])
+    
+    return Network, Customers, PRTs
 
 def gen_Customer(average_arrival, num_customers, Nodes):
     from Dynamics import Customer, TRANSFER, STATION
@@ -41,12 +59,17 @@ def gen_Customer(average_arrival, num_customers, Nodes):
     for i, t in enumerate(accu_pd):
         sn, dn = sample(Stations, 2)
         Customers.append(Customer(i, t, Nodes[sn], Nodes[dn]))
-        
+    
+    customerArrivals_txt = open('Info. Arrivals of customers.txt', 'w')
+    for c in Customers:
+        t, sn, dn = c.arriving_time, c.sn.id, c.dn.id 
+        customerArrivals_txt.write('%f,%s-%s\n' % (t, sn, dn))
+    customerArrivals_txt.close()
+    
     return Customers
 
-def gen_PRT(numOfPRT, Nodes):
+def gen_PRT(numOfPRT, _PRT_SPEED, Nodes):
     from Dynamics import PRT, STATION
-    
     PRTs = []
     for _ in range(numOfPRT):
         target_n_id = randrange(len(Nodes)) 
@@ -55,7 +78,7 @@ def gen_PRT(numOfPRT, Nodes):
         PRTs.append(PRT(Nodes[target_n_id]))
     return PRTs
 
-def Network1():
+def Network1(S2J_SPEED, J2D_SPEED):
     from Dynamics import Node, Edge, TRANSFER, STATION, JUNCTION, DOT
     
     C_len = [0, 210, 150, 200, 230, 180, 200]
@@ -66,12 +89,14 @@ def Network1():
     
     btwSJ = 50
     
+    numOfBerth_station = 4
+    
     S_Nodes = [
-             Node('0', C[1] - 50, R[0], STATION), Node('1', C[3] + 30, R[0], STATION), Node('2', C[5], R[0], STATION),
-             Node('3', C[0], R[1] + 25, TRANSFER), Node('4', C[2], R[1], STATION), Node('5', C[4], R[1] - 15, STATION), Node('6', C[6], R[1] + 20, STATION),
-             Node('7', C[1], R[2], STATION), Node('8', C[3] + 20, R[2], STATION), Node('9', C[5], R[2] + 10, STATION),
-             Node('10', C[0], R[3] + 40, STATION), Node('11', C[2], R[3], STATION), Node('12', C[4], R[3] + 20, STATION), Node('13', C[6], R[3] + 50, STATION),
-             Node('14', C[1] - 20, R[4], STATION), Node('15', C[3] - 15, R[4], STATION), Node('16', C[5] + 25, R[4], STATION),
+             Node('0', C[1] - 50, R[0], STATION, numOfBerth_station), Node('1', C[3] + 30, R[0], STATION, numOfBerth_station), Node('2', C[5], R[0], STATION, numOfBerth_station),
+             Node('3', C[0], R[1] + 25, TRANSFER, 5), Node('4', C[2], R[1], STATION, numOfBerth_station), Node('5', C[4], R[1] - 15, STATION, numOfBerth_station), Node('6', C[6], R[1] + 20, STATION, numOfBerth_station),
+             Node('7', C[1], R[2], STATION, numOfBerth_station), Node('8', C[3] + 20, R[2], STATION, numOfBerth_station), Node('9', C[5], R[2] + 10, STATION, numOfBerth_station),
+             Node('10', C[0], R[3] + 40, STATION, numOfBerth_station), Node('11', C[2], R[3], STATION, numOfBerth_station), Node('12', C[4], R[3] + 20, STATION, numOfBerth_station), Node('13', C[6], R[3] + 50, STATION, numOfBerth_station),
+             Node('14', C[1] - 20, R[4], STATION, numOfBerth_station), Node('15', C[3] - 15, R[4], STATION, numOfBerth_station), Node('16', C[5] + 25, R[4], STATION, numOfBerth_station),
              ]
     
     J_Nodes = []
@@ -87,47 +112,15 @@ def Network1():
             S_px, S_py = S_Nodes[i].px, S_Nodes[i].py + btwSJ
             J_Nodes.append(Node(str(i) + 'N', N_px, N_py, JUNCTION))
             J_Nodes.append(Node(str(i) + 'S', S_px, S_py, JUNCTION))
-            
+    
     Nodes = S_Nodes + J_Nodes
-    
-    JDJ_Nodes = []
-    
-    JDJ_pos_info1 = [
-                    ('0W', '0E', 'CW'),
-#                     ('1W', '1E', 'CCW'),
-#                     ('2W', '2E', 'CW'),
-#                     ('7E', '7W', 'CW'),
-#                     ('8E', '8W', 'CCW'),
-#                     ('9E', '9W', 'CW'),
-#                     ('14E', '14W', 'CCW'),
-#                     ('15E', '15W', 'CW'),
-#                     ('16E', '16W', 'CCW'),
-#                     ('3S', '3N', 'CCW'),
-#                     ('4N', '4S', 'CCW'),
-#                     ('5S', '5N', 'CCW'),
-#                     ('6N', '6S', 'CCW'),
-#                     ('10S', '10N', 'CW'),
-#                     ('11N', '11S', 'CW'),
-#                     ('12S', '12N', 'CW'),
-#                     ('13N', '13S', 'CW'),
-                    ]
     
     def findN(nID):
         for n in Nodes:
             if n.id == nID:
                 return n
         else:
-            False
-            
-    from util import set_posD_OnCurve
-    
-    for sn_id, dn_id, direction in JDJ_pos_info1:
-        for px, py in set_posD_OnCurve(btwSJ, findN(sn_id), findN(dn_id), direction):
-            JDJ_Nodes.append((px, py))
-        
-    return Nodes  # + JDJ_Nodes
-
-'''    
+            False 
     JDJ_Nodes = []
     
     JDJ_pos_info1 = [
@@ -622,8 +615,8 @@ def Network1():
         n.no = i
         
     return Nodes, Edges
-'''
     
+'''
 import wx
 STATION_DIAMETER = 8
 JUNCTION_DIAMETER = 5
@@ -675,11 +668,12 @@ class ViewPanel(DragZoomPanel):
 #                 gc.SetPen(wx.Pen(wx.Colour(0, 0, 0), 0.01))
 #                 gc.DrawEllipse(-1, -1, 2, 2)    
             gc.SetTransform(old_tr)
-    
+  '''  
 if __name__ == '__main__':
-    app = wx.PySimpleApp()
-    win = MainFrame()
-    win.Show(True)
-    app.MainLoop()
+    ex1()
+#     app = wx.PySimpleApp()
+#     win = MainFrame()
+#     win.Show(True)
+#     app.MainLoop()
     
         

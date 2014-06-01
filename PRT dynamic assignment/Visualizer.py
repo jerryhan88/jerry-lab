@@ -16,6 +16,8 @@ JUNCTION_DIAMETER = 5
 CUSTOMER_RADIUS = 30 / 3
 PRT_SIZE = 30 / 5
 
+PRT_SPEED = 0
+
 waiting_customers = []
 event_queue = []
 
@@ -95,18 +97,11 @@ class ChartPanel(DragZoomPanel):
                 gc.DrawLines([(ori_px + Dynamics.WaitingTimeChanges[i - 1][0] * xUnit, ori_py - (Dynamics.WaitingTimeChanges[i - 1][1] / Dynamics.WaitingTimeChanges[i - 1][0]) * yUnit), (ori_px + CT * xUnit, ori_py - AWT * yUnit)])
 
 class MainFrame(wx.Frame):
-    def __init__(self):
+    def __init__(self, Network, PRTs, Customers):
         wx.Frame.__init__(self, None, -1, TITLE, size=(1024, 768), pos=(20, 20))
-#         wx.Frame.__init__(self, None, -1, TITLE, size=(1920, 960), pos=(0, 0))
-        # Every resources are accessible
-#         self.Nodes, self.Edges = Dynamics.Network1()
-        self.Nodes, self.Edges = Dynamics.Network2()
-        
-        self.Customers = Dynamics.gen_Customer(Dynamics.CUSTOMER_ARRIVAL_INTERVAL, Dynamics.NUM_CUSTOMER, 0.3, self.Nodes)
+        self.Nodes, self.Edges = Network
+        self.PRTs, self.Customers = PRTs, Customers
         self.NumOfTotalCustomer = len(self.Customers)
-        self.PRTs = Dynamics.gen_PRT(Dynamics.NUM_PRT, self.Nodes)
-        
-        Algorithms.init_algorithms(self.Nodes)
         
         self.idlePRT_in_node = {}
         for n in self.Nodes:
@@ -152,8 +147,6 @@ class MainFrame(wx.Frame):
         self.Show(True)
         
         self.dispatcher = self.select_dispatcher()
-        
-#         self.dispatcher = Algorithms.NN1 
         
         if self.dispatcher == None:
             return
@@ -461,11 +454,9 @@ class ViewPanel(DragZoomPanel):
     
     def OnMouseWheel(self, e):
         if e.ControlDown():
-            win.OnSpeedUp(None) if e.m_wheelRotation > 0 else win.OnSpeedDown(None)
+            self.Parent.Parent.Parent.Parent.OnSpeedUp(None) if e.m_wheelRotation > 0 else self.Parent.Parent.Parent.Parent.OnSpeedDown(None)
         else:
             DragZoomPanel.OnMouseWheel(self, e)
-        # self.set_scale(self.scale * (self.scale_inc if e.m_wheelRotation > 0 else (1 / self.scale_inc)), e.m_x, e.m_y)
-        # self.RefreshGC()
 
     def OnDrawDevice(self, gc):
         gc.SetFont(wx.Font(12, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
@@ -529,7 +520,7 @@ class ViewPanel(DragZoomPanel):
             if waiting_c_in_node:
                 waiting_c_str = 'C #%d [' % len(waiting_c_in_node) + ':'.join(('C%d' % c_id) for c_id in waiting_c_in_node) + ']'
                 gc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-                gc.DrawText(waiting_c_str, Dynamics.findNode(n_id).px + STATION_DIAMETER / 2, Dynamics.findNode(n_id).py - STATION_DIAMETER / 2 )
+                gc.DrawText(waiting_c_str, Dynamics.findNode(n_id).px + STATION_DIAMETER / 2, Dynamics.findNode(n_id).py - STATION_DIAMETER / 2)
         
         for n_id, idlePRT_in_node in self.Parent.Parent.Parent.Parent.idlePRT_in_node.iteritems():
             if idlePRT_in_node:
@@ -541,7 +532,9 @@ class ViewPanel(DragZoomPanel):
             prev_n, next_n = e._from, e._to
             
             ax, ay = next_n.px - prev_n.px, next_n.py - prev_n.py
+            
             la = sqrt(ax * ax + ay * ay)
+            assert la != 0 
             ux, uy = ax / la, ay / la
             px, py = -uy, ux
             

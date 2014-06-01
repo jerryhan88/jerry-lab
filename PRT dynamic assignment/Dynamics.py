@@ -1,14 +1,15 @@
 from __future__ import division
-from math import sqrt, pi, cos, sin
+from math import sqrt
 from random import uniform
 from heapq import heappush, heappop
-from itertools import chain
 import Algorithms
 
 #---------------------------------------------------------------------
 # node type and states of PRT
 TRANSFER, STATION, JUNCTION, DOT = range(4)
 ST_IDLE, ST_APPROACHING, ST_SETTING, ST_TRANSITING, ST_PARKING = range(5)
+SETTING_TIME = None
+PRT_SPEED = None
 
 # event queue for simulation and current customers in system (simulation)
 waiting_customers = []
@@ -54,10 +55,11 @@ def findNode(nID):
 # Classes
 class Node():
     BIG_NUM = 1000000
-    def __init__(self, _id, px, py, nodeType):
+    def __init__(self, _id, px, py, nodeType, numOfBerth=0):
         self.id = _id
         self.px, self.py = px, py
         self.nodeType = nodeType
+        self.numOfBerth = numOfBerth
         self.no = None
         self.settingPRTs = []
         self.setupWaitingPRTs = []
@@ -151,10 +153,10 @@ class PRT():
         else:
             assert evt == 'I2S'
             targetS = self.arrived_n
-        assert len(targetS.settingPRTs) <= numOfBerth
+        assert len(targetS.settingPRTs) <= targetS.numOfBerth
             
         # new arrival PRT
-        if len(targetS.settingPRTs) >= numOfBerth:
+        if len(targetS.settingPRTs) >= targetS.numOfBerth:
             self.isSetupWaiting = True
             target_c.isSetupWaiting = True
             target_c.boardingWaitingStartTime = cur_time
@@ -245,7 +247,6 @@ class PRT():
         self.arrived_n.settingPRTs.append(self)
         
         # Set things for next state
-        seed(2)
         evt_change_point = cur_time + uniform(*SETTING_TIME)
         x = [evt_change_point, self.On_SettingToTransiting, target_c]
         self.event_seq.append(x)
@@ -271,6 +272,7 @@ class PRT():
         # Set things for next state
         self.path_n, self.path_e = Algorithms.find_SP(self.arrived_n.no, self.assigned_customer.sn.no)
         self.last_planed_time = cur_time
+        global PRT_SPEED
         evt_change_point = cur_time + sum(e.distance / min(PRT_SPEED, e.maxSpeed) for e in self.path_e)
         x = [evt_change_point, self.On_ApproachingToSetting, target_c]
         self.event_seq.append(x)
@@ -328,6 +330,7 @@ class PRT():
         # Set things for next state
         self.path_n, self.path_e = Algorithms.find_SP(self.transporting_customer.sn.no, self.transporting_customer.dn.no)
         self.last_planed_time = cur_time
+        global PRT_SPEED
         evt_change_point = cur_time + sum(e.distance / min(PRT_SPEED, e.maxSpeed) for e in self.path_e)
         x = [evt_change_point, self.On_TransitingToIdle, target_c]
         self.event_seq.append(x)
@@ -365,6 +368,7 @@ class PRT():
         # Set things for next state
         path_travel_time = cur_time - self.last_planed_time
         _, next_n, xth = Algorithms.find_PRT_position_on_PATH(self.path_e, path_travel_time)
+        global PRT_SPEED
         remain_travel_time = sum(e.distance / min(PRT_SPEED, e.maxSpeed) for e in self.path_e[:xth]) - path_travel_time
         
         
@@ -403,6 +407,7 @@ class PRT():
         # Set things for next state
         path_travel_time = cur_time - self.last_planed_time
         _, next_n, xth = Algorithms.find_PRT_position_on_PATH(self.path_e, path_travel_time)
+        global PRT_SPEED
         remain_travel_time = sum(e.distance / min(PRT_SPEED, e.maxSpeed) for e in self.path_e[:xth]) - path_travel_time
         
         if next_n.nodeType == STATION or next_n.nodeType == TRANSFER:
@@ -487,6 +492,7 @@ class PRT():
         # Set things for next state
         path_travel_time = cur_time - self.last_planed_time
         _, next_n, xth = Algorithms.find_PRT_position_on_PATH(self.path_e, path_travel_time)
+        global PRT_SPEED
         remain_travel_time = sum(e.distance / min(PRT_SPEED, e.maxSpeed) for e in self.path_e[:xth]) - path_travel_time
         next_n = self.path_n[-1]
         
@@ -577,8 +583,6 @@ def On_CustomerArrival(cur_time, target_c):
     update_customerWaitingTimeMeasure(cur_time, 1)
     global NumOfCustomerArrivals
     NumOfCustomerArrivals += 1
-    
-    dispatcher(cur_time, PRTs, waiting_customers, Nodes)
     on_notify_customer_arrival(customer)
 
 def process_events(now):
@@ -597,39 +601,28 @@ def remove_A_customerInWaitingList(target_customer):
             return waiting_customers.pop(i)
 
 #---------------------------------------------------------------------
-def test():
+def run(_SETTING_TIME, _PRT_SPEED, Network, PRTs, Customers, dispatcher=None, useVisualizer=False):
     from time import sleep
+    global SETTING_TIME, PRT_SPEED
+    SETTING_TIME = _SETTING_TIME
+    PRT_SPEED = _PRT_SPEED
     
-    # Generate all inputs: Network, Arrivals of customers, PRTs
-#     Nodes, Edges = Network1()
-    Nodes, Edges = Network2()
-    Customers = gen_Customer(4.2, 5000, 0.3, Nodes)
-    PRTs = gen_PRT(50, Nodes)    
+    # Network
+    #  Nodes, Edges = Network
+    Algorithms.init_algorithms(Network[0])
     
-    Algorithms.init_algorithms(Nodes)
-    
-    # Choose dispatcher
-#     dispatcher = Algorithms.NN0
-    dispatcher = Algorithms.NN1
-#     dispatcher = Algorithms.NN2
-#     dispatcher = Algorithms.NN3
-#     dispatcher = Algorithms.NN4
-#     dispatcher = Algorithms.NN5
-    
-    
-    init_dynamics(Nodes, PRTs, Customers, dispatcher)
-    
-    now = 0.0
-    while process_events(now):
-        now += 1
-        sleep(0.0001)
-
-    print        
-    print 'Measure------------------------------------------------------------------------------------------------'
-    print 'T.TravedDist: %.1f, T.E.TravelDist: %.1f, T.FlowTime: %.1f, T.WaitTime: %.1f' % (Total_travel_distance, Total_empty_travel_distance, Total_customers_flow_time, Total_customers_waiting_time)
-    
-    print 'IdleState_time: %.1f, ApproachingState_time: %.1f, TransitingState_time: %.1f, ParkingState_time: %.1f' % (IdleState_time, ApproachingState_time, TransitingState_time, ParkingState_time)
+    if useVisualizer:
+        import wx, Visualizer
+        app = wx.PySimpleApp()
+        win = Visualizer.MainFrame(Network, PRTs, Customers)
+        win.Show(True)
+        app.MainLoop()
+    else:
+        init_dynamics(Network[0], PRTs, Customers, dispatcher)
+        now = 0.0
+        while process_events(now):
+            now += 1
+            sleep(0.0001)
 
 if __name__ == '__main__':
-    test()
-#     tests()
+    pass
