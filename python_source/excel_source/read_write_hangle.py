@@ -1,7 +1,7 @@
 from xlrd import open_workbook
 from xlwt import Workbook
 from xlutils.copy import copy
-p = r'C:\Users\JerryHan88\Desktop\test.xls'
+p = r'test.xls'
 rb = open_workbook(p)
 wb = Workbook()
 st = wb.add_sheet('test')
@@ -10,4 +10,6 @@ rrow = rst.row(2)
 row = st.row(1)
 
 for i, r in enumerate(rrow):
-    print i, r.value
+    row.write(i,r.value)
+    
+wb.save(r'test1.xls')
