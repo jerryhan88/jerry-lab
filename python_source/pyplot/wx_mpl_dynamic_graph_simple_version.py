@@ -18,9 +18,9 @@ class GraphFrame(wx.Frame):
     title = 'Demo: dynamic matplotlib graph'
     def __init__(self):
         wx.Frame.__init__(self, None, -1, self.title, size=(800, 600))
-        self.dataX = [0]
-        self.dataY = [0]
-        self.data = [self.dataX , self.dataY]
+        
+        self.dataX = [[0], [0]]
+        self.dataY = [[0], [0]]
         self.create_main_panel()
         
         self.redraw_timer = wx.Timer(self)
@@ -28,23 +28,31 @@ class GraphFrame(wx.Frame):
         self.redraw_timer.Start(100)
     
     def gen_data(self):
-        self.dataX.append(len(self.dataX))
-        self.dataY.append(self.dataY[-1] + random.uniform(-0.5, 0.5))
+        for x in self.dataX:
+            x.append(len(x))
+        for y in self.dataY:
+            y.append(y[-1] + random.uniform(-0.5, 0.5))
         
     def init_plot(self):
         self.dpi = 100
         self.fig = Figure((4.0, 3.0), dpi=self.dpi, facecolor='white')
-        self.axes = self.fig.add_subplot(111)
+        self.axes = self.fig.add_subplot(121)
         self.axes.set_axis_bgcolor('white')
-        
         pylab.setp(self.axes.get_xticklabels(), fontsize=8)
         pylab.setp(self.axes.get_yticklabels(), fontsize=8)
-
-        # plot the data as a line series, and save the reference 
-        # to the plotted line series
-        #
-        self.plot_data = self.axes.plot(self.data[0],
-                                        self.data[1],
+        
+        self.plot_data = self.axes.plot(self.dataX[0],
+                                        self.dataY[0],
+                                        linewidth=1,
+                                        color='black',
+                                        )[0]
+                                        
+        self.axes1 = self.fig.add_subplot(122)
+        self.axes1.set_axis_bgcolor('white')
+        pylab.setp(self.axes1.get_xticklabels(), fontsize=8)
+        pylab.setp(self.axes1.get_yticklabels(), fontsize=8)
+        self.plot_data1 = self.axes1.plot(self.dataX[1],
+                                        self.dataY[1],
                                         linewidth=1,
                                         color='black',
                                         )[0]
@@ -54,40 +62,35 @@ class GraphFrame(wx.Frame):
         self.panel.SetBackgroundColour('white')
         self.init_plot()
         self.canvas = FigCanvas(self.panel, -1, self.fig)
-        self.pause_button = wx.Button(self.panel, -1, "Pause")
+        
+        self.vbox = wx.BoxSizer(wx.VERTICAL)
+        self.vbox.Add(self.canvas, 1, flag=wx.LEFT | wx.TOP | wx.GROW)        
+        
+        self.panel.SetSizer(self.vbox)
+        self.vbox.Fit(self)
         
     def on_redraw_timer(self, _):
         self.gen_data()
         self.draw_plot()
         
     def draw_plot(self):
-        """ Redraws the plot
-        """
-        xmax = len(self.data[0]) if len(self.data[0]) > 100 else 100
+        xmax = len(self.dataX[0]) if len(self.dataX[0]) > 100 else 100
         xmin = 0
-
-        # for ymin and ymax, find the minimal and maximal values
-        # in the data set and add a mininal margin.
-        # 
-        # note that it's easy to change this scheme to the 
-        # minimal/maximal value in the current display, and not
-        # the whole data set.
-        # 
-        ymin = round(min(self.data[1]), 0) - 1
-        ymax = round(max(self.data[1]), 0) + 1
-
+        ymin = round(min(self.dataY[0]), 0) - 1
+        ymax = round(max(self.dataY[0]), 0) + 1
         self.axes.set_xbound(lower=xmin, upper=xmax)
         self.axes.set_ybound(lower=ymin, upper=ymax)
-#         self.axes.grid(False)
-#         pylab.setp(self.axes.get_xticklabels(), visible=True)
+        self.plot_data.set_xdata(self.dataX[0])
+        self.plot_data.set_ydata(self.dataY[0])
         
-        # Using setp here is convenient, because get_xticklabels
-        # returns a list over which one needs to explicitly 
-        # iterate, and setp already handles this.
-        #  
-        
-        self.plot_data.set_xdata(np.array(self.data[0]))
-        self.plot_data.set_ydata(self.data[1])
+        xmax = len(self.dataX[1]) if len(self.dataX[1]) > 100 else 100
+        xmin = 0
+        ymin = round(min(self.dataY[1]), 0) - 1
+        ymax = round(max(self.dataY[1]), 0) + 1
+        self.axes1.set_xbound(lower=xmin, upper=xmax)
+        self.axes1.set_ybound(lower=ymin, upper=ymax)
+        self.plot_data1.set_xdata(self.dataX[1])
+        self.plot_data1.set_ydata(self.dataY[1])
         
         self.canvas.draw()
         

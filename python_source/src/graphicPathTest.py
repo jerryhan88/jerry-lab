@@ -9,9 +9,9 @@ class Path(object):
         path.AddCurveToPoint(wx.Point2D(10,50),
                              wx.Point2D(10,150),
                              wx.Point2D(100,100))
-        gc.DrawPath(path)
-        
-        path=gc.CreatePath()
+#         gc.DrawPath(path)
+        gc.SetPen(wx.Pen("red",1))
+#         path=gc.CreatePath()
         path.MoveToPoint(wx.Point2D(10,10))
         #path.AddLineToPoint(wx.Point2D(100,100))
         path.AddRoundedRectangle(100.0,100.0,10.0,10.0,5.0)
