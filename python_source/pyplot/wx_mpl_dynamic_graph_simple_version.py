@@ -36,7 +36,8 @@ class GraphFrame(wx.Frame):
     def init_plot(self):
         self.dpi = 100
         self.fig = Figure((4.0, 3.0), dpi=self.dpi, facecolor='white')
-        self.axes = self.fig.add_subplot(121)
+        self.axes = self.fig.add_subplot(1,2,1)
+        self.axes.set_title('test1')
         self.axes.set_axis_bgcolor('white')
         pylab.setp(self.axes.get_xticklabels(), fontsize=8)
         pylab.setp(self.axes.get_yticklabels(), fontsize=8)
@@ -47,7 +48,7 @@ class GraphFrame(wx.Frame):
                                         color='black',
                                         )[0]
                                         
-        self.axes1 = self.fig.add_subplot(122)
+        self.axes1 = self.fig.add_subplot(1,2,2)
         self.axes1.set_axis_bgcolor('white')
         pylab.setp(self.axes1.get_xticklabels(), fontsize=8)
         pylab.setp(self.axes1.get_yticklabels(), fontsize=8)
