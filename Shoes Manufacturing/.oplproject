@@ -37,6 +37,24 @@
 			<ref type="model" name="Models collection/v10_6.mod">
 			</ref>
 		</config>
+		<config default="false" name="&amp;#44396;&amp;#49457; 1" category="opl">
+			<ref type="model" name="Models collection/v10_6.mod">
+			</ref>
+			<ref type="data" name="Data collection/real.dat">
+			</ref>
+		</config>
+		<config default="false" name="&amp;#44396;&amp;#49457; 2" category="opl">
+			<ref type="data" name="Data collection/small.dat">
+			</ref>
+			<ref type="model" name="Models collection/v10_6.mod">
+			</ref>
+		</config>
+		<config default="false" name="&amp;#44396;&amp;#49457; 3" category="opl">
+			<ref type="model" name="Models collection/v10_6.mod">
+			</ref>
+			<ref type="data" name="Data collection/Junho.dat">
+			</ref>
+		</config>
 	</configs>
 	
 </project>

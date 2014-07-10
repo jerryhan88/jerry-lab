@@ -91,7 +91,7 @@ subject to {
     eq8:
 	  sum( i in 1..n , j in Jt[t] inter A_i[i] ) l_j[j] * y[<t, i, j>] <= L;
 
-  forall( t in 1..T, j in 1..n : j in Jt[t] )
+  forall( t in 1..T, j in 1..m : j in Jt[t] )
     eq9:
       sum( i in 1..n : j in A_i[i] ) y[<t, i, j>] <= u_j[j];
       
