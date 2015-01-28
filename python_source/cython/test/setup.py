@@ -8,12 +8,12 @@ from distutils.extension import Extension
 from Cython.Distutils import build_ext
 
 ext_modules=[
-    Extension("demo",
-              ["demo.pyx"]) # Unix-like specific
+    Extension("interitance",
+              ["interitance.pyx"]) # Unix-like specific
 ]
 
 setup(
-  name = "Demos",
+  name = "interitance",
   cmdclass = {"build_ext": build_ext},
   ext_modules = ext_modules
 )
